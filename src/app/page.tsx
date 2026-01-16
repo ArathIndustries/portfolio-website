@@ -14,11 +14,10 @@ export default function Home() {
           Hi, I&apos;m
         </p>
         <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-          Arath Pena
+          Sergio Arath Guzman
         </h1>
         <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl">
-          Design Engineer exploring AI and automation.
-          Building tools that bridge engineering and technology.
+          Industrial Engineer who cannot stop tinkering.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
           <Link

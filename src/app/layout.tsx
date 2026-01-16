@@ -17,11 +17,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Sergio Arath Guzman | Design Engineer",
+    default: "Sergio Arath Guzman | Industrial Engineer",
     template: "%s | Sergio Arath Guzman",
   },
-  description: "Design Engineer exploring AI and automation. Building tools that bridge engineering and technology.",
-  keywords: ["portfolio", "engineering", "AI", "automation", "web development", "civil engineering"],
+  description: "Industrial Engineer who cannot stop tinkering.",
+  keywords: ["portfolio", "engineering", "AI", "automation", "web development", "industrial engineering", "civil engineering"],
   authors: [{ name: "Sergio Arath Guzman" }],
   creator: "Sergio Arath Guzman",
   metadataBase: new URL("https://arath.site"),
@@ -29,13 +29,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "Sergio Arath Guzman",
-    title: "Sergio Arath Guzman | Design Engineer",
-    description: "Design Engineer exploring AI and automation. Building tools that bridge engineering and technology.",
+    title: "Sergio Arath Guzman | Industrial Engineer",
+    description: "Industrial Engineer who cannot stop tinkering.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sergio Arath Guzman | Design Engineer",
-    description: "Design Engineer exploring AI and automation. Building tools that bridge engineering and technology.",
+    title: "Sergio Arath Guzman | Industrial Engineer",
+    description: "Industrial Engineer who cannot stop tinkering.",
   },
   robots: {
     index: true,

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "Learn more about Sergio Arath Guzman - Design Engineer exploring AI and automation.",
+  description: "Learn more about Sergio Arath Guzman - Industrial Engineer who cannot stop tinkering.",
 };
 
 const skills = [
