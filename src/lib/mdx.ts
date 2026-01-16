@@ -1,0 +1,154 @@
+import fs from "fs";
+import path from "path";
+import matter from "gray-matter";
+
+// Base directory for content
+const contentDirectory = path.join(process.cwd(), "content");
+
+// Types for project frontmatter
+export interface ProjectFrontmatter {
+  title: string;
+  description: string;
+  image?: string;
+  tags: string[];
+  github?: string;
+  live?: string;
+  date: string;
+  featured?: boolean;
+}
+
+export interface Project {
+  slug: string;
+  frontmatter: ProjectFrontmatter;
+  content: string;
+}
+
+// Types for blog frontmatter
+export interface BlogFrontmatter {
+  title: string;
+  description: string;
+  date: string;
+  tags: string[];
+  image?: string;
+}
+
+export interface BlogPost {
+  slug: string;
+  frontmatter: BlogFrontmatter;
+  content: string;
+}
+
+/**
+ * Get all projects from content/projects directory
+ * Returns projects sorted by date (newest first)
+ */
+export function getAllProjects(): Project[] {
+  const projectsDirectory = path.join(contentDirectory, "projects");
+
+  // Return empty array if directory doesn't exist or is empty
+  if (!fs.existsSync(projectsDirectory)) {
+    return [];
+  }
+
+  const filenames = fs.readdirSync(projectsDirectory);
+  const mdxFiles = filenames.filter((name) => name.endsWith(".mdx"));
+
+  const projects = mdxFiles.map((filename) => {
+    const slug = filename.replace(/\.mdx$/, "");
+    const filePath = path.join(projectsDirectory, filename);
+    const fileContents = fs.readFileSync(filePath, "utf8");
+    const { data, content } = matter(fileContents);
+
+    return {
+      slug,
+      frontmatter: data as ProjectFrontmatter,
+      content,
+    };
+  });
+
+  // Sort by date (newest first)
+  return projects.sort((a, b) => {
+    return new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime();
+  });
+}
+
+/**
+ * Get a single project by slug
+ */
+export function getProjectBySlug(slug: string): Project | null {
+  const filePath = path.join(contentDirectory, "projects", `${slug}.mdx`);
+
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+
+  const fileContents = fs.readFileSync(filePath, "utf8");
+  const { data, content } = matter(fileContents);
+
+  return {
+    slug,
+    frontmatter: data as ProjectFrontmatter,
+    content,
+  };
+}
+
+/**
+ * Get featured projects only
+ */
+export function getFeaturedProjects(): Project[] {
+  return getAllProjects().filter((project) => project.frontmatter.featured);
+}
+
+/**
+ * Get all blog posts from content/blog directory
+ * Returns posts sorted by date (newest first)
+ */
+export function getAllBlogPosts(): BlogPost[] {
+  const blogDirectory = path.join(contentDirectory, "blog");
+
+  // Return empty array if directory doesn't exist or is empty
+  if (!fs.existsSync(blogDirectory)) {
+    return [];
+  }
+
+  const filenames = fs.readdirSync(blogDirectory);
+  const mdxFiles = filenames.filter((name) => name.endsWith(".mdx"));
+
+  const posts = mdxFiles.map((filename) => {
+    const slug = filename.replace(/\.mdx$/, "");
+    const filePath = path.join(blogDirectory, filename);
+    const fileContents = fs.readFileSync(filePath, "utf8");
+    const { data, content } = matter(fileContents);
+
+    return {
+      slug,
+      frontmatter: data as BlogFrontmatter,
+      content,
+    };
+  });
+
+  // Sort by date (newest first)
+  return posts.sort((a, b) => {
+    return new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime();
+  });
+}
+
+/**
+ * Get a single blog post by slug
+ */
+export function getBlogPostBySlug(slug: string): BlogPost | null {
+  const filePath = path.join(contentDirectory, "blog", `${slug}.mdx`);
+
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+
+  const fileContents = fs.readFileSync(filePath, "utf8");
+  const { data, content } = matter(fileContents);
+
+  return {
+    slug,
+    frontmatter: data as BlogFrontmatter,
+    content,
+  };
+}

@@ -1,0 +1,5 @@
+# robots.txt for arathpena.com
+User-agent: *
+Allow: /
+
+Sitemap: https://arathpena.com/sitemap.xml
