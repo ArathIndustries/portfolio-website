@@ -7,8 +7,8 @@ export const metadata: Metadata = {
 };
 
 const skills = [
-  { category: "Engineering", items: ["Civil Engineering", "Structural Design", "CAD/BIM"] },
-  { category: "Programming", items: ["Python", "TypeScript", "JavaScript", "SQL"] },
+  { category: "Engineering", items: ["Civil", "Industrial", "Electronics"] },
+  { category: "Programming", items: ["Python", "C", "Assembly"] },
   { category: "AI & Automation", items: ["Claude", "Prompt Engineering", "Workflow Automation"] },
   { category: "Web", items: ["React", "Next.js", "Tailwind CSS", "Node.js"] },
 ];
@@ -51,18 +51,23 @@ export default function AboutPage() {
         <h1 className="text-3xl sm:text-4xl font-bold mb-6">About Me</h1>
         <div className="prose prose-gray dark:prose-invert max-w-none">
           <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-            I&apos;m a Design Engineer with a passion for exploring how AI and automation
-            can transform traditional engineering workflows. My background in civil engineering
-            gives me a unique perspective on applying technology to solve real-world problems.
+            I&apos;m a first-generation Latino engineering student with a background that spans
+            electronic systems and civil design. I&apos;ve always been drawn to understanding
+            how things work—whether it&apos;s a circuit, a structure, or a system. That curiosity
+            has taken me down a lot of different paths, and I&apos;ve learned something valuable
+            from each one.
           </p>
           <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mt-4">
-            Currently, I&apos;m focused on building tools and systems that bridge the gap
-            between engineering expertise and emerging AI capabilities. I believe the most
-            interesting work happens at the intersection of domains.
+            Right now, I&apos;m studying Industrial Engineering at Texas State University while
+            working part-time as a Civil Engineering Designer. Lately, I&apos;ve been diving into
+            task automation—finding ways to make repetitive work disappear so people can focus
+            on what actually matters.
           </p>
           <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mt-4">
-            When I&apos;m not working, you&apos;ll find me experimenting with new technologies,
-            documenting what I learn, and sharing insights through this site.
+            I&apos;m motivated by curiosity and novelty. If you know where you want to go but
+            don&apos;t know where to start, I like helping steer the ship in that direction.
+            When I&apos;m not working or studying, you&apos;ll find me reading philosophy,
+            working outside with my hands, or taking long walks to the corner store for snacks.
           </p>
         </div>
       </section>
