@@ -23,7 +23,7 @@ export function Header() {
             href="/"
             className="text-xl font-bold hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
-            Arath Pena
+            Sergio Arath Guzman
           </Link>
 
           {/* Desktop Navigation */}
