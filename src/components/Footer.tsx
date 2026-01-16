@@ -3,7 +3,7 @@ import Link from "next/link";
 const socialLinks = [
   {
     name: "GitHub",
-    href: "https://github.com/yourusername",
+    href: "https://github.com/ArathIndustries",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -17,7 +17,7 @@ const socialLinks = [
   },
   {
     name: "LinkedIn",
-    href: "https://linkedin.com/in/yourusername",
+    href: "https://www.linkedin.com/in/sergioarathguzman/",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -31,7 +31,7 @@ const socialLinks = [
   },
   {
     name: "Email",
-    href: "mailto:your@email.com",
+    href: "mailto:Sergioarathguzman@gmail.com",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -60,7 +60,7 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Copyright */}
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            &copy; {currentYear} Arath Pena. All rights reserved.
+            &copy; {currentYear} Sergio Arath Guzman. All rights reserved.
           </p>
 
           {/* Social Links */}

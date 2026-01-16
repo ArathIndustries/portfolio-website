@@ -17,24 +17,24 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Arath Pena | Design Engineer",
-    template: "%s | Arath Pena",
+    default: "Sergio Arath Guzman | Design Engineer",
+    template: "%s | Sergio Arath Guzman",
   },
   description: "Design Engineer exploring AI and automation. Building tools that bridge engineering and technology.",
   keywords: ["portfolio", "engineering", "AI", "automation", "web development", "civil engineering"],
-  authors: [{ name: "Arath Pena" }],
-  creator: "Arath Pena",
+  authors: [{ name: "Sergio Arath Guzman" }],
+  creator: "Sergio Arath Guzman",
   metadataBase: new URL("https://arathpena.com"),
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "Arath Pena",
-    title: "Arath Pena | Design Engineer",
+    siteName: "Sergio Arath Guzman",
+    title: "Sergio Arath Guzman | Design Engineer",
     description: "Design Engineer exploring AI and automation. Building tools that bridge engineering and technology.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Arath Pena | Design Engineer",
+    title: "Sergio Arath Guzman | Design Engineer",
     description: "Design Engineer exploring AI and automation. Building tools that bridge engineering and technology.",
   },
   robots: {

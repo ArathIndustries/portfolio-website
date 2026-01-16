@@ -61,10 +61,21 @@ npm run lint     # Run ESLint
 
 ## Current Phase
 
-**Phase 2 Complete** - Core layout built: Header, Footer, ThemeToggle, ThemeProvider. Home page has hero + placeholders.
+**MVP Complete** - All 8 phases finished. Site is deployed and live.
 
-**Next:** Phase 4 - Projects Section (MDX utilities, ProjectCard, dynamic routes)
+- Phase 1: Project Setup (Next.js, Tailwind, MDX)
+- Phase 2: Layout & Navigation (Header, Footer, ThemeToggle)
+- Phase 3: Home Page (Hero, featured content)
+- Phase 4: Projects Section (MDX, dynamic routes)
+- Phase 5: Blog Section (MDX, dynamic routes)
+- Phase 6: About Page (Bio, skills, contact)
+- Phase 7: Polish & SEO (Metadata, sitemap, 404)
+- Phase 8: Deployment (GitHub, Vercel)
 
-## Implementation Plan
+## Dev Server
 
-Full 8-phase plan at: `C:\Users\Arath\.claude\plans\magical-chasing-bunny.md`
+Runs on **port 3001** (to avoid conflict with other local services on 3000).
+
+```bash
+npm run dev  # Opens http://localhost:3001
+```
