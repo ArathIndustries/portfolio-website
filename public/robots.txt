@@ -1,5 +1,5 @@
-# robots.txt for arathpena.com
+# robots.txt for arath.site
 User-agent: *
 Allow: /
 
-Sitemap: https://arathpena.com/sitemap.xml
+Sitemap: https://arath.site/sitemap.xml
