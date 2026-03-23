@@ -13,7 +13,7 @@ export function ProjectCard({ slug, frontmatter }: ProjectCardProps) {
   return (
     <article className="group rounded-lg border border-gray-800 overflow-hidden hover:border-[var(--neon)] transition-all duration-200" style={{ background: 'rgba(13,11,10,0.6)' }}>
       <Link href={`/work/${slug}`} className="block">
-        <div className="relative w-full h-48" style={{ background: 'rgba(255,0,170,0.03)' }}>
+        <div className="relative w-full h-48" style={{ background: 'rgba(255,136,0,0.03)' }}>
           {image ? (
             <Image src={image} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
           ) : (
@@ -35,7 +35,7 @@ export function ProjectCard({ slug, frontmatter }: ProjectCardProps) {
         <p className="text-sm text-gray-500 mb-4 line-clamp-2">{description}</p>
         <div className="flex flex-wrap gap-2 mb-4">
           {tags.map((tag) => (
-            <span key={tag} className="px-2 py-1 text-xs rounded font-mono" style={{ background: 'rgba(255,0,170,0.08)', color: 'rgba(255,0,170,0.7)' }}>
+            <span key={tag} className="px-2 py-1 text-xs rounded font-mono" style={{ background: 'rgba(255,136,0,0.08)', color: 'rgba(255,136,0,0.7)' }}>
               {tag}
             </span>
           ))}

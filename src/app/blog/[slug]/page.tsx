@@ -57,7 +57,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <span
               key={tag}
               className="px-3 py-1 text-sm rounded font-mono"
-              style={{ background: 'rgba(255,0,170,0.08)', color: 'rgba(255,0,170,0.7)' }}
+              style={{ background: 'rgba(255,136,0,0.08)', color: 'rgba(255,136,0,0.7)' }}
             >
               {tag}
             </span>

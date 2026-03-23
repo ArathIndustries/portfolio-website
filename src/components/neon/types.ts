@@ -1,6 +1,8 @@
 export interface NeonBridge {
   letterZones: Element[];
   brightnessDips: { idx: number; drop: number }[];
+  avgBrightness: number;
+  signCenter: { x: number; y: number } | null;
 }
 
 export interface Wave {

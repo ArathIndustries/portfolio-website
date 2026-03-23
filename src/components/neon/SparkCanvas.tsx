@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import type { MutableRefObject } from "react";
 import type { NeonBridge } from "./types";
 
-const NEON_RGB = [255, 0, 170];
+const NEON_RGB = [255, 136, 0];
 const MAX_SPARKS = 250;
 
 interface Spark {
@@ -29,17 +29,21 @@ interface SparkCanvasProps {
 }
 
 export function SparkCanvas({ bridgeRef }: SparkCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const visualRef = useRef<HTMLCanvasElement>(null);
+  const maskRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
-    const canvasEl = canvasRef.current;
-    if (!canvasEl) return;
-    const ctxEl = canvasEl.getContext("2d", { alpha: true });
-    if (!ctxEl) return;
-    // Non-null aliases for closures
-    const canvas = canvasEl;
-    const ctx = ctxEl;
+    const vc = visualRef.current;
+    const mc = maskRef.current;
+    if (!vc || !mc) return;
+    const vCtxEl = vc.getContext("2d", { alpha: true });
+    const mCtxEl = mc.getContext("2d", { alpha: true });
+    if (!vCtxEl || !mCtxEl) return;
+    const visualCanvas = vc;
+    const maskCanvas = mc;
+    const vCtx = vCtxEl;
+    const mCtx = mCtxEl;
 
     // Spark pool
     const sparks: Spark[] = [];
@@ -79,10 +83,12 @@ export function SparkCanvas({ bridgeRef }: SparkCanvasProps) {
       bolts.push({ segments: segs, life: 1, decay: 0.04 + Math.random() * 0.03, r: NEON_RGB[0], g: NEON_RGB[1], b: NEON_RGB[2] });
     }
 
-    // Resize
+    // Resize both canvases
     function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      visualCanvas.width = w; visualCanvas.height = h;
+      maskCanvas.width = w; maskCanvas.height = h;
     }
     resize();
     window.addEventListener("resize", resize);
@@ -111,7 +117,32 @@ export function SparkCanvas({ bridgeRef }: SparkCanvasProps) {
     document.addEventListener("mousemove", onMouseMove);
 
     function tick() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const w = visualCanvas.width;
+      const h = visualCanvas.height;
+
+      // === VISUAL CANVAS — colored sparks/bolts ===
+      vCtx.clearRect(0, 0, w, h);
+
+      // === MASK CANVAS — black with holes punched for light ===
+      mCtx.globalCompositeOperation = 'source-over';
+      mCtx.globalAlpha = 1;
+      mCtx.fillStyle = '#000';
+      mCtx.fillRect(0, 0, w, h);
+      mCtx.globalCompositeOperation = 'destination-out';
+
+      // Sign ambient glow — large soft reveal centered on the sign
+      const sc = bridgeRef.current.signCenter;
+      const avgB = bridgeRef.current.avgBrightness;
+      if (sc) {
+        const glowR = Math.max(w, h) * 0.45;
+        const signGrad = mCtx.createRadialGradient(sc.x, sc.y, 0, sc.x, sc.y, glowR);
+        signGrad.addColorStop(0, `rgba(255,255,255,${0.35 * avgB})`);
+        signGrad.addColorStop(0.3, `rgba(255,255,255,${0.15 * avgB})`);
+        signGrad.addColorStop(0.6, `rgba(255,255,255,${0.05 * avgB})`);
+        signGrad.addColorStop(1, 'rgba(255,255,255,0)');
+        mCtx.fillStyle = signGrad;
+        mCtx.beginPath(); mCtx.arc(sc.x, sc.y, glowR, 0, Math.PI * 2); mCtx.fill();
+      }
 
       // Read brightness dips from bridge
       const dips = bridgeRef.current.brightnessDips;
@@ -133,7 +164,7 @@ export function SparkCanvas({ bridgeRef }: SparkCanvasProps) {
       }
 
       // Update + render sparks
-      let w = 0;
+      let wi = 0;
       for (let i = 0; i < sparkCount; i++) {
         const s = sparks[i];
         s.trail.push({ x: s.x, y: s.y });
@@ -142,91 +173,90 @@ export function SparkCanvas({ bridgeRef }: SparkCanvasProps) {
         if (s.life <= 0) { s.trail.length = 0; releaseSpark(s); continue; }
         const a = s.life, rr = s.size * Math.max(s.life, 0.3);
 
+        // --- MASK: punch hole for this spark's environment light ---
+        const envRadius = rr * 35 + s.life * 25;
+        const maskGrad = mCtx.createRadialGradient(s.x, s.y, 0, s.x, s.y, envRadius);
+        maskGrad.addColorStop(0, `rgba(255,255,255,${a * 0.25})`);
+        maskGrad.addColorStop(0.3, `rgba(255,255,255,${a * 0.1})`);
+        maskGrad.addColorStop(0.6, `rgba(255,255,255,${a * 0.03})`);
+        maskGrad.addColorStop(1, 'rgba(255,255,255,0)');
+        mCtx.fillStyle = maskGrad;
+        mCtx.beginPath(); mCtx.arc(s.x, s.y, envRadius, 0, Math.PI * 2); mCtx.fill();
+
+        // --- VISUAL: render spark ---
         // Trail
         if (s.trail.length > 1) {
-          ctx.strokeStyle = `rgb(${s.r},${s.g},${s.b})`;
-          ctx.lineCap = 'round';
+          vCtx.strokeStyle = `rgb(${s.r},${s.g},${s.b})`;
+          vCtx.lineCap = 'round';
           for (let t = 1; t < s.trail.length; t++) {
-            ctx.globalAlpha = (t / s.trail.length) * a * 0.3;
-            ctx.lineWidth = rr * (t / s.trail.length) * 0.8;
-            ctx.beginPath();
-            ctx.moveTo(s.trail[t - 1].x, s.trail[t - 1].y);
-            ctx.lineTo(s.trail[t].x, s.trail[t].y);
-            ctx.stroke();
+            vCtx.globalAlpha = (t / s.trail.length) * a * 0.3;
+            vCtx.lineWidth = rr * (t / s.trail.length) * 0.8;
+            vCtx.beginPath();
+            vCtx.moveTo(s.trail[t - 1].x, s.trail[t - 1].y);
+            vCtx.lineTo(s.trail[t].x, s.trail[t].y);
+            vCtx.stroke();
           }
-          ctx.globalAlpha = a * 0.3; ctx.lineWidth = rr * 0.8;
-          ctx.beginPath();
-          ctx.moveTo(s.trail[s.trail.length - 1].x, s.trail[s.trail.length - 1].y);
-          ctx.lineTo(s.x, s.y);
-          ctx.stroke();
+          vCtx.globalAlpha = a * 0.3; vCtx.lineWidth = rr * 0.8;
+          vCtx.beginPath();
+          vCtx.moveTo(s.trail[s.trail.length - 1].x, s.trail[s.trail.length - 1].y);
+          vCtx.lineTo(s.x, s.y);
+          vCtx.stroke();
         }
-
-        // Environment light — large soft radial glow simulating light bounce on wall
-        const envRadius = rr * 35 + s.life * 25;
-        const envGrad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, envRadius);
-        envGrad.addColorStop(0, `rgba(${s.r},${s.g},${s.b},${a * 0.14})`);
-        envGrad.addColorStop(0.3, `rgba(${s.r},${s.g},${s.b},${a * 0.06})`);
-        envGrad.addColorStop(0.6, `rgba(${s.r},${s.g},${s.b},${a * 0.02})`);
-        envGrad.addColorStop(1, `rgba(${s.r},${s.g},${s.b},0)`);
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = envGrad;
-        ctx.beginPath(); ctx.arc(s.x, s.y, envRadius, 0, Math.PI * 2); ctx.fill();
-
         // Glow
-        ctx.globalAlpha = a * 0.15;
-        ctx.fillStyle = `rgb(${s.r},${s.g},${s.b})`;
-        ctx.beginPath(); ctx.arc(s.x, s.y, rr * 4, 0, Math.PI * 2); ctx.fill();
+        vCtx.globalAlpha = a * 0.15;
+        vCtx.fillStyle = `rgb(${s.r},${s.g},${s.b})`;
+        vCtx.beginPath(); vCtx.arc(s.x, s.y, rr * 4, 0, Math.PI * 2); vCtx.fill();
         // Core
-        ctx.globalAlpha = a;
-        ctx.beginPath(); ctx.arc(s.x, s.y, rr, 0, Math.PI * 2); ctx.fill();
+        vCtx.globalAlpha = a;
+        vCtx.beginPath(); vCtx.arc(s.x, s.y, rr, 0, Math.PI * 2); vCtx.fill();
         // White center
         if (s.life > 0.3) {
-          ctx.globalAlpha = a * 0.8; ctx.fillStyle = '#fff';
-          ctx.beginPath(); ctx.arc(s.x, s.y, rr * 0.4, 0, Math.PI * 2); ctx.fill();
+          vCtx.globalAlpha = a * 0.8; vCtx.fillStyle = '#fff';
+          vCtx.beginPath(); vCtx.arc(s.x, s.y, rr * 0.4, 0, Math.PI * 2); vCtx.fill();
         }
-        sparks[w++] = s;
+        sparks[wi++] = s;
       }
-      sparks.length = w; sparkCount = w;
+      sparks.length = wi; sparkCount = wi;
 
       // Render bolts
       for (let i = bolts.length - 1; i >= 0; i--) {
         const b = bolts[i]; b.life -= b.decay;
         if (b.life <= 0) { bolts.splice(i, 1); continue; }
 
-        // Environment light from bolt — illuminate the wall around each segment
+        // --- MASK: punch holes for bolt environment light ---
         for (const seg of b.segments) {
           const mx = (seg.x1 + seg.x2) / 2;
           const my = (seg.y1 + seg.y2) / 2;
           const boltEnvR = 80 + b.life * 60;
-          const boltGrad = ctx.createRadialGradient(mx, my, 0, mx, my, boltEnvR);
-          boltGrad.addColorStop(0, `rgba(${b.r},${b.g},${b.b},${b.life * 0.15})`);
-          boltGrad.addColorStop(0.4, `rgba(${b.r},${b.g},${b.b},${b.life * 0.06})`);
-          boltGrad.addColorStop(1, `rgba(${b.r},${b.g},${b.b},0)`);
-          ctx.globalAlpha = 1;
-          ctx.fillStyle = boltGrad;
-          ctx.beginPath(); ctx.arc(mx, my, boltEnvR, 0, Math.PI * 2); ctx.fill();
+          const boltMaskGrad = mCtx.createRadialGradient(mx, my, 0, mx, my, boltEnvR);
+          boltMaskGrad.addColorStop(0, `rgba(255,255,255,${b.life * 0.3})`);
+          boltMaskGrad.addColorStop(0.4, `rgba(255,255,255,${b.life * 0.1})`);
+          boltMaskGrad.addColorStop(1, 'rgba(255,255,255,0)');
+          mCtx.fillStyle = boltMaskGrad;
+          mCtx.beginPath(); mCtx.arc(mx, my, boltEnvR, 0, Math.PI * 2); mCtx.fill();
         }
 
-        ctx.lineCap = 'round';
+        // --- VISUAL: render bolt ---
+        vCtx.lineCap = 'round';
         // Outer glow
-        ctx.globalAlpha = b.life * 0.25;
-        ctx.strokeStyle = `rgb(${b.r},${b.g},${b.b})`;
-        ctx.lineWidth = b.life * 8;
-        ctx.beginPath();
-        for (const seg of b.segments) { ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); }
-        ctx.stroke();
+        vCtx.globalAlpha = b.life * 0.25;
+        vCtx.strokeStyle = `rgb(${b.r},${b.g},${b.b})`;
+        vCtx.lineWidth = b.life * 8;
+        vCtx.beginPath();
+        for (const seg of b.segments) { vCtx.moveTo(seg.x1, seg.y1); vCtx.lineTo(seg.x2, seg.y2); }
+        vCtx.stroke();
         // Core
-        ctx.globalAlpha = b.life; ctx.lineWidth = b.life * 2.5;
-        ctx.beginPath();
-        for (const seg of b.segments) { ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); }
-        ctx.stroke();
+        vCtx.globalAlpha = b.life; vCtx.lineWidth = b.life * 2.5;
+        vCtx.beginPath();
+        for (const seg of b.segments) { vCtx.moveTo(seg.x1, seg.y1); vCtx.lineTo(seg.x2, seg.y2); }
+        vCtx.stroke();
         // White core
-        ctx.globalAlpha = b.life * 0.8; ctx.strokeStyle = '#fff'; ctx.lineWidth = b.life;
-        ctx.beginPath();
-        for (const seg of b.segments) { ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); }
-        ctx.stroke();
+        vCtx.globalAlpha = b.life * 0.8; vCtx.strokeStyle = '#fff'; vCtx.lineWidth = b.life;
+        vCtx.beginPath();
+        for (const seg of b.segments) { vCtx.moveTo(seg.x1, seg.y1); vCtx.lineTo(seg.x2, seg.y2); }
+        vCtx.stroke();
       }
-      ctx.globalAlpha = 1;
+      vCtx.globalAlpha = 1;
 
       rafRef.current = requestAnimationFrame(tick);
     }
@@ -240,19 +270,34 @@ export function SparkCanvas({ bridgeRef }: SparkCanvasProps) {
     };
   }, [bridgeRef]);
 
+  const canvasBase: React.CSSProperties = {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    pointerEvents: "none",
+  };
+
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-        zIndex: 1,
-        mixBlendMode: "screen",
-      }}
-    />
+    <>
+      {/* Mask canvas — black overlay with holes punched where light reveals bricks */}
+      <canvas
+        ref={maskRef}
+        style={{
+          ...canvasBase,
+          zIndex: 1,
+          mixBlendMode: "multiply",
+        }}
+      />
+      {/* Visual canvas — colored sparks, bolts, trails */}
+      <canvas
+        ref={visualRef}
+        style={{
+          ...canvasBase,
+          zIndex: 3,
+        }}
+      />
+    </>
   );
 }

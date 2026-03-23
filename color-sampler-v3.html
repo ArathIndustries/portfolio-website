@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arath Industries — Neon Sign Sampler v3</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0e0a09;
+    color: #e0e0e0;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  #spark-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .wall {
+    position: relative;
+    min-height: 100vh;
+    padding: 3rem 2rem;
+    /* Brick pattern — very faint dark red bricks with visible mortar lines */
+    background:
+      /* Horizontal mortar lines */
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 28px,
+        rgba(30, 20, 15, 0.6) 28px,
+        rgba(30, 20, 15, 0.6) 30px
+      ),
+      /* Vertical mortar lines — offset every other row for brick stagger */
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 58px,
+        rgba(30, 20, 15, 0.6) 58px,
+        rgba(30, 20, 15, 0.6) 60px
+      ),
+      /* Ambient light from signs hitting the wall */
+      radial-gradient(ellipse at 30% 20%, rgba(255,200,180,0.012) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 60%, rgba(255,200,180,0.008) 0%, transparent 50%),
+      /* Base brick color — very dark red-brown */
+      linear-gradient(to bottom, #0e0a09, #100c0a);
+  }
+  /* Brick stagger overlay — offsets every other row */
+  .wall::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 28px,
+        transparent 28px,
+        transparent 30px,
+        /* second row of bricks is offset by half a brick width */
+        transparent 30px,
+        transparent 58px,
+        rgba(30, 20, 15, 0.6) 58px,
+        rgba(30, 20, 15, 0.6) 60px
+      );
+    /* Offset the vertical mortar for alternating rows */
+    background-size: 60px 60px;
+    background-position: 30px 30px;
+    pointer-events: none;
+    z-index: 0;
+    mask-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 30px,
+        black 30px,
+        black 60px
+      );
+    -webkit-mask-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 30px,
+        black 30px,
+        black 60px
+      );
+  }
+  /* Subtle noise / texture on the bricks */
+  .wall::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .signs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5rem;
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .neon-sign {
+    position: relative;
+    padding: 3rem 4rem;
+    text-align: center;
+  }
+  .neon-sign::before {
+    content: '';
+    position: absolute;
+    top: -8px; left: 50%;
+    transform: translateX(-50%);
+    width: 60px; height: 4px;
+    background: #1a1a1a;
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+
+  .neon-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 3.5rem;
+    letter-spacing: 0.08em;
+    color: #fff;
+    position: relative;
+    display: inline-block;
+    text-shadow:
+      0 0 7px var(--neon),
+      0 0 10px var(--neon),
+      0 0 21px var(--neon),
+      0 0 42px var(--neon-deep),
+      0 0 82px var(--neon-deep),
+      0 0 92px var(--neon-deep),
+      0 0 102px var(--neon-deep),
+      0 0 151px var(--neon-deep);
+    animation: var(--flicker-anim, neonFlicker1) var(--flicker-speed, 4s) ease-in-out infinite;
+  }
+  .neon-text .dot {
+    color: var(--neon);
+    text-shadow:
+      0 0 7px var(--neon), 0 0 10px var(--neon), 0 0 21px var(--neon),
+      0 0 42px var(--neon-deep), 0 0 82px var(--neon-deep);
+    animation: dotFlicker 2.5s ease-in-out infinite;
+  }
+
+  .neon-sign .wall-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%; height: 200%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, var(--neon-glow) 0%, transparent 70%);
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: -1;
+    animation: var(--flicker-anim, neonFlicker1) var(--flicker-speed, 4s) ease-in-out infinite;
+  }
+
+  .neon-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 1rem;
+    color: var(--neon);
+    text-shadow: 0 0 5px var(--neon), 0 0 10px var(--neon), 0 0 20px var(--neon-deep);
+    opacity: 0.8;
+    animation: subFlicker 6s ease-in-out infinite;
+  }
+
+  .neon-color-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #333;
+    letter-spacing: 0.1em;
+    margin-top: 1.5rem;
+    text-transform: uppercase;
+  }
+
+  @keyframes neonFlicker1 {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+    20%, 24%, 55% { opacity: 0.6; }
+  }
+  @keyframes neonFlicker2 {
+    0%, 100% { opacity: 1; }
+    42% { opacity: 0.4; } 43% { opacity: 1; } 44% { opacity: 0.5; } 45% { opacity: 1; }
+    77% { opacity: 0.7; } 78% { opacity: 1; }
+  }
+  @keyframes neonFlicker3 {
+    0%, 100% { opacity: 1; }
+    31% { opacity: 0.3; } 32% { opacity: 1; } 33% { opacity: 0.7; } 34% { opacity: 1; } 35% { opacity: 0.5; } 36% { opacity: 1; }
+    69% { opacity: 0.6; } 70% { opacity: 1; }
+  }
+  @keyframes neonFlicker4 {
+    0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
+    20% { opacity: 0.3; } 24% { opacity: 0.7; } 55% { opacity: 0.5; }
+  }
+  @keyframes neonFlicker5 {
+    0%, 100% { opacity: 1; }
+    10% { opacity: 0.8; } 11% { opacity: 1; }
+    61% { opacity: 0.2; } 62% { opacity: 0.8; } 63% { opacity: 0.2; } 64% { opacity: 1; }
+  }
+  @keyframes neonFlicker6 {
+    0%, 100% { opacity: 1; }
+    49% { opacity: 0.4; } 50% { opacity: 1; } 51% { opacity: 0.6; } 52% { opacity: 1; }
+    86% { opacity: 0.3; } 87% { opacity: 1; }
+  }
+  @keyframes dotFlicker {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.5; } 51% { opacity: 1; }
+    81% { opacity: 0.3; } 82% { opacity: 0.8; } 83% { opacity: 1; }
+  }
+  @keyframes subFlicker {
+    0%, 100% { opacity: 0.8; }
+    26% { opacity: 0.3; } 27% { opacity: 0.8; }
+    74% { opacity: 0.5; } 75% { opacity: 0.8; }
+  }
+
+  .wire {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, #222, transparent);
+    margin: 0 auto;
+  }
+
+  /* === COMBO SECTION === */
+  .combo-section { margin-top: 2rem; text-align: center; position: relative; z-index: 1; }
+  .combo-section h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; color: #333;
+    text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 3rem;
+  }
+  .combo-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4rem; max-width: 1100px; margin: 0 auto;
+  }
+  .combo-sign {
+    position: relative; padding: 2.5rem 2rem; text-align: center;
+  }
+  .combo-sign::before {
+    content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 3px; background: #1a1a1a; border-radius: 2px;
+  }
+  .combo-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; font-size: 2.2rem; letter-spacing: 0.08em;
+    color: #fff; display: inline-block;
+  }
+  .combo-text .part1 {
+    text-shadow: 0 0 7px var(--c1), 0 0 10px var(--c1), 0 0 21px var(--c1),
+      0 0 42px var(--c1-deep), 0 0 82px var(--c1-deep);
+  }
+  .combo-text .dot {
+    color: var(--c2);
+    text-shadow: 0 0 7px var(--c2), 0 0 10px var(--c2), 0 0 21px var(--c2),
+      0 0 42px var(--c2-deep), 0 0 82px var(--c2-deep);
+    animation: dotFlicker 3s ease-in-out infinite;
+  }
+  .combo-text .part2 {
+    text-shadow: 0 0 7px var(--c2), 0 0 10px var(--c2), 0 0 21px var(--c2),
+      0 0 42px var(--c2-deep), 0 0 60px var(--c2-deep);
+  }
+  .combo-sign .wall-glow {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 120%; height: 200%; border-radius: 50%;
+    background: radial-gradient(ellipse,
+      color-mix(in srgb, var(--c1) 8%, transparent) 0%,
+      color-mix(in srgb, var(--c2) 5%, transparent) 40%, transparent 70%);
+    pointer-events: none; z-index: -1;
+  }
+  .combo-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; color: #333; letter-spacing: 0.1em;
+    margin-top: 1.2rem; text-transform: uppercase;
+  }
+
+  /* === PREVIEW SECTION — GRITTY NEON VERSION === */
+  .preview-section {
+    margin-top: 5rem; max-width: 750px;
+    margin-left: auto; margin-right: auto; text-align: center;
+    position: relative; z-index: 1;
+  }
+  .preview-section h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; color: #333;
+    text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 3rem;
+  }
+
+  .preview-card {
+    background: #0a0a0f;
+    border: 1px solid #151520;
+    border-radius: 2px;
+    padding: 3rem;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Neon tube across the top — flickers */
+  .preview-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 2px;
+    background: var(--neon);
+    box-shadow: 0 0 8px var(--neon), 0 0 20px var(--neon), 0 0 40px var(--neon-deep);
+    animation: neonFlicker3 5s ease-in-out infinite;
+  }
+  /* Faint wall glow behind card */
+  .preview-card::after {
+    content: '';
+    position: absolute;
+    top: -20%; left: -10%; right: -10%; bottom: -20%;
+    background: radial-gradient(ellipse at 50% 0%, var(--neon-glow) 0%, transparent 60%);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: -1;
+    animation: neonFlicker2 6s ease-in-out infinite;
+  }
+
+  .preview-card .p-brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.6rem; font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 7px var(--neon), 0 0 15px var(--neon), 0 0 30px var(--neon-deep);
+    margin-bottom: 0.3rem;
+    animation: neonFlicker1 4s ease-in-out infinite;
+  }
+  .preview-card .p-brand span { color: var(--neon); }
+
+  .preview-card .p-tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; color: #444;
+    margin-bottom: 2rem;
+    letter-spacing: 0.05em;
+  }
+
+  .preview-card .p-body {
+    font-size: 0.9rem; line-height: 1.9;
+    color: #666; margin-bottom: 2rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .preview-card .p-body em {
+    color: var(--neon);
+    font-style: normal;
+    text-shadow: 0 0 6px var(--neon-deep);
+  }
+
+  .preview-card .p-btn {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; padding: 0.7rem 2rem;
+    border: 1px solid var(--neon); color: var(--neon);
+    background: transparent; border-radius: 2px;
+    cursor: pointer; text-transform: uppercase;
+    letter-spacing: 0.12em;
+    text-shadow: 0 0 6px var(--neon-deep);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--neon) 15%, transparent),
+      inset 0 0 8px color-mix(in srgb, var(--neon) 5%, transparent);
+    transition: all 0.15s;
+    margin-right: 1rem; margin-bottom: 0.5rem;
+  }
+  .preview-card .p-btn:hover {
+    background: var(--neon);
+    color: #08080c; text-shadow: none;
+    box-shadow: 0 0 15px var(--neon), 0 0 40px var(--neon-deep);
+  }
+
+  .preview-card .p-tags { margin-top: 1.5rem; }
+  .preview-card .p-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; padding: 0.2rem 0.6rem;
+    border: 1px solid color-mix(in srgb, var(--neon) 20%, transparent);
+    color: color-mix(in srgb, var(--neon) 70%, #fff);
+    border-radius: 2px; margin-right: 0.5rem; margin-bottom: 0.4rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    text-shadow: 0 0 4px var(--neon-deep);
+  }
+
+  .preview-card .p-divider {
+    border: none; border-top: 1px solid #151520;
+    margin: 1.5rem 0;
+    box-shadow: 0 1px 0 #000;
+  }
+
+  .preview-card .p-stats { display: flex; gap: 2.5rem; }
+  .preview-card .p-stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.5rem; font-weight: 700;
+    color: var(--neon);
+    text-shadow: 0 0 7px var(--neon), 0 0 20px var(--neon-deep);
+    animation: neonFlicker4 5s ease-in-out infinite;
+  }
+  .preview-card .p-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.5rem; color: #383838;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    margin-top: 0.3rem;
+  }
+
+  /* Scuff marks / noise overlay */
+  .preview-card .noise {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #08080c; }
+  ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<canvas id="spark-canvas"></canvas>
+
+<div class="wall">
+
+  <h1>// pick your neon · color randomizes each visit on the real site</h1>
+
+  <div class="signs">
+
+    <!-- Electric Blue -->
+    <div class="neon-sign groundable" style="--neon: #00D4FF; --neon-deep: #0077aa; --neon-glow: rgba(0,212,255,0.06); --flicker-anim: neonFlicker1; --flicker-speed: 4s;">
+      <div class="wall-glow"></div>
+      <div class="neon-text groundable-target">ARATH<span class="dot">.</span>INDUSTRIES</div>
+      <div class="neon-sub">building tools that fit</div>
+      <div class="neon-color-label">Electric Blue · #00D4FF</div>
+    </div>
+
+    <div class="wire"></div>
+
+    <!-- Neon Cyan -->
+    <div class="neon-sign groundable" style="--neon: #00FFE0; --neon-deep: #008877; --neon-glow: rgba(0,255,224,0.06); --flicker-anim: neonFlicker2; --flicker-speed: 3.5s;">
+      <div class="wall-glow"></div>
+      <div class="neon-text groundable-target">ARATH<span class="dot">.</span>INDUSTRIES</div>
+      <div class="neon-sub">building tools that fit</div>
+      <div class="neon-color-label">Neon Cyan · #00FFE0</div>
+    </div>
+
+    <div class="wire"></div>
+
+    <!-- Hot Magenta -->
+    <div class="neon-sign groundable" style="--neon: #FF00AA; --neon-deep: #990066; --neon-glow: rgba(255,0,170,0.06); --flicker-anim: neonFlicker3; --flicker-speed: 5s;">
+      <div class="wall-glow"></div>
+      <div class="neon-text groundable-target">ARATH<span class="dot">.</span>INDUSTRIES</div>
+      <div class="neon-sub">building tools that fit</div>
+      <div class="neon-color-label">Hot Magenta · #FF00AA</div>
+    </div>
+
+    <div class="wire"></div>
+
+    <!-- Electric Purple -->
+    <div class="neon-sign groundable" style="--neon: #A855F7; --neon-deep: #6622aa; --neon-glow: rgba(168,85,247,0.06); --flicker-anim: neonFlicker4; --flicker-speed: 4.5s;">
+      <div class="wall-glow"></div>
+      <div class="neon-text groundable-target">ARATH<span class="dot">.</span>INDUSTRIES</div>
+      <div class="neon-sub">building tools that fit</div>
+      <div class="neon-color-label">Electric Purple · #A855F7</div>
+    </div>
+
+    <div class="wire"></div>
+
+    <!-- Neon Green -->
+    <div class="neon-sign groundable" style="--neon: #39FF14; --neon-deep: #1a8800; --neon-glow: rgba(57,255,20,0.06); --flicker-anim: neonFlicker5; --flicker-speed: 3.8s;">
+      <div class="wall-glow"></div>
+      <div class="neon-text groundable-target">ARATH<span class="dot">.</span>INDUSTRIES</div>
+      <div class="neon-sub">building tools that fit</div>
+      <div class="neon-color-label">Neon Green · #39FF14</div>
+    </div>
+
+    <div class="wire"></div>
+
+    <!-- Warm Amber -->
+    <div class="neon-sign groundable" style="--neon: #FFAA00; --neon-deep: #995500; --neon-glow: rgba(255,170,0,0.06); --flicker-anim: neonFlicker6; --flicker-speed: 4.2s;">
+      <div class="wall-glow"></div>
+      <div class="neon-text groundable-target">ARATH<span class="dot">.</span>INDUSTRIES</div>
+      <div class="neon-sub">building tools that fit</div>
+      <div class="neon-color-label">Warm Amber · #FFAA00</div>
+    </div>
+
+  </div>
+
+  <!-- COMBOS -->
+  <div class="combo-section">
+    <div class="wire" style="height: 60px;"></div>
+    <h2>// two-color combos</h2>
+    <div class="combo-grid">
+      <div class="combo-sign groundable" style="--c1: #00FFE0; --c1-deep: #008877; --c2: #FF00AA; --c2-deep: #990066; --neon: #00FFE0; --neon-deep: #008877;">
+        <div class="wall-glow"></div>
+        <div class="combo-text groundable-target"><span class="part1">ARATH</span><span class="dot">.</span><span class="part2">INDUSTRIES</span></div>
+        <div class="combo-label">Cyan + Magenta</div>
+      </div>
+      <div class="combo-sign groundable" style="--c1: #00D4FF; --c1-deep: #0077aa; --c2: #A855F7; --c2-deep: #6622aa; --neon: #00D4FF; --neon-deep: #0077aa;">
+        <div class="wall-glow"></div>
+        <div class="combo-text groundable-target"><span class="part1">ARATH</span><span class="dot">.</span><span class="part2">INDUSTRIES</span></div>
+        <div class="combo-label">Blue + Purple</div>
+      </div>
+      <div class="combo-sign groundable" style="--c1: #39FF14; --c1-deep: #1a8800; --c2: #00FFE0; --c2-deep: #008877; --neon: #39FF14; --neon-deep: #1a8800;">
+        <div class="wall-glow"></div>
+        <div class="combo-text groundable-target"><span class="part1">ARATH</span><span class="dot">.</span><span class="part2">INDUSTRIES</span></div>
+        <div class="combo-label">Green + Cyan</div>
+      </div>
+      <div class="combo-sign groundable" style="--c1: #A855F7; --c1-deep: #6622aa; --c2: #FF00AA; --c2-deep: #990066; --neon: #A855F7; --neon-deep: #6622aa;">
+        <div class="wall-glow"></div>
+        <div class="combo-text groundable-target"><span class="part1">ARATH</span><span class="dot">.</span><span class="part2">INDUSTRIES</span></div>
+        <div class="combo-label">Purple + Magenta</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-section">
+    <div class="wire" style="height: 60px;"></div>
+    <h2>// how it translates to UI</h2>
+
+    <div class="preview-card groundable" id="preview-card" style="--neon: #00D4FF; --neon-deep: #0077aa; --neon-glow: rgba(0,212,255,0.08);">
+      <div class="noise"></div>
+      <div class="p-brand groundable-target">ARATH<span>.</span>INDUSTRIES</div>
+      <div class="p-tagline">// building tools that fit how people actually work</div>
+      <p class="p-body">I study the workflow, talk to the team, and build something that <em>actually fits</em>. From municipal data platforms to <em>embedded ML</em> on microcontrollers.</p>
+      <button class="p-btn groundable-target">View Work</button>
+      <button class="p-btn groundable-target">Hire Me</button>
+      <div class="p-tags">
+        <span class="p-tag">FastAPI</span>
+        <span class="p-tag">Plotly</span>
+        <span class="p-tag">Python</span>
+        <span class="p-tag">TinyML</span>
+        <span class="p-tag">Arduino</span>
+      </div>
+      <hr class="p-divider">
+      <div class="p-stats">
+        <div><div class="p-stat-num groundable-target">1,592</div><div class="p-stat-label">Meetings Tracked</div></div>
+        <div><div class="p-stat-num groundable-target">254</div><div class="p-stat-label">Counties Analyzed</div></div>
+        <div><div class="p-stat-num groundable-target">79</div><div class="p-stat-label">Scripts Built</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 4rem;"></div>
+</div>
+
+<script>
+const canvas = document.getElementById('spark-canvas');
+const ctx = canvas.getContext('2d', { alpha: true });
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// === SPARK COLORS ===
+const sparkRGB = [
+  [0, 212, 255], [0, 255, 224], [255, 0, 170],
+  [168, 85, 247], [57, 255, 20], [255, 170, 0],
+  [255, 255, 255], [255, 255, 255], [255, 255, 255],
+  [200, 220, 255], // blue-white
+];
+
+// === ARC SPARK PARTICLES ===
+const sparks = [];
+let sparkCount = 0;
+const MAX_SPARKS = 150;
+const sparkPool = [];
+function getSpark() { return sparkPool.length > 0 ? sparkPool.pop() : {}; }
+function releaseSpark(s) { sparkPool.push(s); }
+
+function initSpark(s, x, y, speed) {
+  const angle = Math.random() * Math.PI * 2;
+  const velocity = (Math.random() * 5 + 2) * speed;
+  s.x = x; s.y = y;
+  s.vx = Math.cos(angle) * velocity;
+  s.vy = Math.sin(angle) * velocity - Math.random() * 2;
+  s.life = Math.random() * 0.5 + 0.3;
+  s.decay = Math.random() * 0.04 + 0.03;
+  s.size = Math.random() * 1.8 + 0.8;
+  const c = sparkRGB[Math.floor(Math.random() * sparkRGB.length)];
+  s.r = c[0]; s.g = c[1]; s.b = c[2];
+  s.gravity = 0.12 + Math.random() * 0.15;
+  return s;
+}
+
+// === LIGHTNING BOLTS ===
+const bolts = [];
+
+// Build a bolt from point A toward point B with jitter
+function spawnBolt(x1, y1, x2, y2, color) {
+  const c = color || sparkRGB[Math.floor(Math.random() * sparkRGB.length)];
+  const segments = [];
+  const steps = Math.floor(Math.random() * 5 + 4);
+  let cx = x1, cy = y1;
+  for (let i = 0; i < steps; i++) {
+    const t = (i + 1) / steps;
+    // Lerp toward target with jitter
+    const targetX = x1 + (x2 - x1) * t;
+    const targetY = y1 + (y2 - y1) * t;
+    const jitter = (1 - t) * 30; // more jitter at start, less at end (converging)
+    const nx = targetX + (Math.random() - 0.5) * jitter;
+    const ny = targetY + (Math.random() - 0.5) * jitter;
+    segments.push({ x1: cx, y1: cy, x2: nx, y2: ny });
+    cx = nx; cy = ny;
+    // Branch chance
+    if (Math.random() > 0.7 && i < steps - 1) {
+      const bx = nx + (Math.random() - 0.5) * 30;
+      const by = ny + (Math.random() - 0.5) * 30;
+      segments.push({ x1: nx, y1: ny, x2: bx, y2: by });
+    }
+  }
+  bolts.push({ segments, life: 1, decay: 0.06 + Math.random() * 0.05, r: c[0], g: c[1], b: c[2] });
+}
+
+// Random undirected bolt (for sign surges)
+function spawnRandomBolt(x, y, color) {
+  const c = color || sparkRGB[Math.floor(Math.random() * sparkRGB.length)];
+  const segments = [];
+  let cx = x, cy = y;
+  const len = Math.floor(Math.random() * 5 + 3);
+  for (let i = 0; i < len; i++) {
+    const nx = cx + (Math.random() - 0.5) * 35;
+    const ny = cy + (Math.random() - 0.5) * 35;
+    segments.push({ x1: cx, y1: cy, x2: nx, y2: ny });
+    cx = nx; cy = ny;
+  }
+  bolts.push({ segments, life: 1, decay: 0.07 + Math.random() * 0.05, r: c[0], g: c[1], b: c[2] });
+}
+
+// === FIND CLOSEST GROUNDABLE ELEMENT ===
+function findGroundTarget(mx, my, maxDist) {
+  const targets = document.querySelectorAll('.groundable-target');
+  let closest = null;
+  let closestDist = maxDist;
+  let closestPoint = null;
+
+  for (const el of targets) {
+    const rect = el.getBoundingClientRect();
+    // Find nearest point on the rect edge to the mouse
+    const nearX = Math.max(rect.left, Math.min(mx, rect.right));
+    const nearY = Math.max(rect.top, Math.min(my, rect.bottom));
+    const dx = mx - nearX;
+    const dy = my - nearY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < closestDist) {
+      closestDist = dist;
+      closest = el;
+      closestPoint = { x: nearX, y: nearY };
+    }
+  }
+
+  return closest ? { el: closest, point: closestPoint, dist: closestDist } : null;
+}
+
+// === MOUSE TRACKING ===
+let mouseX = 0, mouseY = 0, lastMouseX = 0, lastMouseY = 0;
+let moveAccum = 0;
+let lastMoveTime = 0;
+
+document.addEventListener('mousemove', (e) => {
+  const now = performance.now();
+  if (now - lastMoveTime < 16) return;
+  lastMoveTime = now;
+
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  const dx = mouseX - lastMouseX;
+  const dy = mouseY - lastMouseY;
+  const speed = Math.sqrt(dx * dx + dy * dy);
+
+  // Accumulate movement — surge when threshold hit
+  moveAccum += speed;
+  if (moveAccum > 120 + Math.random() * 80) {
+    // VOLTAGE SURGE — burst of arc sparks
+    const burstCount = Math.floor(Math.random() * 10 + 6);
+    for (let i = 0; i < burstCount && sparkCount < MAX_SPARKS; i++) {
+      sparks.push(initSpark(getSpark(),
+        mouseX + (Math.random() - 0.5) * 6,
+        mouseY + (Math.random() - 0.5) * 6,
+        1.5 + Math.random()));
+      sparkCount++;
+    }
+
+    // Try to ground to nearest element
+    const ground = findGroundTarget(mouseX, mouseY, 200);
+    if (ground) {
+      // Arc toward the element
+      spawnBolt(mouseX, mouseY, ground.point.x, ground.point.y);
+      // Extra sparks at the ground point
+      for (let i = 0; i < 4 && sparkCount < MAX_SPARKS; i++) {
+        sparks.push(initSpark(getSpark(), ground.point.x, ground.point.y, 1.2));
+        sparkCount++;
+      }
+    } else {
+      // No ground nearby — random undirected bolt
+      spawnRandomBolt(mouseX, mouseY);
+    }
+
+    moveAccum = 0;
+  }
+
+  lastMouseX = mouseX;
+  lastMouseY = mouseY;
+});
+
+// === SIGN SURGES (autonomous) ===
+function signSurge() {
+  const signs = document.querySelectorAll('.neon-sign, .combo-sign');
+  const sign = signs[Math.floor(Math.random() * signs.length)];
+  if (!sign) { setTimeout(signSurge, 2000); return; }
+
+  const textEl = sign.querySelector('.neon-text, .combo-text');
+  if (!textEl) { setTimeout(signSurge, 2000); return; }
+
+  const rect = textEl.getBoundingClientRect();
+
+  // Check if sign is at least partially visible
+  if (rect.bottom < -50 || rect.top > window.innerHeight + 50) {
+    setTimeout(signSurge, 1000 + Math.random() * 2000);
+    return;
+  }
+
+  // Get the sign's neon color
+  const style = getComputedStyle(sign);
+  const neonColor = style.getPropertyValue('--neon').trim();
+  let rgb = [255, 255, 255];
+  if (neonColor) {
+    // Parse hex to RGB
+    const hex = neonColor.replace('#', '');
+    if (hex.length === 6) {
+      rgb = [parseInt(hex.substr(0,2),16), parseInt(hex.substr(2,2),16), parseInt(hex.substr(4,2),16)];
+    }
+  }
+
+  // Spawn burst at random point along the text
+  const burstX = rect.left + Math.random() * rect.width;
+  const burstY = rect.top + Math.random() * rect.height;
+
+  // Sparks that fly outward
+  const burstCount = Math.floor(Math.random() * 12 + 6);
+  for (let i = 0; i < burstCount && sparkCount < MAX_SPARKS; i++) {
+    const s = initSpark(getSpark(), burstX, burstY, 1.8);
+    // Bias color toward the sign's color
+    if (Math.random() > 0.3) { s.r = rgb[0]; s.g = rgb[1]; s.b = rgb[2]; }
+    sparks.push(s);
+    sparkCount++;
+  }
+
+  // Lightning bolts from the burst point
+  if (Math.random() > 0.3) {
+    spawnRandomBolt(burstX, burstY, rgb);
+  }
+  // Sometimes a second bolt
+  if (Math.random() > 0.6) {
+    spawnRandomBolt(burstX, burstY, rgb);
+  }
+
+  // Flash the sign brighter momentarily
+  const origTransition = textEl.style.transition;
+  textEl.style.transition = 'none';
+  textEl.style.filter = 'brightness(2)';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      textEl.style.transition = 'filter 0.3s';
+      textEl.style.filter = '';
+      setTimeout(() => { textEl.style.transition = origTransition; }, 400);
+    });
+  });
+
+  // Next surge: 2-8 seconds
+  setTimeout(signSurge, 2000 + Math.random() * 6000);
+}
+setTimeout(signSurge, 1500);
+
+// === ANIMATION LOOP ===
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Sparks
+  let writeIdx = 0;
+  for (let i = 0; i < sparkCount; i++) {
+    const s = sparks[i];
+    s.x += s.vx; s.y += s.vy;
+    s.vy += s.gravity;
+    s.vx *= 0.96;
+    s.life -= s.decay;
+    if (s.life <= 0) { releaseSpark(s); continue; }
+
+    const alpha = s.life;
+    const r = s.size * s.life;
+
+    // Glow
+    ctx.globalAlpha = alpha * 0.2;
+    ctx.fillStyle = `rgb(${s.r},${s.g},${s.b})`;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, r * 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Core
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Hot center
+    if (s.life > 0.2) {
+      ctx.globalAlpha = alpha * 0.7;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, r * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    sparks[writeIdx++] = s;
+  }
+  sparks.length = writeIdx;
+  sparkCount = writeIdx;
+
+  // Lightning bolts
+  for (let i = bolts.length - 1; i >= 0; i--) {
+    const b = bolts[i];
+    b.life -= b.decay;
+    if (b.life <= 0) { bolts.splice(i, 1); continue; }
+
+    // Glow pass
+    ctx.globalAlpha = b.life * 0.25;
+    ctx.strokeStyle = `rgb(${b.r},${b.g},${b.b})`;
+    ctx.lineWidth = b.life * 8;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (const seg of b.segments) { ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); }
+    ctx.stroke();
+
+    // Main line
+    ctx.globalAlpha = b.life;
+    ctx.strokeStyle = `rgb(${b.r},${b.g},${b.b})`;
+    ctx.lineWidth = b.life * 2.5;
+    ctx.beginPath();
+    for (const seg of b.segments) { ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); }
+    ctx.stroke();
+
+    // White-hot core
+    ctx.globalAlpha = b.life * 0.8;
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = b.life * 1;
+    ctx.beginPath();
+    for (const seg of b.segments) { ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); }
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+</body>
+</html>

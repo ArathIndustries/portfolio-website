@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Hershey Paths</title></head>
+<body style="background:#111;color:#eee;font-family:monospace;padding:2rem;">
+<h2>Hershey Font Path Generator</h2>
+<div id="preview" style="margin:2rem 0;"></div>
+<h3>SVG Output (copy this):</h3>
+<textarea id="output" style="width:100%;height:400px;background:#222;color:#0f0;font-size:12px;padding:1rem;"></textarea>
+
+<script type="module">
+import hershey from 'https://cdn.skypack.dev/hersheytext';
+
+// List available fonts
+console.log('Available fonts:', Object.keys(hershey.fonts));
+
+// Try multiple font options
+const fonts = ['futural', 'futuram', 'rowmans'];
+let allOutput = '';
+
+for (const fontName of fonts) {
+  try {
+    const svg = hershey.renderTextSVG('ARATH.INDUSTRIES', {
+      font: fontName,
+      scale: 1.0
+    });
+
+    allOutput += `\n\n=== FONT: ${fontName} ===\n${svg}`;
+
+    // Also render preview
+    const container = document.createElement('div');
+    container.innerHTML = `<h4>${fontName}</h4><svg viewBox="-10 -30 800 60" width="900" height="80" style="background:#000;">
+      <g stroke="#00D4FF" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svg}</g>
+    </svg>`;
+    document.getElementById('preview').appendChild(container);
+
+  } catch(e) {
+    allOutput += `\n\n=== FONT: ${fontName} === ERROR: ${e.message}`;
+    console.error(fontName, e);
+  }
+}
+
+// Also try getting individual character paths
+try {
+  const font = hershey.fonts['futural'];
+  allOutput += '\n\n=== CHARACTER DATA (futural) ===\n';
+  const text = 'ARATH.INDUSTRIES';
+  for (const ch of text) {
+    const charCode = ch.charCodeAt(0);
+    if (font.chars && font.chars[charCode]) {
+      const c = font.chars[charCode];
+      allOutput += `\n${ch}: width=${c.w}, d="${c.d}"`;
+    }
+  }
+} catch(e) {
+  allOutput += '\nChar data error: ' + e.message;
+}
+
+document.getElementById('output').value = allOutput;
+</script>
+</body>
+</html>

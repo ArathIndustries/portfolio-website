@@ -34,7 +34,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto relative z-[1]" style={{ borderTop: '1px solid rgba(255,0,170,0.08)' }}>
+    <footer className="mt-auto relative z-[1]" style={{ borderTop: '1px solid rgba(255,136,0,0.08)' }}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-600">

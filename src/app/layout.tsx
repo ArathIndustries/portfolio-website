@@ -54,7 +54,7 @@ export default function RootLayout({
       >
         <div className="brick-wall" aria-hidden="true" />
         <Header />
-        <main className="flex-1 relative z-[1]">{children}</main>
+        <main className="flex-1 flex flex-col relative z-[2]">{children}</main>
         <Footer />
       </body>
     </html>

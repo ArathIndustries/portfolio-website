@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arath Industries — Neon Sign Sampler v2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #08080c;
+    color: #e0e0e0;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* === SPARK CANVAS === */
+  #spark-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* === DARK WALL TEXTURE === */
+  .wall {
+    position: relative;
+    min-height: 100vh;
+    padding: 3rem 2rem;
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 49px,
+        rgba(255,255,255,0.008) 49px,
+        rgba(255,255,255,0.008) 50px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 99px,
+        rgba(255,255,255,0.005) 99px,
+        rgba(255,255,255,0.005) 100px
+      ),
+      radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.015) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 70%, rgba(255,255,255,0.01) 0%, transparent 50%);
+  }
+
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    text-align: center;
+  }
+
+  /* === NEON SIGN CONTAINER === */
+  .signs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* === INDIVIDUAL NEON SIGN === */
+  .neon-sign {
+    position: relative;
+    padding: 3rem 4rem;
+    text-align: center;
+    cursor: default;
+  }
+
+  /* Wall mounting bracket look */
+  .neon-sign::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: #1a1a1a;
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+
+  /* === NEON TEXT — THE MAIN EVENT === */
+  .neon-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 3.5rem;
+    letter-spacing: 0.08em;
+    color: #fff;
+    position: relative;
+    display: inline-block;
+    /* Base text glow */
+    text-shadow:
+      0 0 7px var(--neon),
+      0 0 10px var(--neon),
+      0 0 21px var(--neon),
+      0 0 42px var(--neon-deep),
+      0 0 82px var(--neon-deep),
+      0 0 92px var(--neon-deep),
+      0 0 102px var(--neon-deep),
+      0 0 151px var(--neon-deep);
+    /* Flicker animation */
+    animation: var(--flicker-anim, neonFlicker1) var(--flicker-speed, 4s) ease-in-out infinite;
+  }
+
+  .neon-text .dot {
+    color: var(--neon);
+    text-shadow:
+      0 0 7px var(--neon),
+      0 0 10px var(--neon),
+      0 0 21px var(--neon),
+      0 0 42px var(--neon-deep),
+      0 0 82px var(--neon-deep);
+    animation: dotFlicker 2.5s ease-in-out infinite;
+  }
+
+  /* Reflected glow on the wall behind */
+  .neon-sign .wall-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%;
+    height: 200%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, var(--neon-glow) 0%, transparent 70%);
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: -1;
+    animation: var(--flicker-anim, neonFlicker1) var(--flicker-speed, 4s) ease-in-out infinite;
+  }
+
+  /* === SUBTITLE (buzzy, dimmer) === */
+  .neon-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 1rem;
+    color: var(--neon);
+    text-shadow:
+      0 0 5px var(--neon),
+      0 0 10px var(--neon),
+      0 0 20px var(--neon-deep);
+    opacity: 0.8;
+    animation: subFlicker 6s ease-in-out infinite;
+  }
+
+  .neon-color-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #333;
+    letter-spacing: 0.1em;
+    margin-top: 1.5rem;
+    text-transform: uppercase;
+  }
+
+  /* === FLICKER ANIMATIONS (each sign gets a unique one) === */
+  @keyframes neonFlicker1 {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+      opacity: 1;
+      text-shadow:
+        0 0 7px var(--neon),
+        0 0 10px var(--neon),
+        0 0 21px var(--neon),
+        0 0 42px var(--neon-deep),
+        0 0 82px var(--neon-deep),
+        0 0 92px var(--neon-deep),
+        0 0 102px var(--neon-deep),
+        0 0 151px var(--neon-deep);
+    }
+    20%, 24%, 55% {
+      opacity: 0.6;
+      text-shadow:
+        0 0 4px var(--neon),
+        0 0 7px var(--neon),
+        0 0 12px var(--neon-deep);
+    }
+  }
+
+  @keyframes neonFlicker2 {
+    0%, 100% { opacity: 1; }
+    41% { opacity: 1; }
+    42% { opacity: 0.4; }
+    43% { opacity: 1; }
+    44% { opacity: 0.5; }
+    45% { opacity: 1; }
+    76% { opacity: 1; }
+    77% { opacity: 0.7; }
+    78% { opacity: 1; }
+  }
+
+  @keyframes neonFlicker3 {
+    0%, 100% { opacity: 1; }
+    30% { opacity: 1; }
+    31% { opacity: 0.3; }
+    32% { opacity: 1; }
+    33% { opacity: 0.7; }
+    34% { opacity: 1; }
+    35% { opacity: 0.5; }
+    36% { opacity: 1; }
+    68% { opacity: 1; }
+    69% { opacity: 0.6; }
+    70% { opacity: 1; }
+  }
+
+  @keyframes neonFlicker4 {
+    0%, 18%, 22%, 25%, 53%, 57%, 100% {
+      opacity: 1;
+    }
+    20% { opacity: 0.3; }
+    24% { opacity: 0.7; }
+    55% { opacity: 0.5; }
+  }
+
+  @keyframes neonFlicker5 {
+    0%, 100% { opacity: 1; }
+    10% { opacity: 0.8; }
+    11% { opacity: 1; }
+    60% { opacity: 1; }
+    61% { opacity: 0.2; }
+    62% { opacity: 0.8; }
+    63% { opacity: 0.2; }
+    64% { opacity: 1; }
+  }
+
+  @keyframes neonFlicker6 {
+    0%, 100% { opacity: 1; }
+    48% { opacity: 1; }
+    49% { opacity: 0.4; }
+    50% { opacity: 1; }
+    51% { opacity: 0.6; }
+    52% { opacity: 1; }
+    85% { opacity: 1; }
+    86% { opacity: 0.3; }
+    87% { opacity: 1; }
+  }
+
+  @keyframes dotFlicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+    51% { opacity: 1; }
+    80% { opacity: 1; }
+    81% { opacity: 0.3; }
+    82% { opacity: 0.8; }
+    83% { opacity: 1; }
+  }
+
+  @keyframes subFlicker {
+    0%, 100% { opacity: 0.8; }
+    25% { opacity: 0.8; }
+    26% { opacity: 0.3; }
+    27% { opacity: 0.8; }
+    73% { opacity: 0.8; }
+    74% { opacity: 0.5; }
+    75% { opacity: 0.8; }
+  }
+
+  /* === SEPARATOR (wire between signs) === */
+  .wire {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, #222, transparent);
+    margin: 0 auto;
+  }
+
+  /* === COMBO SECTION === */
+  .combo-section {
+    margin-top: 2rem;
+    text-align: center;
+  }
+  .combo-section h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 3rem;
+  }
+  .combo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .combo-sign {
+    position: relative;
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  .combo-sign::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: #1a1a1a;
+    border-radius: 2px;
+  }
+  .combo-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 2.2rem;
+    letter-spacing: 0.08em;
+    color: #fff;
+    display: inline-block;
+  }
+  .combo-text .part1 {
+    color: #fff;
+    text-shadow:
+      0 0 7px var(--c1),
+      0 0 10px var(--c1),
+      0 0 21px var(--c1),
+      0 0 42px var(--c1-deep),
+      0 0 82px var(--c1-deep);
+  }
+  .combo-text .dot {
+    text-shadow:
+      0 0 7px var(--c2),
+      0 0 10px var(--c2),
+      0 0 21px var(--c2),
+      0 0 42px var(--c2-deep),
+      0 0 82px var(--c2-deep);
+    color: var(--c2);
+    animation: dotFlicker 3s ease-in-out infinite;
+  }
+  .combo-text .part2 {
+    color: #fff;
+    text-shadow:
+      0 0 7px var(--c2),
+      0 0 10px var(--c2),
+      0 0 21px var(--c2),
+      0 0 42px var(--c2-deep),
+      0 0 60px var(--c2-deep);
+  }
+  .combo-sign .wall-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%;
+    height: 200%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse,
+      color-mix(in srgb, var(--c1) 8%, transparent) 0%,
+      color-mix(in srgb, var(--c2) 5%, transparent) 40%,
+      transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+  }
+  .combo-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #333;
+    letter-spacing: 0.1em;
+    margin-top: 1.2rem;
+    text-transform: uppercase;
+  }
+
+  /* === PREVIEW SECTION === */
+  .preview-section {
+    margin-top: 5rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
+  .preview-section h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 3rem;
+  }
+  .preview-card {
+    background: #0c0c12;
+    border: 1px solid #1a1a25;
+    border-radius: 12px;
+    padding: 3rem;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+    --accent: #00D4FF;
+    --accent-deep: #0066aa;
+  }
+  .preview-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent), 0 0 30px var(--accent-deep);
+    animation: neonFlicker2 5s ease-in-out infinite;
+  }
+  .preview-card .p-brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 10px var(--accent), 0 0 30px var(--accent-deep);
+    margin-bottom: 0.5rem;
+  }
+  .preview-card .p-brand span { color: var(--accent); }
+  .preview-card .p-tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #555;
+    margin-bottom: 1.5rem;
+  }
+  .preview-card .p-body {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: #888;
+    margin-bottom: 1.5rem;
+  }
+  .preview-card .p-body em {
+    color: var(--accent);
+    font-style: normal;
+    text-shadow: 0 0 8px var(--accent-deep);
+  }
+  .preview-card .p-btn {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.6rem 1.8rem;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 8px var(--accent-deep);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 15%, transparent);
+    transition: all 0.3s;
+    margin-right: 0.75rem;
+  }
+  .preview-card .p-btn:hover {
+    background: var(--accent);
+    color: #08080c;
+    text-shadow: none;
+    box-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent-deep);
+  }
+  .preview-card .p-tags {
+    margin-top: 1.25rem;
+  }
+  .preview-card .p-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    color: var(--accent);
+    border-radius: 3px;
+    margin-right: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 6px var(--accent-deep);
+  }
+  .preview-card .p-stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #1a1a25;
+  }
+  .preview-card .p-stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--accent), 0 0 25px var(--accent-deep);
+  }
+  .preview-card .p-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.2rem;
+  }
+
+  /* === SCROLLBAR === */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #08080c; }
+  ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<canvas id="spark-canvas"></canvas>
+
+<div class="wall">
+
+  <h1>// pick your neon</h1>
+
+  <div class="signs">
+
+    <!-- Electric Blue -->
+    <div class="neon-sign" style="--neon: #00D4FF; --neon-deep: #0077aa; --neon-glow: rgba(0,212,255,0.06); --flicker-anim: neonFlicker1; --flicker-speed: 4s;">
+      <div class="wall-glow"></div>
+      <div class="neon-text">ARATH<span class="dot">.</span>INDUSTRIES</div>
+      <div class="neon-sub">building tools that fit</div>
+      <div class="neon-color-label">Electric Blue · #00D4FF</div>
+    </div>
+
+    <div class="wire"></div>
+
+    <!-- Neon Cyan -->
+    <div class="neon-sign" style="--neon: #00FFE0; --neon-deep: #008877; --neon-glow: rgba(0,255,224,0.06); --flicker-anim: neonFlicker2; --flicker-speed: 3.5s;">
+      <div class="wall-glow"></div>
+      <div class="neon-text">ARATH<span class="dot">.</span>INDUSTRIES</div>
+      <div class="neon-sub">building tools that fit</div>
+      <div class="neon-color-label">Neon Cyan · #00FFE0</div>
+    </div>
+
+    <div class="wire"></div>
+
+    <!-- Hot Magenta -->
+    <div class="neon-sign" style="--neon: #FF00AA; --neon-deep: #990066; --neon-glow: rgba(255,0,170,0.06); --flicker-anim: neonFlicker3; --flicker-speed: 5s;">
+      <div class="wall-glow"></div>
+      <div class="neon-text">ARATH<span class="dot">.</span>INDUSTRIES</div>
+      <div class="neon-sub">building tools that fit</div>
+      <div class="neon-color-label">Hot Magenta · #FF00AA</div>
+    </div>
+
+    <div class="wire"></div>
+
+    <!-- Electric Purple -->
+    <div class="neon-sign" style="--neon: #A855F7; --neon-deep: #6622aa; --neon-glow: rgba(168,85,247,0.06); --flicker-anim: neonFlicker4; --flicker-speed: 4.5s;">
+      <div class="wall-glow"></div>
+      <div class="neon-text">ARATH<span class="dot">.</span>INDUSTRIES</div>
+      <div class="neon-sub">building tools that fit</div>
+      <div class="neon-color-label">Electric Purple · #A855F7</div>
+    </div>
+
+    <div class="wire"></div>
+
+    <!-- Neon Green -->
+    <div class="neon-sign" style="--neon: #39FF14; --neon-deep: #1a8800; --neon-glow: rgba(57,255,20,0.06); --flicker-anim: neonFlicker5; --flicker-speed: 3.8s;">
+      <div class="wall-glow"></div>
+      <div class="neon-text">ARATH<span class="dot">.</span>INDUSTRIES</div>
+      <div class="neon-sub">building tools that fit</div>
+      <div class="neon-color-label">Neon Green · #39FF14</div>
+    </div>
+
+    <div class="wire"></div>
+
+    <!-- Warm Amber -->
+    <div class="neon-sign" style="--neon: #FFAA00; --neon-deep: #995500; --neon-glow: rgba(255,170,0,0.06); --flicker-anim: neonFlicker6; --flicker-speed: 4.2s;">
+      <div class="wall-glow"></div>
+      <div class="neon-text">ARATH<span class="dot">.</span>INDUSTRIES</div>
+      <div class="neon-sub">building tools that fit</div>
+      <div class="neon-color-label">Warm Amber · #FFAA00</div>
+    </div>
+
+  </div>
+
+  <!-- COMBOS -->
+  <div class="combo-section">
+    <div class="wire" style="height: 60px;"></div>
+    <h2>// two-color combos</h2>
+
+    <div class="combo-grid">
+
+      <div class="combo-sign" style="--c1: #00FFE0; --c1-deep: #008877; --c2: #FF00AA; --c2-deep: #990066;">
+        <div class="wall-glow"></div>
+        <div class="combo-text">
+          <span class="part1">ARATH</span><span class="dot">.</span><span class="part2">INDUSTRIES</span>
+        </div>
+        <div class="combo-label">Cyan + Magenta</div>
+      </div>
+
+      <div class="combo-sign" style="--c1: #00D4FF; --c1-deep: #0077aa; --c2: #A855F7; --c2-deep: #6622aa;">
+        <div class="wall-glow"></div>
+        <div class="combo-text">
+          <span class="part1">ARATH</span><span class="dot">.</span><span class="part2">INDUSTRIES</span>
+        </div>
+        <div class="combo-label">Blue + Purple</div>
+      </div>
+
+      <div class="combo-sign" style="--c1: #39FF14; --c1-deep: #1a8800; --c2: #00FFE0; --c2-deep: #008877;">
+        <div class="wall-glow"></div>
+        <div class="combo-text">
+          <span class="part1">ARATH</span><span class="dot">.</span><span class="part2">INDUSTRIES</span>
+        </div>
+        <div class="combo-label">Green + Cyan</div>
+      </div>
+
+      <div class="combo-sign" style="--c1: #A855F7; --c1-deep: #6622aa; --c2: #FF00AA; --c2-deep: #990066;">
+        <div class="wall-glow"></div>
+        <div class="combo-text">
+          <span class="part1">ARATH</span><span class="dot">.</span><span class="part2">INDUSTRIES</span>
+        </div>
+        <div class="combo-label">Purple + Magenta</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PREVIEW: what it looks like in a UI context -->
+  <div class="preview-section">
+    <div class="wire" style="height: 60px;"></div>
+    <h2>// how it feels in a real card</h2>
+
+    <div class="preview-card">
+      <div class="p-brand">ARATH<span>.</span>INDUSTRIES</div>
+      <div class="p-tagline">// building tools that fit how people actually work</div>
+      <p class="p-body">I study the workflow, talk to the team, and build something that <em>actually fits</em>. From municipal data platforms to embedded ML on microcontrollers.</p>
+      <button class="p-btn">View Work</button>
+      <button class="p-btn">Hire Me</button>
+      <div class="p-tags">
+        <span class="p-tag">FastAPI</span>
+        <span class="p-tag">Plotly</span>
+        <span class="p-tag">Python</span>
+        <span class="p-tag">TinyML</span>
+        <span class="p-tag">Arduino</span>
+      </div>
+      <div class="p-stats">
+        <div><div class="p-stat-num">1,592</div><div class="p-stat-label">Meetings Tracked</div></div>
+        <div><div class="p-stat-num">254</div><div class="p-stat-label">Counties Analyzed</div></div>
+        <div><div class="p-stat-num">79</div><div class="p-stat-label">Scripts Built</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 4rem;"></div>
+
+</div>
+
+<script>
+// === ELECTRICAL SPARK SYSTEM ===
+// These aren't sparkles — they're voltage surges. Short bursts that pop and crack.
+const canvas = document.getElementById('spark-canvas');
+const ctx = canvas.getContext('2d', { alpha: true });
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const sparkRGB = [
+  [0, 212, 255],
+  [0, 255, 224],
+  [255, 0, 170],
+  [168, 85, 247],
+  [57, 255, 20],
+  [255, 170, 0],
+  [255, 255, 255],
+  [255, 255, 255], // extra weight on white — electrical arcs are white-hot
+  [255, 255, 255],
+];
+
+// === ELECTRICAL ARC PARTICLES ===
+const sparks = [];
+let sparkCount = 0;
+const MAX_SPARKS = 120;
+
+const sparkPool = [];
+function getSpark() { return sparkPool.length > 0 ? sparkPool.pop() : {}; }
+function releaseSpark(s) { sparkPool.push(s); }
+
+function initSpark(s, x, y, speed, isArc) {
+  const angle = Math.random() * Math.PI * 2;
+  const velocity = isArc ? (Math.random() * 6 + 3) * speed : (Math.random() * 2 + 1) * speed;
+  s.x = x;
+  s.y = y;
+  s.vx = Math.cos(angle) * velocity;
+  s.vy = Math.sin(angle) * velocity - (isArc ? Math.random() * 3 : 0);
+  s.life = isArc ? (Math.random() * 0.4 + 0.2) : 1;
+  s.decay = isArc ? (Math.random() * 0.05 + 0.04) : (Math.random() * 0.02 + 0.01);
+  s.size = isArc ? (Math.random() * 1.5 + 1) : (Math.random() * 2 + 0.5);
+  const c = sparkRGB[Math.floor(Math.random() * sparkRGB.length)];
+  s.r = c[0]; s.g = c[1]; s.b = c[2];
+  s.gravity = isArc ? (0.15 + Math.random() * 0.2) : (0.02 + Math.random() * 0.03);
+  s.isArc = isArc;
+  return s;
+}
+
+// === LIGHTNING BOLT SEGMENTS ===
+const bolts = [];
+
+function spawnBolt(x, y) {
+  const c = sparkRGB[Math.floor(Math.random() * sparkRGB.length)];
+  const segments = [];
+  let cx = x, cy = y;
+  const len = Math.floor(Math.random() * 4 + 3);
+  for (let i = 0; i < len; i++) {
+    const nx = cx + (Math.random() - 0.5) * 40;
+    const ny = cy + (Math.random() - 0.5) * 40;
+    segments.push({ x1: cx, y1: cy, x2: nx, y2: ny });
+    cx = nx; cy = ny;
+  }
+  bolts.push({ segments, life: 1, decay: 0.08 + Math.random() * 0.06, r: c[0], g: c[1], b: c[2] });
+}
+
+let mouseX = 0, mouseY = 0, lastMouseX = 0, lastMouseY = 0;
+let lastMoveTime = 0;
+let moveAccum = 0;
+
+document.addEventListener('mousemove', (e) => {
+  const now = performance.now();
+  if (now - lastMoveTime < 16) return;
+  lastMoveTime = now;
+
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  const dx = mouseX - lastMouseX;
+  const dy = mouseY - lastMouseY;
+  const speed = Math.sqrt(dx * dx + dy * dy);
+
+  // Gentle trailing sparks
+  const numSparks = Math.min(Math.floor(speed * 0.15), 3);
+  for (let i = 0; i < numSparks && sparkCount < MAX_SPARKS; i++) {
+    sparks.push(initSpark(getSpark(),
+      mouseX + (Math.random() - 0.5) * 6,
+      mouseY + (Math.random() - 0.5) * 6,
+      Math.min(speed * 0.1, 2), false));
+    sparkCount++;
+  }
+
+  // Accumulate movement — when threshold hit, BURST (the voltage surge)
+  moveAccum += speed;
+  if (moveAccum > 150 + Math.random() * 100) {
+    // Pop! Electrical burst
+    const burstCount = Math.floor(Math.random() * 8 + 5);
+    for (let i = 0; i < burstCount && sparkCount < MAX_SPARKS; i++) {
+      sparks.push(initSpark(getSpark(),
+        mouseX + (Math.random() - 0.5) * 4,
+        mouseY + (Math.random() - 0.5) * 4,
+        1.5, true));
+      sparkCount++;
+    }
+    // Small lightning bolt
+    if (Math.random() > 0.4) {
+      spawnBolt(mouseX, mouseY);
+    }
+    moveAccum = 0;
+  }
+
+  lastMouseX = mouseX;
+  lastMouseY = mouseY;
+});
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw sparks
+  let writeIdx = 0;
+  for (let i = 0; i < sparkCount; i++) {
+    const s = sparks[i];
+    s.x += s.vx;
+    s.y += s.vy;
+    s.vy += s.gravity;
+    s.vx *= s.isArc ? 0.95 : 0.99;
+    s.life -= s.decay;
+
+    if (s.life <= 0) { releaseSpark(s); continue; }
+
+    const alpha = s.life;
+    const radius = s.size * s.life;
+
+    // Outer glow
+    ctx.globalAlpha = alpha * 0.25;
+    ctx.fillStyle = `rgb(${s.r},${s.g},${s.b})`;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, radius * (s.isArc ? 4 : 3), 0, Math.PI * 2);
+    ctx.fill();
+
+    // Core
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // White-hot center for arc sparks
+    if (s.isArc && s.life > 0.3) {
+      ctx.globalAlpha = alpha * 0.8;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, radius * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    sparks[writeIdx++] = s;
+  }
+  sparks.length = writeIdx;
+  sparkCount = writeIdx;
+
+  // Draw lightning bolts
+  for (let i = bolts.length - 1; i >= 0; i--) {
+    const b = bolts[i];
+    b.life -= b.decay;
+    if (b.life <= 0) { bolts.splice(i, 1); continue; }
+
+    ctx.globalAlpha = b.life;
+    ctx.strokeStyle = `rgb(${b.r},${b.g},${b.b})`;
+    ctx.lineWidth = b.life * 2;
+    ctx.beginPath();
+    for (const seg of b.segments) {
+      ctx.moveTo(seg.x1, seg.y1);
+      ctx.lineTo(seg.x2, seg.y2);
+    }
+    ctx.stroke();
+
+    // Glow pass
+    ctx.globalAlpha = b.life * 0.3;
+    ctx.lineWidth = b.life * 6;
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animate);
+}
+animate();
+
+// === RANDOM SURGES ON NEON SIGNS ===
+// Occasionally pop sparks near the signs themselves, like a bad connection
+function signSurge() {
+  const signs = document.querySelectorAll('.neon-text, .combo-text');
+  const sign = signs[Math.floor(Math.random() * signs.length)];
+  const rect = sign.getBoundingClientRect();
+
+  // Random point along the text
+  const x = rect.left + Math.random() * rect.width;
+  const y = rect.top + Math.random() * rect.height;
+
+  // Small burst
+  for (let i = 0; i < 6 && sparkCount < MAX_SPARKS; i++) {
+    sparks.push(initSpark(getSpark(), x, y, 1.2, true));
+    sparkCount++;
+  }
+  if (Math.random() > 0.5) spawnBolt(x, y);
+
+  // Next surge: random delay 1-6 seconds
+  setTimeout(signSurge, 1000 + Math.random() * 5000);
+}
+// Start surges after a moment
+setTimeout(signSurge, 2000);
+</script>
+
+</body>
+</html>

@@ -84,7 +84,7 @@ export default function WorkPage() {
             >
               {/* Placeholder thumbnail area for grid mode */}
               {viewMode === "grid" && (
-                <div className="w-full h-32 rounded-md mb-4 flex items-center justify-center" style={{ background: 'rgba(255,0,170,0.03)', border: '1px solid rgba(255,0,170,0.08)' }}>
+                <div className="w-full h-32 rounded-md mb-4 flex items-center justify-center" style={{ background: 'rgba(255,136,0,0.03)', border: '1px solid rgba(255,136,0,0.08)' }}>
                   <span className="text-gray-700 font-mono text-xs">Preview</span>
                 </div>
               )}
@@ -100,7 +100,7 @@ export default function WorkPage() {
                   <span
                     key={tag}
                     className="px-2 py-1 text-xs rounded font-mono"
-                    style={{ background: 'rgba(255,0,170,0.08)', color: 'rgba(255,0,170,0.7)' }}
+                    style={{ background: 'rgba(255,136,0,0.08)', color: 'rgba(255,136,0,0.7)' }}
                   >
                     {tag}
                   </span>

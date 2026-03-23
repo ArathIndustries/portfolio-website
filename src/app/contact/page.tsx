@@ -55,7 +55,7 @@ export default function ContactPage() {
 
       {/* Contact Form */}
       {submitted ? (
-        <div className="p-8 rounded-lg text-center" style={{ border: '1px solid rgba(255,0,170,0.2)', background: 'rgba(255,0,170,0.03)' }}>
+        <div className="p-8 rounded-lg text-center" style={{ border: '1px solid rgba(255,136,0,0.2)', background: 'rgba(255,136,0,0.03)' }}>
           <h3 className="text-xl font-mono font-semibold neon-text mb-2">Message sent</h3>
           <p className="text-gray-400">Thanks for reaching out. I&apos;ll get back to you soon.</p>
         </div>
@@ -106,7 +106,7 @@ export default function ContactPage() {
       )}
 
       {/* Direct contact */}
-      <div className="mt-12 pt-8" style={{ borderTop: '1px solid rgba(255,0,170,0.08)' }}>
+      <div className="mt-12 pt-8" style={{ borderTop: '1px solid rgba(255,136,0,0.08)' }}>
         <p className="text-sm text-gray-500 mb-4">Or reach out directly:</p>
         <div className="flex flex-wrap gap-4">
           <Link

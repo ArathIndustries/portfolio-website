@@ -129,6 +129,19 @@ export function NeonSign({ bridgeRef }: NeonSignProps) {
     // Populate bridge with letter zone elements
     bridgeRef.current.letterZones = Array.from(zones);
 
+    // Track sign center position
+    function updateSignCenter() {
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      bridgeRef.current.signCenter = {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      };
+    }
+    updateSignCenter();
+    window.addEventListener('resize', updateSignCenter);
+    window.addEventListener('scroll', updateSignCenter);
+
     function setNodeBrightness(idx: number, val: number) {
       if (lights[idx]) (lights[idx] as SVGElement).style.opacity = String(val);
       if (cores[idx]) (cores[idx] as SVGElement).style.opacity = String(val * 0.5);
@@ -173,9 +186,10 @@ export function NeonSign({ bridgeRef }: NeonSignProps) {
 
       for (let i = 0; i < TOTAL_NODES; i++) setNodeBrightness(i, brightness[i]);
 
-      // Update glow
+      // Update glow + bridge
+      const avg = brightness.reduce((a, b) => a + b, 0) / TOTAL_NODES;
+      bridgeRef.current.avgBrightness = avg;
       if (glowRef.current) {
-        const avg = brightness.reduce((a, b) => a + b, 0) / TOTAL_NODES;
         glowRef.current.style.opacity = String(avg * 0.4);
       }
     }
@@ -223,6 +237,8 @@ export function NeonSign({ bridgeRef }: NeonSignProps) {
       cancelAnimationFrame(rafRef.current);
       waveTimersRef.current.forEach(clearTimeout);
       waveTimersRef.current = [];
+      window.removeEventListener('resize', updateSignCenter);
+      window.removeEventListener('scroll', updateSignCenter);
     };
   }, [bridgeRef, scheduleWave]);
 
@@ -242,10 +258,9 @@ export function NeonSign({ bridgeRef }: NeonSignProps) {
           width: '300%',
           height: '600%',
           borderRadius: '50%',
-          background: `radial-gradient(ellipse, rgba(255,0,170,0.14) 0%, rgba(255,0,170,0.06) 25%, rgba(255,0,170,0.02) 50%, transparent 75%)`,
+          background: `radial-gradient(ellipse, rgba(255,136,0,0.14) 0%, rgba(255,136,0,0.06) 25%, rgba(255,136,0,0.02) 50%, transparent 75%)`,
           zIndex: -1,
           opacity: 0.7,
-          mixBlendMode: 'screen',
         }}
       />
 

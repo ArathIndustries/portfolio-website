@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arath Industries — Color Sampler v2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #06060b;
+    color: #e0e0e0;
+    font-family: 'Inter', sans-serif;
+    padding: 2rem;
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+  }
+
+  /* === SPARK CANVAS (behind everything) === */
+  #spark-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* === AMBIENT BACKGROUND GLOW === */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(0, 212, 255, 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(168, 85, 247, 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, rgba(255, 0, 170, 0.02) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+    animation: ambientDrift 20s ease-in-out infinite alternate;
+  }
+  @keyframes ambientDrift {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(-3%, 2%) rotate(3deg); }
+  }
+
+  /* === MOUSE GLOW FOLLOWER === */
+  #mouse-glow {
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    pointer-events: none !important;
+    z-index: 1;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s;
+    opacity: 0;
+  }
+
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.5rem;
+    color: #888;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    position: relative;
+    z-index: 2;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* === CARDS WITH GLOW + SHADOW === */
+  .swatch {
+    background: #0d0d14;
+    border: 1px solid #1a1a25;
+    border-radius: 12px;
+    padding: 2rem;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Inner glow on hover */
+  .swatch::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .swatch::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+  }
+  .swatch:hover {
+    border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+    box-shadow:
+      0 0 20px color-mix(in srgb, var(--accent) 10%, transparent),
+      0 0 60px color-mix(in srgb, var(--accent) 5%, transparent),
+      0 8px 32px rgba(0,0,0,0.6);
+    transform: translateY(-2px);
+  }
+  .swatch:hover::before { opacity: 1; }
+  .swatch:hover::after { opacity: 1; }
+
+  .swatch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  .swatch-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 15px color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+
+  .swatch-hex {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #555;
+  }
+
+  .color-bar {
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+    box-shadow:
+      0 0 8px var(--accent),
+      0 0 20px color-mix(in srgb, var(--accent) 50%, transparent),
+      0 0 40px color-mix(in srgb, var(--accent) 25%, transparent);
+    position: relative;
+  }
+  /* Animated pulse on the color bar */
+  .color-bar::after {
+    content: '';
+    position: absolute;
+    top: -2px; left: 0; right: 0; bottom: -2px;
+    background: var(--accent);
+    border-radius: 2px;
+    opacity: 0;
+    animation: barPulse 3s ease-in-out infinite;
+  }
+  @keyframes barPulse {
+    0%, 100% { opacity: 0; filter: blur(4px); }
+    50% { opacity: 0.3; filter: blur(8px); }
+  }
+
+  .brand-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.25rem;
+    text-shadow: 0 0 30px rgba(255,255,255,0.05);
+  }
+  .brand-name span {
+    color: var(--accent);
+    text-shadow: 0 0 20px color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+
+  .brand-tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  .sample-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #999;
+    margin-bottom: 1.5rem;
+  }
+
+  .sample-link {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    font-weight: 600;
+    text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 20%, transparent);
+    transition: text-shadow 0.3s;
+  }
+  .sample-link:hover {
+    text-shadow: 0 0 20px color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+
+  .sample-btn {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    padding: 0.6rem 1.5rem;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.3s;
+    margin-right: 0.75rem;
+    position: relative;
+  }
+  .sample-btn:hover {
+    background: var(--accent);
+    color: #06060b;
+    box-shadow:
+      0 0 15px color-mix(in srgb, var(--accent) 40%, transparent),
+      0 0 40px color-mix(in srgb, var(--accent) 20%, transparent),
+      inset 0 0 15px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+
+  .sample-btn-filled {
+    background: var(--accent);
+    color: #06060b;
+    font-weight: 700;
+    box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+  .sample-btn-filled:hover {
+    background: transparent;
+    color: var(--accent);
+    box-shadow: 0 0 25px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.25rem 0.6rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    color: var(--accent);
+    border-radius: 4px;
+    margin-right: 0.4rem;
+    margin-top: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 20%, transparent);
+    transition: all 0.3s;
+  }
+  .tag:hover {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 15%, transparent);
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.25rem;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-shadow:
+      0 0 10px color-mix(in srgb, var(--accent) 40%, transparent),
+      0 0 30px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.25rem;
+  }
+
+  /* === MULTI-COLOR SECTION === */
+  .multi-section {
+    grid-column: 1 / -1;
+    margin-top: 1rem;
+  }
+  .multi-section h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    color: #888;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .multi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+  .multi-card {
+    background: #0d0d14;
+    border: 1px solid #1a1a25;
+    border-radius: 12px;
+    padding: 2rem;
+    border-top: 3px solid var(--accent);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .multi-card::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+  }
+  .multi-card:hover {
+    border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+    box-shadow:
+      0 0 25px color-mix(in srgb, var(--accent) 10%, transparent),
+      0 0 60px color-mix(in srgb, var(--accent) 5%, transparent),
+      0 8px 32px rgba(0,0,0,0.6);
+    transform: translateY(-2px);
+  }
+  .multi-card:hover::after { opacity: 1; }
+
+  .multi-card .brand-name span.c1 { color: #00D4FF; text-shadow: 0 0 20px rgba(0,212,255,0.4); }
+  .multi-card .brand-name span.c2 { color: #FF00AA; text-shadow: 0 0 20px rgba(255,0,170,0.4); }
+  .multi-card .brand-name span.c3 { color: #A855F7; text-shadow: 0 0 20px rgba(168,85,247,0.4); }
+  .multi-card .brand-name span.c4 { color: #39FF14; text-shadow: 0 0 20px rgba(57,255,20,0.4); }
+  .multi-card .brand-name span.c5 { color: #00FFE0; text-shadow: 0 0 20px rgba(0,255,224,0.4); }
+
+  .gradient-bar {
+    height: 3px;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  /* === GRADIENT BAR GLOW === */
+  .multi-card .gradient-bar {
+    box-shadow:
+      0 0 10px color-mix(in srgb, var(--accent) 40%, transparent),
+      0 0 30px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+
+  /* === SCROLLBAR === */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #06060b; }
+  ::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #444; }
+</style>
+</head>
+<body>
+
+<canvas id="spark-canvas"></canvas>
+<div id="mouse-glow"></div>
+
+<h1>// Arath Industries — Color Direction Sampler</h1>
+
+<div class="grid">
+
+  <!-- Electric Blue -->
+  <div class="swatch" style="--accent: #00D4FF;">
+    <div class="swatch-header">
+      <span class="swatch-name">Electric Blue</span>
+      <span class="swatch-hex">#00D4FF</span>
+    </div>
+    <div class="color-bar"></div>
+    <div class="brand-name">ARATH<span>.</span>INDUSTRIES</div>
+    <div class="brand-tagline">// building tools that fit how people actually work</div>
+    <p class="sample-text">I don't just build the tool — I study the workflow, talk to the team, and build something that <a href="#" class="sample-link">actually fits</a>.</p>
+    <button class="sample-btn">View Work</button>
+    <button class="sample-btn sample-btn-filled">Hire Me</button>
+    <div>
+      <span class="tag">FastAPI</span>
+      <span class="tag">Plotly</span>
+      <span class="tag">Python</span>
+      <span class="tag">TinyML</span>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-num">1,592</div><div class="stat-label">Meetings Tracked</div></div>
+      <div class="stat"><div class="stat-num">254</div><div class="stat-label">Counties Analyzed</div></div>
+      <div class="stat"><div class="stat-num">79</div><div class="stat-label">Scripts Built</div></div>
+    </div>
+  </div>
+
+  <!-- Neon Cyan -->
+  <div class="swatch" style="--accent: #00FFE0;">
+    <div class="swatch-header">
+      <span class="swatch-name">Neon Cyan</span>
+      <span class="swatch-hex">#00FFE0</span>
+    </div>
+    <div class="color-bar"></div>
+    <div class="brand-name">ARATH<span>.</span>INDUSTRIES</div>
+    <div class="brand-tagline">// building tools that fit how people actually work</div>
+    <p class="sample-text">I don't just build the tool — I study the workflow, talk to the team, and build something that <a href="#" class="sample-link">actually fits</a>.</p>
+    <button class="sample-btn">View Work</button>
+    <button class="sample-btn sample-btn-filled">Hire Me</button>
+    <div>
+      <span class="tag">FastAPI</span>
+      <span class="tag">Plotly</span>
+      <span class="tag">Python</span>
+      <span class="tag">TinyML</span>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-num">1,592</div><div class="stat-label">Meetings Tracked</div></div>
+      <div class="stat"><div class="stat-num">254</div><div class="stat-label">Counties Analyzed</div></div>
+      <div class="stat"><div class="stat-num">79</div><div class="stat-label">Scripts Built</div></div>
+    </div>
+  </div>
+
+  <!-- Hot Magenta -->
+  <div class="swatch" style="--accent: #FF00AA;">
+    <div class="swatch-header">
+      <span class="swatch-name">Hot Magenta</span>
+      <span class="swatch-hex">#FF00AA</span>
+    </div>
+    <div class="color-bar"></div>
+    <div class="brand-name">ARATH<span>.</span>INDUSTRIES</div>
+    <div class="brand-tagline">// building tools that fit how people actually work</div>
+    <p class="sample-text">I don't just build the tool — I study the workflow, talk to the team, and build something that <a href="#" class="sample-link">actually fits</a>.</p>
+    <button class="sample-btn">View Work</button>
+    <button class="sample-btn sample-btn-filled">Hire Me</button>
+    <div>
+      <span class="tag">FastAPI</span>
+      <span class="tag">Plotly</span>
+      <span class="tag">Python</span>
+      <span class="tag">TinyML</span>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-num">1,592</div><div class="stat-label">Meetings Tracked</div></div>
+      <div class="stat"><div class="stat-num">254</div><div class="stat-label">Counties Analyzed</div></div>
+      <div class="stat"><div class="stat-num">79</div><div class="stat-label">Scripts Built</div></div>
+    </div>
+  </div>
+
+  <!-- Electric Purple -->
+  <div class="swatch" style="--accent: #A855F7;">
+    <div class="swatch-header">
+      <span class="swatch-name">Electric Purple</span>
+      <span class="swatch-hex">#A855F7</span>
+    </div>
+    <div class="color-bar"></div>
+    <div class="brand-name">ARATH<span>.</span>INDUSTRIES</div>
+    <div class="brand-tagline">// building tools that fit how people actually work</div>
+    <p class="sample-text">I don't just build the tool — I study the workflow, talk to the team, and build something that <a href="#" class="sample-link">actually fits</a>.</p>
+    <button class="sample-btn">View Work</button>
+    <button class="sample-btn sample-btn-filled">Hire Me</button>
+    <div>
+      <span class="tag">FastAPI</span>
+      <span class="tag">Plotly</span>
+      <span class="tag">Python</span>
+      <span class="tag">TinyML</span>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-num">1,592</div><div class="stat-label">Meetings Tracked</div></div>
+      <div class="stat"><div class="stat-num">254</div><div class="stat-label">Counties Analyzed</div></div>
+      <div class="stat"><div class="stat-num">79</div><div class="stat-label">Scripts Built</div></div>
+    </div>
+  </div>
+
+  <!-- Neon Green -->
+  <div class="swatch" style="--accent: #39FF14;">
+    <div class="swatch-header">
+      <span class="swatch-name">Neon Green</span>
+      <span class="swatch-hex">#39FF14</span>
+    </div>
+    <div class="color-bar"></div>
+    <div class="brand-name">ARATH<span>.</span>INDUSTRIES</div>
+    <div class="brand-tagline">// building tools that fit how people actually work</div>
+    <p class="sample-text">I don't just build the tool — I study the workflow, talk to the team, and build something that <a href="#" class="sample-link">actually fits</a>.</p>
+    <button class="sample-btn">View Work</button>
+    <button class="sample-btn sample-btn-filled">Hire Me</button>
+    <div>
+      <span class="tag">FastAPI</span>
+      <span class="tag">Plotly</span>
+      <span class="tag">Python</span>
+      <span class="tag">TinyML</span>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-num">1,592</div><div class="stat-label">Meetings Tracked</div></div>
+      <div class="stat"><div class="stat-num">254</div><div class="stat-label">Counties Analyzed</div></div>
+      <div class="stat"><div class="stat-num">79</div><div class="stat-label">Scripts Built</div></div>
+    </div>
+  </div>
+
+  <!-- Warm Amber (bonus) -->
+  <div class="swatch" style="--accent: #FFAA00;">
+    <div class="swatch-header">
+      <span class="swatch-name">Warm Amber</span>
+      <span class="swatch-hex">#FFAA00</span>
+    </div>
+    <div class="color-bar"></div>
+    <div class="brand-name">ARATH<span>.</span>INDUSTRIES</div>
+    <div class="brand-tagline">// building tools that fit how people actually work</div>
+    <p class="sample-text">I don't just build the tool — I study the workflow, talk to the team, and build something that <a href="#" class="sample-link">actually fits</a>.</p>
+    <button class="sample-btn">View Work</button>
+    <button class="sample-btn sample-btn-filled">Hire Me</button>
+    <div>
+      <span class="tag">FastAPI</span>
+      <span class="tag">Plotly</span>
+      <span class="tag">Python</span>
+      <span class="tag">TinyML</span>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-num">1,592</div><div class="stat-label">Meetings Tracked</div></div>
+      <div class="stat"><div class="stat-num">254</div><div class="stat-label">Counties Analyzed</div></div>
+      <div class="stat"><div class="stat-num">79</div><div class="stat-label">Scripts Built</div></div>
+    </div>
+  </div>
+
+  <!-- MULTI-COLOR COMBOS -->
+  <div class="multi-section">
+    <h2>// Multi-Color Combos</h2>
+    <div class="multi-grid">
+
+      <!-- Combo 1: Cyan + Magenta -->
+      <div class="multi-card" style="--accent: #00FFE0;">
+        <div class="gradient-bar" style="background: linear-gradient(90deg, #00FFE0, #FF00AA); box-shadow: 0 0 10px rgba(0,255,224,0.4), 0 0 30px rgba(0,255,224,0.2);"></div>
+        <div class="brand-name"><span class="c5">ARATH</span><span style="color:#FF00AA; text-shadow: 0 0 20px rgba(255,0,170,0.4);">.</span>INDUSTRIES</div>
+        <div class="brand-tagline" style="color:#555;">// cyan primary + magenta accent</div>
+        <p class="sample-text">Cyberpunk energy. High contrast, high impact. The two colors create natural visual hierarchy — <span style="color:#00FFE0; text-shadow: 0 0 10px rgba(0,255,224,0.3);">cyan for structure</span>, <span style="color:#FF00AA; text-shadow: 0 0 10px rgba(255,0,170,0.3);">magenta for action</span>.</p>
+        <button class="sample-btn" style="--accent:#00FFE0;">View Work</button>
+        <button class="sample-btn sample-btn-filled" style="--accent:#FF00AA; border-color:#FF00AA; background:#FF00AA;">Hire Me</button>
+      </div>
+
+      <!-- Combo 2: Blue + Purple -->
+      <div class="multi-card" style="--accent: #00D4FF;">
+        <div class="gradient-bar" style="background: linear-gradient(90deg, #00D4FF, #A855F7); box-shadow: 0 0 10px rgba(0,212,255,0.4), 0 0 30px rgba(0,212,255,0.2);"></div>
+        <div class="brand-name"><span class="c1">ARATH</span><span style="color:#A855F7; text-shadow: 0 0 20px rgba(168,85,247,0.4);">.</span>INDUSTRIES</div>
+        <div class="brand-tagline" style="color:#555;">// blue primary + purple accent</div>
+        <p class="sample-text">Clean and modern. Professional but not boring. <span style="color:#00D4FF; text-shadow: 0 0 10px rgba(0,212,255,0.3);">Blue for trust and tech</span>, <span style="color:#A855F7; text-shadow: 0 0 10px rgba(168,85,247,0.3);">purple for creativity</span>.</p>
+        <button class="sample-btn" style="--accent:#00D4FF;">View Work</button>
+        <button class="sample-btn sample-btn-filled" style="--accent:#A855F7; border-color:#A855F7; background:#A855F7;">Hire Me</button>
+      </div>
+
+      <!-- Combo 3: Green + Cyan -->
+      <div class="multi-card" style="--accent: #39FF14;">
+        <div class="gradient-bar" style="background: linear-gradient(90deg, #39FF14, #00FFE0); box-shadow: 0 0 10px rgba(57,255,20,0.4), 0 0 30px rgba(57,255,20,0.2);"></div>
+        <div class="brand-name"><span class="c4">ARATH</span><span style="color:#00FFE0; text-shadow: 0 0 20px rgba(0,255,224,0.4);">.</span>INDUSTRIES</div>
+        <div class="brand-tagline" style="color:#555;">// green primary + cyan accent</div>
+        <p class="sample-text">Full terminal energy. Matrix meets workshop. <span style="color:#39FF14; text-shadow: 0 0 10px rgba(57,255,20,0.3);">Green for the builder</span>, <span style="color:#00FFE0; text-shadow: 0 0 10px rgba(0,255,224,0.3);">cyan for the engineer</span>.</p>
+        <button class="sample-btn" style="--accent:#39FF14;">View Work</button>
+        <button class="sample-btn sample-btn-filled" style="--accent:#00FFE0; border-color:#00FFE0; background:#00FFE0;">Hire Me</button>
+      </div>
+
+      <!-- Combo 4: Purple + Magenta -->
+      <div class="multi-card" style="--accent: #A855F7;">
+        <div class="gradient-bar" style="background: linear-gradient(90deg, #A855F7, #FF00AA); box-shadow: 0 0 10px rgba(168,85,247,0.4), 0 0 30px rgba(168,85,247,0.2);"></div>
+        <div class="brand-name"><span class="c3">ARATH</span><span style="color:#FF00AA; text-shadow: 0 0 20px rgba(255,0,170,0.4);">.</span>INDUSTRIES</div>
+        <div class="brand-tagline" style="color:#555;">// purple primary + magenta accent</div>
+        <p class="sample-text">Bold and distinctive. Stands out from every other dark-theme dev portfolio. <span style="color:#A855F7; text-shadow: 0 0 10px rgba(168,85,247,0.3);">Purple for vision</span>, <span style="color:#FF00AA; text-shadow: 0 0 10px rgba(255,0,170,0.3);">magenta for energy</span>.</p>
+        <button class="sample-btn" style="--accent:#A855F7;">View Work</button>
+        <button class="sample-btn sample-btn-filled" style="--accent:#FF00AA; border-color:#FF00AA; background:#FF00AA;">Hire Me</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+// === SPARK PARTICLES ON MOUSE MOVE ===
+const canvas = document.getElementById('spark-canvas');
+const ctx = canvas.getContext('2d', { alpha: true });
+const sparks = [];
+let mouseX = 0, mouseY = 0;
+let lastMouseX = 0, lastMouseY = 0;
+let sparkCount = 0;
+const MAX_SPARKS = 150;
+
+// Pre-parsed RGB values for fast access (no hex parsing per frame)
+const sparkRGB = [
+  [0, 212, 255],   // Electric Blue
+  [0, 255, 224],   // Neon Cyan
+  [255, 0, 170],   // Hot Magenta
+  [168, 85, 247],  // Electric Purple
+  [57, 255, 20],   // Neon Green
+  [255, 170, 0],   // Warm Amber
+  [255, 255, 255], // White
+];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// Object pool — reuse spark objects instead of creating/GC'ing
+const sparkPool = [];
+function getSpark() {
+  return sparkPool.length > 0 ? sparkPool.pop() : {};
+}
+function releaseSpark(s) {
+  sparkPool.push(s);
+}
+
+function initSpark(s, x, y, speed) {
+  const angle = Math.random() * Math.PI * 2;
+  const velocity = (Math.random() * 2 + 1) * speed;
+  s.x = x;
+  s.y = y;
+  s.vx = Math.cos(angle) * velocity;
+  s.vy = Math.sin(angle) * velocity;
+  s.life = 1;
+  s.decay = Math.random() * 0.025 + 0.012;
+  s.size = Math.random() * 2.5 + 0.5;
+  const c = sparkRGB[Math.floor(Math.random() * sparkRGB.length)];
+  s.r = c[0]; s.g = c[1]; s.b = c[2];
+  s.gravity = 0.02 + Math.random() * 0.03;
+  return s;
+}
+
+// Throttle mousemove to ~60fps max
+let lastMoveTime = 0;
+document.addEventListener('mousemove', (e) => {
+  const now = performance.now();
+  if (now - lastMoveTime < 16) return;
+  lastMoveTime = now;
+
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+
+  const dx = mouseX - lastMouseX;
+  const dy = mouseY - lastMouseY;
+  const speed = Math.sqrt(dx * dx + dy * dy);
+
+  // Spawn sparks proportional to speed
+  const numSparks = Math.min(Math.floor(speed * 0.25), 5);
+  for (let i = 0; i < numSparks; i++) {
+    if (sparkCount >= MAX_SPARKS) break;
+    const s = initSpark(
+      getSpark(),
+      mouseX + (Math.random() - 0.5) * 10,
+      mouseY + (Math.random() - 0.5) * 10,
+      Math.min(speed * 0.12, 2.5)
+    );
+    sparks.push(s);
+    sparkCount++;
+  }
+
+  lastMouseX = mouseX;
+  lastMouseY = mouseY;
+
+  // Update mouse glow position
+  const glow = document.getElementById('mouse-glow');
+  glow.style.left = mouseX + 'px';
+  glow.style.top = mouseY + 'px';
+  glow.style.opacity = '1';
+});
+
+// Hide glow when mouse leaves
+document.addEventListener('mouseleave', () => {
+  document.getElementById('mouse-glow').style.opacity = '0';
+});
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // No shadowBlur — fake glow by drawing two passes: big faint circle + small bright core
+  let writeIdx = 0;
+  for (let i = 0; i < sparkCount; i++) {
+    const s = sparks[i];
+    s.x += s.vx;
+    s.y += s.vy;
+    s.vy += s.gravity;
+    s.vx *= 0.99;
+    s.life -= s.decay;
+
+    if (s.life <= 0) {
+      releaseSpark(s);
+      continue;
+    }
+
+    const alpha = s.life;
+    const radius = s.size * s.life;
+
+    // Outer glow (larger, faint)
+    ctx.globalAlpha = alpha * 0.3;
+    ctx.fillStyle = `rgb(${s.r},${s.g},${s.b})`;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, radius * 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bright core
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    sparks[writeIdx++] = s;
+  }
+  sparks.length = writeIdx;
+  sparkCount = writeIdx;
+
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animate);
+}
+animate();
+
+// === CARD TILT ON HOVER (subtle 3D) ===
+document.querySelectorAll('.swatch, .multi-card').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    card.style.transform = `translateY(-2px) perspective(600px) rotateX(${-y * 4}deg) rotateY(${x * 4}deg)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = 'translateY(0) perspective(600px) rotateX(0) rotateY(0)';
+  });
+});
+</script>
+
+</body>
+</html>
