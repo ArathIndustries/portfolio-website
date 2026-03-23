@@ -61,7 +61,7 @@ export default function ContactPage() {
         </div>
       ) : (
         <form
-          action="https://formspree.io/f/placeholder"
+          action="https://formspree.io/f/xkoqlqkz"
           method="POST"
           onSubmit={handleSubmit}
           className="space-y-6"
