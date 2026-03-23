@@ -1,0 +1,32 @@
+---
+title: "AI Agent Network"
+description: "Dockerized multi-agent system with inter-agent communication via shared Docker network, running Agent Zero and OpenClaw frameworks."
+tags: ["Docker", "AI Agents", "Python"]
+date: "2026-01-15"
+---
+
+## The Problem
+
+Single-agent AI systems hit a ceiling quickly — one agent can only hold so much context, use so many tools, and pursue one thread of reasoning at a time. The real potential is in multi-agent architectures where specialized agents collaborate, delegate subtasks, and share discoveries. But spinning up multiple agent frameworks on a single machine is a dependency nightmare: conflicting Python versions, port collisions, and the inevitable "it works on my machine" problem when one agent's requirements break another's environment.
+
+I wanted a clean way to run multiple AI agent frameworks simultaneously — each in its own isolated environment but able to communicate with each other — without spending more time on infrastructure than on the actual agent work.
+
+## What I Built
+
+A Dockerized multi-agent network running Agent Zero and OpenClaw as independent containers on a shared Docker network, enabling inter-agent communication while keeping each framework's dependencies completely isolated.
+
+### Container Architecture
+
+Each agent framework runs in its own Docker container with its full dependency stack — Python version, model libraries, tool integrations — completely separated from the others. A shared Docker bridge network connects all containers, allowing agents to communicate via HTTP endpoints without exposing services to the host network unnecessarily. Docker Compose orchestrates the stack, so the entire multi-agent system comes up with a single command and tears down cleanly.
+
+### Inter-Agent Communication
+
+The agents communicate through a lightweight message-passing layer on the shared network. Agent Zero handles general-purpose reasoning and task decomposition, while OpenClaw provides specialized capabilities. When one agent encounters a subtask outside its specialization, it can delegate to another agent on the network and incorporate the response into its own reasoning chain. The communication protocol is simple HTTP + JSON — no custom message brokers or complex middleware — because the bottleneck is LLM inference time, not network overhead between containers on the same machine.
+
+### Extensibility
+
+The Docker network architecture makes adding new agents trivial: define a Dockerfile, add the service to docker-compose, and the new agent can immediately communicate with every existing agent on the network. I've used this setup as a testbed for evaluating different agent frameworks side by side — running the same task through Agent Zero and OpenClaw to compare reasoning approaches, tool usage patterns, and output quality.
+
+## Tech Stack
+
+Docker + Docker Compose for container orchestration, shared bridge network for inter-agent communication, Agent Zero and OpenClaw agent frameworks, Python runtime environments, HTTP + JSON message passing.

@@ -1,0 +1,43 @@
+---
+title: "Texas Water Crisis Dashboard"
+description: "Interactive geospatial analytics dashboard analyzing Texas water supply-demand crisis across counties, regions, and industrial sectors."
+tags: ["JavaScript", "Plotly.js", "Data Viz", "GeoJSON", "Python"]
+github: "https://github.com/ArathIndustries/datathon-water-analysis"
+live: "https://datathon-water-analysis.vercel.app"
+date: "2026-01-15"
+featured: true
+---
+
+## The Problem
+
+Texas faces a growing water supply-demand imbalance projected to worsen through 2070. Understanding where the crisis hits hardest — which counties, which sectors, how industrial growth compounds the problem — requires cross-referencing multiple datasets that don't normally talk to each other: TWDB water projections, EPA facility locations, census population data, and regional planning boundaries.
+
+## What I Built
+
+A comprehensive geospatial analytics dashboard that visualizes Texas's water crisis across 254 counties and 16 TWDB regions, integrating TWDB water data with EPA facility location data (data centers, semiconductor fabs) to identify infrastructure-stress hot spots.
+
+### Five IE Frameworks
+
+The dashboard applies Industrial Engineering analytical frameworks to environmental data:
+
+1. **Sankey Flow Diagrams** — sector-level water movement showing where water goes and where shortfalls emerge
+2. **Risk Matrix Heatmap** — stress tier vs. facility density, identifying counties with both high water stress AND high industrial demand
+3. **Pareto Charts** — counties ranked by deficit with cumulative percentage, showing that ~20% of counties account for ~80% of the problem
+4. **R² Regression** — facility count vs. water deficit with confidence bands, quantifying the relationship between industrial growth and water stress
+5. **Box Plots** — industrial vs. non-industrial water deficit distribution, comparing counties with and without major facilities
+
+### Interactive Map
+
+The choropleth map supports county and region view toggles, a year slider (2020-2070 projections), TWDB region filtering (A-P), and facility overlays (data centers in blue, semiconductor fabs in red). Users can drill down from statewide overview to individual county detail.
+
+### Data Viewer
+
+A companion page lets users explore all 9 raw datasets — 5 TWDB sources, 2 EPA sources, and a master county dataset — with search, sort, pagination, and CSV download. Every chart includes Plotly PNG export and methodology info-tips explaining the underlying calculations.
+
+## Results
+
+All data transformations are reproducible via Python scripts. The dashboard serves as both an analytical tool and a presentation-ready deliverable, with 1,319 lines of hand-written HTML/JS and 26 passing tests.
+
+## Tech Stack
+
+Vanilla HTML/CSS/JavaScript, Plotly.js 2.35.2, PapaParse 5.4.1, GeoJSON (Texas counties + TWDB regions), Python data processing scripts, Vercel static hosting.

@@ -1,0 +1,49 @@
+---
+title: "OpenChambers"
+description: "AI-powered municipal meeting intelligence platform automating government agency meeting discovery, summarization, and delivery across Texas."
+tags: ["Python", "FastAPI", "AI", "Supabase", "Plotly.js", "Leaflet.js"]
+github: "https://github.com/ArathIndustries/bd-monitor"
+live: "https://openchambers.vercel.app"
+date: "2025-12-01"
+featured: true
+---
+
+## The Problem
+
+Civil engineering and surveying firms need to monitor dozens of government agency meeting portals across Texas — cities, counties, school districts, water authorities, transit agencies, and special purpose districts. Each portal runs on a different platform (CivicClerk, Legistar, Granicus, etc.), and there's no single API that covers them all. Business development staff spend hours manually scanning these portals for RFPs, zoning changes, and infrastructure project announcements buried in meeting agendas and minutes.
+
+## What I Built
+
+OpenChambers is a comprehensive Texas public meeting database that automatically scrapes, extracts, summarizes, and delivers meeting intelligence to 50+ users. The system monitors 150+ government agencies through 11 custom-built scrapers, each designed for a specific portal platform.
+
+### Architecture
+
+The platform uses a plugin-based scraper registry — each portal type has its own scraper module that can be added without modifying core code. A 3-layer hybrid summarization pipeline handles meetings of all sizes:
+
+1. **Render** (512MB) handles small meetings with document extraction and AI summarization
+2. **GitHub Actions** (7GB RAM, daily cron) processes large meetings that would OOM on Render
+3. **Incremental extraction** fills in document text across multiple runs
+
+A shared semaphore prevents out-of-memory crashes, and a scheduler manages 31 concurrent jobs (28 scrape + summarize + extract + digest).
+
+### Key Features
+
+- **Feed view** with infinite scroll, sidebar filters, board type categorization, and full-text search
+- **AI summaries** with extracted action items (RFPs, zoning changes, infrastructure projects)
+- **Opportunity Cost Framework** with client-side scoring, cost-of-waiting decay, and dollar-weighted pipeline funnel
+- **Action Board** — Kanban-style feed with relevance filters and save/dismiss
+- **Analytics** — Pareto charts, SPC sparklines, Value Stream Map
+- **Pipeline tracking** — Detected, Qualified, Pursuing, Won with visual funnel
+- **Email digests** — personalized weekly summaries via Resend
+- **Board type discovery** — 13 fuzzy-keyword categories mapping 515 board names
+
+## Current Scale
+
+- **1,961 meetings** scraped across **28 active agencies**
+- **184 directory entries** spanning 11 portal platforms
+- **164 meetings summarized** (8.4%) with hybrid AI pipeline
+- **31 scheduled jobs** running continuously on Render + GitHub Actions
+
+## Tech Stack
+
+Python 3.11+ FastAPI backend, Supabase PostgreSQL, OpenRouter AI, Vanilla JavaScript frontend with Plotly.js and Leaflet.js, Resend email, Docker on Render, Vercel frontend, GitHub Actions CI/CD.

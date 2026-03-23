@@ -1,0 +1,32 @@
+---
+title: "ClarityOS"
+description: "Comprehensive operating system design from first principles — predictable filesystem, earned permissions, and progressive disclosure for Consumer and Enterprise editions."
+tags: ["OS Design", "Linux", "Architecture", "Documentation"]
+date: "2026-02-15"
+---
+
+## The Problem
+
+Modern operating systems are architectural compromises stacked on top of decades-old decisions. Windows hides critical files behind layers of indirection while exposing users to registry corruption. macOS prioritizes aesthetics over transparency, making power users fight the system to get anything done. Linux distributions offer freedom but demand expertise from minute one, scattering configuration across `/etc`, `~/.config`, dotfiles, and systemd units with no coherent organizational logic. Every major OS assumes users are either helpless beginners who need to be protected from themselves, or experts who already know where everything lives.
+
+I wanted to design an OS that treated its filesystem like a product — predictable, navigable, and honest about what it's doing — while building a permission and disclosure system that grows with the user instead of gatekeeping or overwhelming them.
+
+## What I Built
+
+ClarityOS is a comprehensive operating system design document — 92KB of specification covering architecture, filesystem layout, permission models, UI frameworks, and deployment strategies for both Consumer and Enterprise editions. This is conceptual design work, not a shipped binary, but it's designed with implementation in mind: Linux-based, buildable with existing toolchains, and scoped to be realistic rather than aspirational.
+
+### Predictable Filesystem
+
+The core design principle is that a user should be able to find any file on the system by reasoning about it — no searching, no memorization. The filesystem uses a hierarchical taxonomy where every directory's purpose is self-evident from its name and location. System files, application data, user data, and configuration all have distinct, predictable homes. No more hunting through `AppData/Local`, `AppData/Roaming`, `/usr/share`, and `~/.local/share` to find where an application stores its data.
+
+### Earned Permissions
+
+Instead of the traditional binary — either you're an admin or you're not — ClarityOS introduces an earned permission model where users unlock system capabilities progressively. New users start with a curated, safe subset of system access. As they demonstrate competence (successfully using terminal commands, modifying configurations, etc.), the system surfaces more advanced tools and permissions. It's not about restriction; it's about not overwhelming people with options they don't understand yet, while never hard-blocking power users who know what they want.
+
+### Progressive Disclosure
+
+The UI framework applies progressive disclosure at every level — from the file manager to system settings to the terminal. Default views show what most users need. Expanding sections reveal intermediate options. Expert mode exposes everything. The same physical interface serves a first-time computer user and a sysadmin, with the complexity dial controlled by the user rather than the OS vendor. The Consumer edition optimizes for personal use and creative workflows; the Enterprise edition adds fleet management, policy enforcement, and audit logging.
+
+## Tech Stack
+
+Linux kernel base, custom filesystem hierarchy specification, permission state machine design, UI/UX wireframes and interaction patterns, deployment architecture for Consumer + Enterprise editions. 92KB of structured design documentation covering architecture, security model, user experience, and implementation roadmap.

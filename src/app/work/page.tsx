@@ -16,11 +16,20 @@ const projects = [
   {
     slug: "datathon-water",
     title: "Texas Water Crisis Dashboard",
-    description: "Interactive data visualization dashboard for Texas water infrastructure analysis.",
+    description: "Interactive geospatial analytics dashboard for Texas water infrastructure analysis.",
     tags: ["JavaScript", "Plotly.js", "Data Viz"],
     github: "https://github.com/ArathIndustries/datathon-water-analysis",
     live: "https://datathon-water-analysis.vercel.app",
     embed: "https://datathon-water-analysis.vercel.app",
+  },
+  {
+    slug: "portfolio-website",
+    title: "Portfolio Website (Arath Industries)",
+    description: "Dark neon sign portfolio with interactive SVG animations and light-reactive brick wall.",
+    tags: ["Next.js", "React", "Tailwind CSS", "Canvas"],
+    github: "https://github.com/ArathIndustries/portfolio-website",
+    live: "https://arath-industries.vercel.app",
+    embed: "https://arath-industries.vercel.app",
   },
   {
     slug: "digital-twin",
@@ -33,6 +42,30 @@ const projects = [
     title: "TCEQ Permit Geowatcher",
     description: "Geospatial permit tracking with LLM-powered data extraction from TCEQ records.",
     tags: ["Python", "FastAPI", "Leaflet.js"],
+  },
+  {
+    slug: "clarityos",
+    title: "ClarityOS",
+    description: "Comprehensive operating system design from first principles — Consumer and Enterprise editions.",
+    tags: ["OS Design", "Linux", "Architecture"],
+  },
+  {
+    slug: "ai-assistant",
+    title: "AI Executive Function Assistant",
+    description: "Personal AI assistant with Discord interface and local LLM for task management and executive function support.",
+    tags: ["Python", "Discord", "Ollama", "LLM"],
+  },
+  {
+    slug: "ai-agents",
+    title: "AI Agent Network",
+    description: "Dockerized multi-agent system with Agent Zero and OpenClaw for inter-agent communication.",
+    tags: ["Docker", "AI Agents", "Python"],
+  },
+  {
+    slug: "file-explorer",
+    title: "File Explorer App",
+    description: "Cross-platform file browser built with Tauri and React — clean, minimal, and extensible.",
+    tags: ["Tauri", "React", "Rust"],
   },
 ];
 

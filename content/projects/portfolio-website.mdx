@@ -1,0 +1,35 @@
+---
+title: "Arath Industries Portfolio"
+description: "Dark neon sign portfolio site with interactive SVG wave interference, canvas spark particles, and dual-mask lighting effects."
+tags: ["Next.js", "React", "Tailwind CSS", "SVG", "Canvas"]
+github: "https://github.com/ArathIndustries/portfolio-website"
+live: "https://arath.site"
+date: "2026-03-23"
+featured: true
+---
+
+## The Problem
+
+Most developer portfolios fall into two camps: minimal template sites that all look the same, or over-engineered showcases that prioritize flash over content. I wanted something that felt like walking into a workshop after hours — dark, atmospheric, clearly built by someone who cares about the craft. The site needed to function as a legitimate portfolio with case studies and contact flow, but the landing experience had to make visitors stop scrolling for a second and think "okay, this is different."
+
+The technical challenge was building a neon sign effect that actually looks like a neon sign — not just a CSS glow, but the full physics: glass tubes with varying brightness, the characteristic flicker of gas discharge, sparks that fire when voltage dips, and light that spills onto the surrounding wall.
+
+## What I Built
+
+This site. A dark-themed portfolio built on Next.js 16 with a custom interactive neon sign as the centerpiece, MDX-powered case studies, and atmospheric effects that carry through every page.
+
+### The Neon Sign
+
+The sign is a 5-layer SVG system where each letter is rendered with glass-edge, glass fill, bloom, light spread, and bright core layers — all with gaussian blur filters tuned to mimic real gas-discharge tubes. A wave interference algorithm modulates brightness across the letters, creating that organic flicker where different sections dim and brighten independently, just like real neon when the transformer is working hard. When a letter's brightness dips below a threshold, the spark system fires — canvas-rendered particles that arc and fade like electrical discharge.
+
+### Dual Canvas Mask System
+
+The neon sign doesn't just glow in empty space — it illuminates a brick wall behind it. I built a dual canvas mask system where the background is a dark brick texture by default, but a second canvas renders a radial gradient mask driven by the neon sign's light output. Where the sign is bright, the mask reveals the lit brick texture underneath. The result is that the wall appears to be genuinely illuminated by the sign, with light falloff and shadow that responds to the sign's flicker animation.
+
+### Mouse Flashlight
+
+Every page features a subtle flashlight effect that follows the cursor — a radial gradient that reveals additional texture detail in the brick wall as you move your mouse. On the landing page it interacts with the neon sign's voltage system, creating a "voltage surge" effect when the cursor approaches the sign. It's the kind of detail most visitors won't consciously notice, but it makes the whole site feel alive and responsive.
+
+## Tech Stack
+
+Next.js 16 with App Router and Turbopack, Tailwind CSS v4 (CSS-based configuration), MDX via next-mdx-remote + gray-matter for content, custom SVG neon animation system with wave interference, HTML5 Canvas for spark particles and mask effects, JetBrains Mono + Inter typography, Formspree contact form, Vercel deployment with auto-deploy on push.

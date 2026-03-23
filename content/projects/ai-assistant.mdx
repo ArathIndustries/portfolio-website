@@ -1,0 +1,32 @@
+---
+title: "AI Executive Function Assistant"
+description: "Personal AI assistant using Discord as interface and Ollama for local LLM inference — designed to support executive function with task aggregation, scheduled check-ins, and AI prioritization."
+tags: ["Python", "Discord", "Ollama", "LLM", "Automation"]
+date: "2026-01-01"
+---
+
+## The Problem
+
+Executive function — the ability to plan, prioritize, initiate, and follow through on tasks — is the bottleneck for every knowledge worker, but it hits especially hard when you're juggling multiple projects across school, research, and personal development. I don't need another task app with a pretty UI that I'll forget to open. I need something that comes to me, on a platform I already have open all day, and actively helps me decide what to work on next instead of just storing a list I'll ignore.
+
+The commercial AI assistant space is full of products that either require cloud subscriptions, lock you into their ecosystem, or treat "AI" as a marketing term for glorified if-else rules. I wanted a real local LLM doing the thinking, running on hardware I own, with no data leaving my network.
+
+## What I Built
+
+A Python-based AI assistant that lives in Discord and runs Ollama for local LLM inference on a Mac Mini. It aggregates tasks from multiple sources, runs scheduled check-ins throughout the day, and uses the LLM to help prioritize and plan work sessions. Discord is the interface because it's always open, supports rich formatting, and has a mature bot API — no need to build a custom frontend.
+
+### Task Aggregation and Prioritization
+
+The assistant pulls tasks from multiple inputs — manual Discord commands, scheduled scrapes, and project status files — and maintains a unified task list. When I ask "what should I work on?", the LLM evaluates deadlines, dependencies, energy level (I can tell it how I'm feeling), and project priority weights to suggest a ranked work plan. It's not just sorting by due date; it factors in context switching costs and groups related tasks together. Scheduled check-ins ping me at configured intervals to review progress, adjust priorities, and capture new tasks before they fall through the cracks.
+
+### Automated Monitoring
+
+The system runs as a launchctl service on macOS with automated health monitoring: a resource monitor tracks CPU/memory usage, a Python watchdog restarts the bot if it crashes, and a circuit breaker pattern prevents restart loops if something is fundamentally broken. If the bot goes down, I get a Discord notification in a separate monitoring channel. If it can't restart after three attempts, it backs off and alerts me to investigate manually. The whole service management layer was necessary because a personal assistant that silently dies is worse than no assistant at all.
+
+### Local LLM Stack
+
+All inference runs through Ollama on the Mac Mini — no API keys, no cloud calls, no monthly bills. Model selection is configurable, so I can swap between smaller models for quick task sorting and larger models for planning sessions that need more nuanced reasoning. The Discord bot handles conversation context management, keeping relevant history in the prompt window without exceeding token limits.
+
+## Tech Stack
+
+Python 3.11+ bot framework, Discord.py for interface, Ollama for local LLM inference, launchctl for macOS service management, custom watchdog and circuit breaker for reliability monitoring, Mac Mini M-series for inference hardware.
