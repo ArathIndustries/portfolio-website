@@ -1,0 +1,17 @@
+export interface NeonBridge {
+  letterZones: Element[];
+  brightnessDips: { idx: number; drop: number }[];
+}
+
+export interface Wave {
+  startTime: number;
+  mode: 'linear' | 'ripple' | 'single';
+  direction?: number;
+  speed?: number;
+  dip: number;
+  holdMs: number;
+  recoveryMs: number;
+  origin?: number;
+  target?: number;
+  bounce?: boolean;
+}

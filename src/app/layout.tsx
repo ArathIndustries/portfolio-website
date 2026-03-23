@@ -1,41 +1,40 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Sergio Arath Guzman | Industrial Engineer",
-    template: "%s | Sergio Arath Guzman",
+    default: "Arath Industries",
+    template: "%s | Arath Industries",
   },
-  description: "Industrial Engineer who cannot stop tinkering.",
-  keywords: ["portfolio", "engineering", "AI", "automation", "web development", "industrial engineering", "civil engineering"],
+  description: "Building tools that fit how people work.",
+  keywords: ["portfolio", "engineering", "AI", "automation", "web development", "industrial engineering"],
   authors: [{ name: "Sergio Arath Guzman" }],
   creator: "Sergio Arath Guzman",
   metadataBase: new URL("https://arath.site"),
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "Sergio Arath Guzman",
-    title: "Sergio Arath Guzman | Industrial Engineer",
-    description: "Industrial Engineer who cannot stop tinkering.",
+    siteName: "Arath Industries",
+    title: "Arath Industries",
+    description: "Building tools that fit how people work.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sergio Arath Guzman | Industrial Engineer",
-    description: "Industrial Engineer who cannot stop tinkering.",
+    title: "Arath Industries",
+    description: "Building tools that fit how people work.",
   },
   robots: {
     index: true,
@@ -49,15 +48,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        className={`${jetbrainsMono.variable} ${inter.variable} antialiased min-h-screen flex flex-col`}
       >
-        <ThemeProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </ThemeProvider>
+        <div className="brick-wall" aria-hidden="true" />
+        <Header />
+        <main className="flex-1 relative z-[1]">{children}</main>
+        <Footer />
       </body>
     </html>
   );

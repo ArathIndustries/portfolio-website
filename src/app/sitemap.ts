@@ -4,7 +4,6 @@ import { getAllProjects, getAllBlogPosts } from "@/lib/mdx";
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://arath.site";
 
-  // Static pages
   const staticPages = [
     {
       url: baseUrl,
@@ -19,10 +18,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/projects`,
+      url: `${baseUrl}/work`,
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/blog`,
@@ -32,16 +37,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  // Dynamic project pages
   const projects = getAllProjects();
   const projectPages = projects.map((project) => ({
-    url: `${baseUrl}/projects/${project.slug}`,
+    url: `${baseUrl}/work/${project.slug}`,
     lastModified: new Date(project.frontmatter.date),
     changeFrequency: "monthly" as const,
     priority: 0.7,
   }));
 
-  // Dynamic blog pages
   const posts = getAllBlogPosts();
   const blogPages = posts.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
