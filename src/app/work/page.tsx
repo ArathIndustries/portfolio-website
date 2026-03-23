@@ -11,7 +11,7 @@ const projects = [
     tags: ["Python", "FastAPI", "AI", "Supabase"],
     github: "https://github.com/ArathIndustries/bd-monitor",
     live: "https://openchambers.vercel.app",
-    embed: "https://openchambers.vercel.app",
+    embed: "https://openchambers.vercel.app/welcome",
   },
   {
     slug: "datathon-water",
