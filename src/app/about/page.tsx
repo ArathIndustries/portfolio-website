@@ -7,10 +7,14 @@ export const metadata: Metadata = {
 };
 
 const skills = [
-  { category: "Engineering", items: ["Civil", "Industrial", "Electronics"] },
-  { category: "Programming", items: ["Python", "C", "Assembly"] },
-  { category: "AI & Automation", items: ["Claude", "Prompt Engineering", "Workflow Automation"] },
-  { category: "Web", items: ["React", "Next.js", "Tailwind CSS", "Node.js"] },
+  { category: "Engineering", items: ["Civil", "Industrial", "Electronics", "Quality (SPC/DMAIC)"] },
+  { category: "Programming", items: ["Python", "C/C++", "JavaScript", "TypeScript", "SQL", "Assembly"] },
+  { category: "AI & ML", items: ["LLM Integration", "Prompt Engineering", "TensorFlow/TFLite", "CNNs", "Signal Processing"] },
+  { category: "Web Development", items: ["Next.js", "React", "FastAPI", "Tailwind CSS", "Plotly.js", "Leaflet.js", "MDX"] },
+  { category: "Hardware & IoT", items: ["Arduino", "ESP32", "BLE", "WiFi Bridges", "Sensor Systems", "Acoustic Emission"] },
+  { category: "Data & Infrastructure", items: ["PostgreSQL", "Supabase", "Docker", "GitHub Actions", "Vercel", "Render"] },
+  { category: "Design", items: ["Affinity Suite", "Blender", "Krita", "SVG Animation", "Data Visualization"] },
+  { category: "Tools", items: ["Git", "Minitab", "Web Scraping", "REST APIs"] },
 ];
 
 const socialLinks = [

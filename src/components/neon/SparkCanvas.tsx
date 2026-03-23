@@ -94,7 +94,8 @@ export function SparkCanvas({ bridgeRef }: SparkCanvasProps) {
     window.addEventListener("resize", resize);
 
     // Mouse tracking
-    let mouseX = 0, mouseY = 0, lastMouseX = 0, lastMouseY = 0;
+    let mouseX = -200, mouseY = -200, lastMouseX = 0, lastMouseY = 0;
+    let smoothMouseX = -200, smoothMouseY = -200;
     let moveAccum = 0, lastMoveTime = 0;
 
     function onMouseMove(e: MouseEvent) {
@@ -152,6 +153,18 @@ export function SparkCanvas({ bridgeRef }: SparkCanvasProps) {
         mCtx.beginPath(); mCtx.arc(0, 0, glowR, 0, Math.PI * 2); mCtx.fill();
         mCtx.restore();
       }
+
+      // Mouse flashlight glow on mask
+      smoothMouseX += (mouseX - smoothMouseX) * 0.15;
+      smoothMouseY += (mouseY - smoothMouseY) * 0.15;
+      const mouseR = 150;
+      const mouseGrad = mCtx.createRadialGradient(smoothMouseX, smoothMouseY, 0, smoothMouseX, smoothMouseY, mouseR);
+      mouseGrad.addColorStop(0, 'rgba(255,255,255,0.3)');
+      mouseGrad.addColorStop(0.25, 'rgba(255,255,255,0.15)');
+      mouseGrad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+      mouseGrad.addColorStop(1, 'rgba(255,255,255,0)');
+      mCtx.fillStyle = mouseGrad;
+      mCtx.beginPath(); mCtx.arc(smoothMouseX, smoothMouseY, mouseR, 0, Math.PI * 2); mCtx.fill();
 
       // Read brightness dips from bridge
       const dips = bridgeRef.current.brightnessDips;

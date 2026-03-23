@@ -3,6 +3,7 @@ import { JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { MouseGlow } from "@/components/neon";
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
@@ -53,7 +54,11 @@ export default function RootLayout({
         className={`${jetbrainsMono.variable} ${inter.variable} antialiased min-h-screen flex flex-col`}
       >
         <div className="brick-wall" aria-hidden="true" />
+        <MouseGlow />
         <Header />
+        {/* MouseGlow provides global cursor light. On the landing page,
+            SparkCanvas has its own mask — MouseGlow sits beneath it (same z-index,
+            SparkCanvas mask overwrites via DOM order). */}
         <main className="flex-1 flex flex-col relative z-[2]">{children}</main>
         <Footer />
       </body>
