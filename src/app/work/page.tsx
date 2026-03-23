@@ -10,8 +10,8 @@ const projects = [
     description: "Municipal meeting intelligence platform — AI-powered summaries of TX public meetings.",
     tags: ["Python", "FastAPI", "AI", "Supabase"],
     github: "https://github.com/ArathIndustries/bd-monitor",
-    live: "https://openchambers.vercel.app",
-    embed: "https://openchambers.vercel.app/welcome",
+    live: "https://openchambers.vercel.app/welcome",
+    embed: "https://openchambers.vercel.app",
   },
   {
     slug: "datathon-water",
