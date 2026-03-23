@@ -10,7 +10,7 @@ featured: true
 
 ## The Problem
 
-Civil engineering and surveying firms need to monitor dozens of government agency meeting portals across Texas — cities, counties, school districts, water authorities, transit agencies, and special purpose districts. Each portal runs on a different platform (CivicClerk, Legistar, Granicus, etc.), and there's no single API that covers them all. Business development staff spend hours manually scanning these portals for RFPs, zoning changes, and infrastructure project announcements buried in meeting agendas and minutes.
+Civil engineering and surveying firms need to monitor dozens of government agency meeting portals across Texas — cities, counties, school districts, water authorities, transit agencies, and special purpose districts. Each portal runs on a different platform (CivicClerk, Legistar, Granicus, etc.), and there's no single Application Programming Interface (API) that covers them all. Business development staff spend hours manually scanning these portals for Requests for Proposal (RFPs), zoning changes, and infrastructure project announcements buried in meeting agendas and minutes.
 
 ## What I Built
 
@@ -20,8 +20,8 @@ OpenChambers is a comprehensive Texas public meeting database that automatically
 
 The platform uses a plugin-based scraper registry — each portal type has its own scraper module that can be added without modifying core code. A 3-layer hybrid summarization pipeline handles meetings of all sizes:
 
-1. **Render** (512MB) handles small meetings with document extraction and AI summarization
-2. **GitHub Actions** (7GB RAM, daily cron) processes large meetings that would OOM on Render
+1. **Render** (512MB) handles small meetings with document extraction and Artificial Intelligence (AI) summarization
+2. **GitHub Actions** (7GB RAM, daily cron) processes large meetings that would Out of Memory (OOM) on Render
 3. **Incremental extraction** fills in document text across multiple runs
 
 A shared semaphore prevents out-of-memory crashes, and a scheduler manages 31 concurrent jobs (28 scrape + summarize + extract + digest).
@@ -32,7 +32,7 @@ A shared semaphore prevents out-of-memory crashes, and a scheduler manages 31 co
 - **AI summaries** with extracted action items (RFPs, zoning changes, infrastructure projects)
 - **Opportunity Cost Framework** with client-side scoring, cost-of-waiting decay, and dollar-weighted pipeline funnel
 - **Action Board** — Kanban-style feed with relevance filters and save/dismiss
-- **Analytics** — Pareto charts, SPC sparklines, Value Stream Map
+- **Analytics** — Pareto charts, Statistical Process Control (SPC) sparklines, Value Stream Map
 - **Pipeline tracking** — Detected, Qualified, Pursuing, Won with visual funnel
 - **Email digests** — personalized weekly summaries via Resend
 - **Board type discovery** — 13 fuzzy-keyword categories mapping 515 board names
@@ -46,4 +46,18 @@ A shared semaphore prevents out-of-memory crashes, and a scheduler manages 31 co
 
 ## Tech Stack
 
-Python 3.11+ FastAPI backend, Supabase PostgreSQL, OpenRouter AI, Vanilla JavaScript frontend with Plotly.js and Leaflet.js, Resend email, Docker on Render, Vercel frontend, GitHub Actions CI/CD.
+Python 3.11+ FastAPI backend, Supabase PostgreSQL, OpenRouter AI, Vanilla JavaScript frontend with Plotly.js and Leaflet.js, Resend email, Docker on Render, Vercel frontend, GitHub Actions Continuous Integration/Continuous Deployment (CI/CD).
+
+## Development Timeline
+
+<Timeline>
+  <TimelineItem date="Mar 7, 2026" title="Project Launch" description="Initial commit with backend, CivicClerk scraper, AI summarization, and frontend Single Page Application (SPA). Deployed to Render + Vercel on day one." status="completed" />
+  <TimelineItem date="Mar 8, 2026" title="Scraper Expansion" description="Legistar scraper added. User Experience (UX) overhaul for non-technical users with mobile nav, welcome screen, and skeleton loaders. Agency directory reached 77 portals." status="completed" />
+  <TimelineItem date="Mar 11, 2026" title="11 Scrapers Live" description="Massive expansion: CivicEngage, NovusAgenda, IQM2, CivicWeb, OnBase, PrimeGov, Municode, Granicus, and Universal AI scrapers. UX redesign with 3-group nav." status="completed" />
+  <TimelineItem date="Mar 13, 2026" title="Digest System" description="Email digest pipeline built with Resend. Multi-format document extraction (Portable Document Format (PDF), DOCX, HTML, TXT). Settings page reorganized." status="completed" />
+  <TimelineItem date="Mar 18, 2026" title="Hybrid Summarization" description="GitHub Actions bulk processor (7GB RAM) + incremental extraction on Render. Solved the OOM problem for large meetings." status="completed" />
+  <TimelineItem date="Mar 20, 2026" title="OpenChambers Rebrand" description="Rebranded from BD Monitor to OpenChambers with 'The LoneStar Ledger' tagline." status="completed" />
+  <TimelineItem date="Mar 23, 2026" title="v0.6.0" description="1,961 meetings, 28 active agencies, 164 summarized. Action Board, Analytics, Pipeline tracking all live." status="current" />
+  <TimelineItem date="Q2 2026" title="Auth & New Scrapers" description="BoardBook and BoardDocs scrapers. User authentication system. Calendar view improvements." status="future" />
+  <TimelineItem date="2026+" title="Statewide Coverage" description="Expand to all TX government entities. No existing API covers all portals — OpenChambers aims to be the first." status="future" />
+</Timeline>

@@ -7,7 +7,7 @@ date: "2026-02-15"
 
 ## The Problem
 
-Modern operating systems are architectural compromises stacked on top of decades-old decisions. Windows hides critical files behind layers of indirection while exposing users to registry corruption. macOS prioritizes aesthetics over transparency, making power users fight the system to get anything done. Linux distributions offer freedom but demand expertise from minute one, scattering configuration across `/etc`, `~/.config`, dotfiles, and systemd units with no coherent organizational logic. Every major OS assumes users are either helpless beginners who need to be protected from themselves, or experts who already know where everything lives.
+Modern operating systems are architectural compromises stacked on top of decades-old decisions. Windows hides critical files behind layers of indirection while exposing users to registry corruption. macOS prioritizes aesthetics over transparency, making power users fight the system to get anything done. Linux distributions offer freedom but demand expertise from minute one, scattering configuration across `/etc`, `~/.config`, dotfiles, and systemd units with no coherent organizational logic. Every major Operating System (OS) assumes users are either helpless beginners who need to be protected from themselves, or experts who already know where everything lives.
 
 I wanted to design an OS that treated its filesystem like a product — predictable, navigable, and honest about what it's doing — while building a permission and disclosure system that grows with the user instead of gatekeeping or overwhelming them.
 
@@ -29,4 +29,13 @@ The UI framework applies progressive disclosure at every level — from the file
 
 ## Tech Stack
 
-Linux kernel base, custom filesystem hierarchy specification, permission state machine design, UI/UX wireframes and interaction patterns, deployment architecture for Consumer + Enterprise editions. 92KB of structured design documentation covering architecture, security model, user experience, and implementation roadmap.
+Linux kernel base, custom filesystem hierarchy specification, permission state machine design, UI/User Experience (UX) wireframes and interaction patterns, deployment architecture for Consumer + Enterprise editions. 92KB of structured design documentation covering architecture, security model, user experience, and implementation roadmap.
+
+## Development Timeline
+
+<Timeline>
+  <TimelineItem date="Feb 15, 2026" title="Design Sprint" description="Complete OS specification designed from first principles in a single comprehensive session. 92KB of documentation produced." status="completed" />
+  <TimelineItem date="Feb 15, 2026" title="Documentation Complete" description="Consumer and Enterprise edition specs, filesystem design, permission model, cost analysis, and 4-phase rollout strategy all documented." status="current" />
+  <TimelineItem date="TBD" title="Prototype" description="Build proof-of-concept on Ubuntu 24.04 LTS with custom filesystem structure and permission model." status="future" />
+  <TimelineItem date="TBD" title="Community Review" description="Open-source the design documents for community feedback and validation." status="future" />
+</Timeline>

@@ -7,17 +7,17 @@ date: "2026-02-01"
 
 ## The Problem
 
-Texas environmental permit data is scattered across multiple TCEQ systems, ArcGIS REST endpoints, and PDF filings that don't talk to each other. If you're an environmental consultant, a concerned citizen near an industrial facility, or a civil engineer scoping a project site, answering basic questions — "What permits exist within 5 miles of this location?" or "Which outfalls discharge into this watershed?" — requires manually querying multiple databases and cross-referencing results on separate maps. There's no unified spatial view of Texas environmental infrastructure.
+Texas environmental permit data is scattered across multiple Texas Commission on Environmental Quality (TCEQ) systems, ArcGIS REST endpoints, and Portable Document Format (PDF) filings that don't talk to each other. If you're an environmental consultant, a concerned citizen near an industrial facility, or a civil engineer scoping a project site, answering basic questions — "What permits exist within 5 miles of this location?" or "Which outfalls discharge into this watershed?" — requires manually querying multiple databases and cross-referencing results on separate maps. There's no unified spatial view of Texas environmental infrastructure.
 
 The regulatory landscape is complex enough without the data access problem making it worse. I wanted to build the tool I'd want if I were doing environmental due diligence: one map, all the layers, with the ability to drill into any permit or facility and see its full history.
 
 ## What I Built
 
-TCEQ Permit Geowatcher is an interactive geospatial explorer that pulls environmental data from TCEQ's ArcGIS REST APIs and renders it on a single Leaflet map with filterable layers for permits, discharge outfalls, monitoring stations, and superfund sites.
+TCEQ Permit Geowatcher is an interactive geospatial explorer that pulls environmental data from TCEQ's ArcGIS REST Application Programming Interfaces (APIs) and renders it on a single Leaflet map with filterable layers for permits, discharge outfalls, monitoring stations, and superfund sites.
 
 ### Plugin Architecture
 
-The system uses a plugin-based connector architecture — each data source (TCEQ permits, outfalls, superfund sites, monitoring stations) has its own connector module that normalizes the source data into a common GeoJSON schema. Adding a new data source means writing one connector file without touching the core map or API code. This pattern was directly inspired by the scraper registry I built for OpenChambers, and it's designed to eventually support EPA ECHO, railroad commission data, and other environmental APIs beyond TCEQ.
+The system uses a plugin-based connector architecture — each data source (TCEQ permits, outfalls, superfund sites, monitoring stations) has its own connector module that normalizes the source data into a common GeoJSON schema. Adding a new data source means writing one connector file without touching the core map or API code. This pattern was directly inspired by the scraper registry I built for OpenChambers, and it's designed to eventually support Environmental Protection Agency (EPA) ECHO, railroad commission data, and other environmental APIs beyond TCEQ.
 
 ### Map Interface
 
@@ -30,3 +30,12 @@ The FastAPI backend handles data fetching, caching, and GeoJSON transformation. 
 ## Tech Stack
 
 Python 3.11+ FastAPI backend, Leaflet.js 1.9 interactive map, Plotly.js charts, TCEQ ArcGIS REST API connectors, GeoJSON spatial data, Docker containerization, plugin-based data connector architecture.
+
+## Development Timeline
+
+<Timeline>
+  <TimelineItem date="Feb 2026" title="Architecture Design" description="5-phase implementation plan written. Plugin-based connector pattern designed for extensible data sources." status="completed" />
+  <TimelineItem date="Q2 2026" title="Phase 1: MVP" description="Interactive map with TCEQ ArcGIS data layer. County-level choropleth with drill-down." status="current" />
+  <TimelineItem date="Q3 2026" title="Phase 2-3" description="Analytics panel, data tables, search/sort/export. Additional environmental data connectors." status="future" />
+  <TimelineItem date="2026+" title="Enterprise Features" description="Auth, Role-Based Access Control (RBAC), audit logging. Embeddable widget for intranet integration." status="future" />
+</Timeline>

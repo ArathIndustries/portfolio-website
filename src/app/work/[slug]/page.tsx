@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getAllProjects, getProjectBySlug } from "@/lib/mdx";
+import { Timeline, TimelineItem } from "@/components/Timeline";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -101,7 +102,7 @@ export default async function WorkDetailPage({ params }: WorkPageProps) {
 
       {/* MDX Content */}
       <div className="prose max-w-none">
-        <MDXRemote source={content} />
+        <MDXRemote source={content} components={{ Timeline, TimelineItem }} />
       </div>
     </article>
   );

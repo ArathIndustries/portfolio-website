@@ -10,7 +10,7 @@ featured: true
 
 ## The Problem
 
-Texas faces a growing water supply-demand imbalance projected to worsen through 2070. Understanding where the crisis hits hardest — which counties, which sectors, how industrial growth compounds the problem — requires cross-referencing multiple datasets that don't normally talk to each other: TWDB water projections, EPA facility locations, census population data, and regional planning boundaries.
+Texas faces a growing water supply-demand imbalance projected to worsen through 2070. Understanding where the crisis hits hardest — which counties, which sectors, how industrial growth compounds the problem — requires cross-referencing multiple datasets that don't normally talk to each other: Texas Water Development Board (TWDB) water projections, Environmental Protection Agency (EPA) facility locations, census population data, and regional planning boundaries.
 
 ## What I Built
 
@@ -32,7 +32,7 @@ The choropleth map supports county and region view toggles, a year slider (2020-
 
 ### Data Viewer
 
-A companion page lets users explore all 9 raw datasets — 5 TWDB sources, 2 EPA sources, and a master county dataset — with search, sort, pagination, and CSV download. Every chart includes Plotly PNG export and methodology info-tips explaining the underlying calculations.
+A companion page lets users explore all 9 raw datasets — 5 TWDB sources, 2 EPA sources, and a master county dataset — with search, sort, pagination, and Comma-Separated Values (CSV) download. Every chart includes Plotly PNG export and methodology info-tips explaining the underlying calculations.
 
 ## Results
 
@@ -41,3 +41,12 @@ All data transformations are reproducible via Python scripts. The dashboard serv
 ## Tech Stack
 
 Vanilla HTML/CSS/JavaScript, Plotly.js 2.35.2, PapaParse 5.4.1, GeoJSON (Texas counties + TWDB regions), Python data processing scripts, Vercel static hosting.
+
+## Development Timeline
+
+<Timeline>
+  <TimelineItem date="Feb 8, 2026" title="Project Kickoff" description="Initial commit with TWDB data analysis dashboard. Deployed to Vercel same day." status="completed" />
+  <TimelineItem date="Feb 10, 2026" title="Full Dashboard" description="Severity map, info tooltips, dataset viewer page. Cleaned up 25 redundant files." status="completed" />
+  <TimelineItem date="Feb 12, 2026" title="Competition Ready" description="Mobile UI polished. Poster Portable Document Format (PDF) and presentation script finalized. All 5 IE frameworks implemented." status="completed" />
+  <TimelineItem date="Feb 12, 2026" title="Delivered" description="Dashboard presented at datathon competition. All charts, maps, and data viewer fully functional with 26 passing tests." status="current" />
+</Timeline>

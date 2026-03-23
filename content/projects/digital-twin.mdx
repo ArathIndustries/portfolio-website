@@ -7,17 +7,17 @@ date: "2025-10-01"
 
 ## The Problem
 
-CNC machining operations rely on operator experience and scheduled tool changes to manage tool wear — a reactive approach that leads to scrapped parts, unplanned downtime, and wasted tooling budget. Acoustic emission (AE) sensors can detect the subtle ultrasonic signatures of tool wear in real time, but processing that signal data requires either expensive proprietary systems or a tethered laptop sitting next to the machine. For a university research lab running a HAAS CNC, neither option is practical.
+Computer Numerical Control (CNC) machining operations rely on operator experience and scheduled tool changes to manage tool wear — a reactive approach that leads to scrapped parts, unplanned downtime, and wasted tooling budget. Acoustic Emission (AE) sensors can detect the subtle ultrasonic signatures of tool wear in real time, but processing that signal data requires either expensive proprietary systems or a tethered laptop sitting next to the machine. For a university research lab running a HAAS CNC, neither option is practical.
 
 The challenge was clear: build a wireless, low-cost monitoring system that could classify machining states at the edge — no cloud, no cables, no expensive DAQ hardware — and stream results to a browser dashboard in real time.
 
 ## What I Built
 
-A complete edge-inference pipeline that captures acoustic emission data on an Arduino Nano 33 BLE, runs a 12-class CNN classifier on-device, and wirelessly streams predictions through an ESP32 bridge to a live browser dashboard. The entire system runs on battery power and fits in your hand.
+A complete edge-inference pipeline that captures acoustic emission data on an Arduino Nano 33 Bluetooth Low Energy (BLE), runs a 12-class Convolutional Neural Network (CNN) classifier on-device, and wirelessly streams predictions through an ESP32 bridge to a live browser dashboard. The entire system runs on battery power and fits in your hand.
 
 ### Signal Processing Pipeline
 
-Raw AE sensor data is captured at high frequency on the Nano 33 BLE, where an FFT converts time-domain signals into frequency-domain features suitable for classification. The INT8 quantized TFLite Micro model runs inference directly on the Nano's Cortex-M4 processor, classifying machining states (idle, cutting, tool wear stages, chatter, etc.) without any cloud dependency. I built the training pipeline in Python using TensorFlow, with representative dataset quantization to minimize accuracy loss during INT8 conversion.
+Raw AE sensor data is captured at high frequency on the Nano 33 BLE, where a Fast Fourier Transform (FFT) converts time-domain signals into frequency-domain features suitable for classification. The INT8 quantized TFLite Micro model runs inference directly on the Nano's Cortex-M4 processor, classifying machining states (idle, cutting, tool wear stages, chatter, etc.) without any cloud dependency. I built the training pipeline in Python using TensorFlow, with representative dataset quantization to minimize accuracy loss during INT8 conversion.
 
 ### Wireless Architecture
 
@@ -29,4 +29,15 @@ The CNN model was trained on 12 machining state classes and deployed using TFLit
 
 ## Tech Stack
 
-Arduino Nano 33 BLE Rev2 (Cortex-M4), ESP32-WROOM-32, TensorFlow + TFLite Micro, Python ML pipeline (FFT, training, quantization), C++ Arduino sketches (9 iterations), BLE + WiFi protocols, browser dashboard with WebSocket. Academic research under Dr. Shendokar at Texas State University.
+Arduino Nano 33 BLE Rev2 (Cortex-M4), ESP32-WROOM-32, TensorFlow + TFLite Micro, Python Machine Learning (ML) pipeline (FFT, training, quantization), C++ Arduino sketches (9 iterations), BLE + WiFi protocols, browser dashboard with WebSocket. Academic research under Dr. Shendokar at Texas State University.
+
+## Development Timeline
+
+<Timeline>
+  <TimelineItem date="Jan 2026" title="Literature Review" description="14,500-word review covering 34 sources in IEEE format. TinyML background research completed." status="completed" />
+  <TimelineItem date="Feb 2026" title="Hardware Analysis" description="Nano 33 BLE limitations documented. Sensor-board compatibility matrix created. STM32F746 recommended as production platform." status="completed" />
+  <TimelineItem date="Mar 6, 2026" title="CNN Deployed" description="12-class musical note CNN trained and deployed on Nano 33 BLE Rev2. 176KB INT8 quantized model running on-device." status="completed" />
+  <TimelineItem date="Mar 9, 2026" title="Wireless Proof of Concept (POC)" description="Full pipeline validated: Nano (mic→FFT→CNN→BLE) → ESP32 (WiFi AP) → Browser dashboard. Data collection protocol written." status="current" />
+  <TimelineItem date="May 8, 2026" title="Presentation" description="Present research findings and working prototype to faculty and industry panel." status="future" />
+  <TimelineItem date="May 31, 2026" title="Final Deliverables" description="Complete research article for publication. Final data collection with AE sensors on HAAS VF-2YT." status="future" />
+</Timeline>

@@ -15,7 +15,7 @@ export default function Home() {
 
       {/* Tagline */}
       <p className="text-center text-sm sm:text-base font-mono neon-text opacity-70 mt-2 px-4">
-        Building tools that fit how people work
+        Building tools fit for how people work
       </p>
 
       {/* CTA Buttons */}

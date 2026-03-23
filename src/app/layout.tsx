@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     default: "Arath Industries",
     template: "%s | Arath Industries",
   },
-  description: "Building tools that fit how people work.",
+  description: "Building tools fit for how people work.",
   keywords: ["portfolio", "engineering", "AI", "automation", "web development", "industrial engineering"],
   authors: [{ name: "Sergio Arath Guzman" }],
   creator: "Sergio Arath Guzman",
@@ -30,12 +30,12 @@ export const metadata: Metadata = {
     locale: "en_US",
     siteName: "Arath Industries",
     title: "Arath Industries",
-    description: "Building tools that fit how people work.",
+    description: "Building tools fit for how people work.",
   },
   twitter: {
     card: "summary_large_image",
     title: "Arath Industries",
-    description: "Building tools that fit how people work.",
+    description: "Building tools fit for how people work.",
   },
   robots: {
     index: true,

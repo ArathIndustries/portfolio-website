@@ -9,11 +9,11 @@ date: "2026-01-01"
 
 Executive function — the ability to plan, prioritize, initiate, and follow through on tasks — is the bottleneck for every knowledge worker, but it hits especially hard when you're juggling multiple projects across school, research, and personal development. I don't need another task app with a pretty UI that I'll forget to open. I need something that comes to me, on a platform I already have open all day, and actively helps me decide what to work on next instead of just storing a list I'll ignore.
 
-The commercial AI assistant space is full of products that either require cloud subscriptions, lock you into their ecosystem, or treat "AI" as a marketing term for glorified if-else rules. I wanted a real local LLM doing the thinking, running on hardware I own, with no data leaving my network.
+The commercial Artificial Intelligence (AI) assistant space is full of products that either require cloud subscriptions, lock you into their ecosystem, or treat "AI" as a marketing term for glorified if-else rules. I wanted a real local Large Language Model (LLM) doing the thinking, running on hardware I own, with no data leaving my network.
 
 ## What I Built
 
-A Python-based AI assistant that lives in Discord and runs Ollama for local LLM inference on a Mac Mini. It aggregates tasks from multiple sources, runs scheduled check-ins throughout the day, and uses the LLM to help prioritize and plan work sessions. Discord is the interface because it's always open, supports rich formatting, and has a mature bot API — no need to build a custom frontend.
+A Python-based AI assistant that lives in Discord and runs Ollama for local LLM inference on a Mac Mini. It aggregates tasks from multiple sources, runs scheduled check-ins throughout the day, and uses the LLM to help prioritize and plan work sessions. Discord is the interface because it's always open, supports rich formatting, and has a mature bot Application Programming Interface (API) — no need to build a custom frontend.
 
 ### Task Aggregation and Prioritization
 
@@ -30,3 +30,12 @@ All inference runs through Ollama on the Mac Mini — no API keys, no cloud call
 ## Tech Stack
 
 Python 3.11+ bot framework, Discord.py for interface, Ollama for local LLM inference, launchctl for macOS service management, custom watchdog and circuit breaker for reliability monitoring, Mac Mini M-series for inference hardware.
+
+## Development Timeline
+
+<Timeline>
+  <TimelineItem date="Jan 2026" title="Initial Build" description="Discord bot running on Mac Mini with Ollama for local LLM processing. Basic task management via chat commands." status="completed" />
+  <TimelineItem date="Jan 26, 2026" title="Monitoring System" description="Automated resource monitor, Python watchdog, and circuit breaker system. Prevents runaway processes and boot loops." status="completed" />
+  <TimelineItem date="Feb 2026" title="Service Hardening" description="launchctl service management, auto-restart on crash, log rotation. System runs 24/7 unattended." status="current" />
+  <TimelineItem date="Q2 2026" title="Task Aggregation" description="Pull tasks from Canvas, email, and calendar into unified priority queue with AI-powered scheduling." status="future" />
+</Timeline>
