@@ -258,9 +258,9 @@ export function NeonSign({ bridgeRef }: NeonSignProps) {
           width: '300%',
           height: '600%',
           borderRadius: '50%',
-          background: `radial-gradient(ellipse, rgba(255,136,0,0.14) 0%, rgba(255,136,0,0.06) 25%, rgba(255,136,0,0.02) 50%, transparent 75%)`,
+          background: `radial-gradient(ellipse, rgba(255,80,20,0.2) 0%, rgba(255,60,10,0.1) 25%, rgba(255,40,5,0.03) 50%, transparent 75%)`,
           zIndex: -1,
-          opacity: 0.7,
+          opacity: 0.8,
         }}
       />
 

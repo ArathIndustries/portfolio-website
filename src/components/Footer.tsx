@@ -34,23 +34,34 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto relative z-[1]" style={{ borderTop: '1px solid rgba(255,136,0,0.08)' }}>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <footer className="relative z-[2] mt-auto">
+      {/* Neon border line */}
+      <div
+        className="h-px w-full"
+        style={{
+          background: 'linear-gradient(90deg, transparent, rgba(255,136,0,0.3) 30%, rgba(255,136,0,0.3) 70%, transparent)',
+          boxShadow: '0 0 8px rgba(255,136,0,0.15), 0 0 20px rgba(255,136,0,0.05)',
+        }}
+      />
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm font-mono" style={{ color: 'rgba(255,136,0,0.35)' }}>
             &copy; {currentYear} Arath Industries
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-5">
             {socialLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-600 hover:text-[var(--neon)] transition-colors"
+                className="transition-all duration-200"
+                style={{ color: 'rgba(255,136,0,0.4)' }}
                 aria-label={link.name}
               >
-                {link.icon}
+                <span className="hover:drop-shadow-[0_0_6px_rgba(255,136,0,0.5)]">
+                  {link.icon}
+                </span>
               </Link>
             ))}
           </div>
