@@ -12,11 +12,12 @@ export function MouseGlow() {
   useEffect(() => {
     // On landing page, SparkCanvas handles the mask + mouse glow
     if (isLanding) return;
-    const el = canvasRef.current;
-    if (!el) return;
-    const ctx = el.getContext("2d", { alpha: true });
-    if (!ctx) return;
-    const canvas = el;
+    const canvasEl = canvasRef.current;
+    if (!canvasEl) return;
+    const ctxEl = canvasEl.getContext("2d", { alpha: true });
+    if (!ctxEl) return;
+    const canvas = canvasEl;
+    const ctx = ctxEl;
 
     let mouseX = -200;
     let mouseY = -200;
