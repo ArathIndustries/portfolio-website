@@ -1,0 +1,39 @@
+---
+title: "File Explorer App"
+description: "Cross-platform file browser built with Tauri and React — clean, minimal, and designed for extensibility."
+tags: ["Tauri", "React", "Rust"]
+date: "2026-02-01"
+---
+
+## The Problem
+
+Every operating system ships a file explorer, but none of them feel quite right. Windows File Explorer is powerful but cluttered. Apple's Finder hides too much. Linux options are either too minimal or too complex. I wanted something that combined the best of all three — an intuitive, responsive file browser with a clean User Interface (UI) that works the same on Windows, macOS, and Linux, with an architecture designed to grow.
+
+## What I'm Building
+
+A cross-platform desktop file explorer using Tauri (Rust backend) and React (frontend). Tauri was chosen over Electron for its significantly smaller bundle size, native performance, and security model — the Rust backend handles file system operations while the React frontend focuses purely on the User Experience (UX).
+
+### Design Philosophy
+
+The UI takes inspiration from both Windows File Explorer's power features and Apple Files' clean aesthetic. The goal is progressive disclosure — simple and intuitive by default, with power features accessible when you need them. No feature bloat, no unnecessary complexity. The architecture is modular from the start so new capabilities (search, preview, plugins) can be added without rewriting core navigation.
+
+### Core Features (Planned)
+
+- **File browsing and navigation** — breadcrumb path bar, sidebar favorites, back/forward history
+- **File operations** — view, open, rename, move, copy, delete with undo support
+- **Clean minimalist UI** — inspired by the best parts of Windows Explorer and Apple Finder
+- **Cross-platform** — single codebase targeting Windows, macOS, and Linux via Tauri
+- **Expandable architecture** — plugin-ready structure for future features like preview panes, search, and custom actions
+
+## Tech Stack
+
+Tauri (Rust-based desktop framework), React (component-based frontend), Cargo + npm (build tools), Jest/Vitest (frontend testing), Clippy + ESLint (linting). Evaluated Electron, Qt, and Flutter before selecting Tauri for its performance-to-bundle-size ratio.
+
+## Development Timeline
+
+<Timeline>
+  <TimelineItem date="Feb 2026" title="Planning & Design" description="Project scope defined. Evaluated 4 technology stacks (Tauri, Electron, Qt, Flutter). Selected Tauri + React for cross-platform performance and small bundle size." status="completed" />
+  <TimelineItem date="Q2 2026" title="Core Navigation" description="File browsing, directory tree, breadcrumb path bar, and sidebar favorites. Basic file operations (open, rename, move, copy, delete)." status="future" />
+  <TimelineItem date="Q3 2026" title="Polish & Platform Testing" description="Cross-platform testing on Windows, macOS, and Linux. Keyboard shortcuts, drag-and-drop, and undo/redo support." status="future" />
+  <TimelineItem date="2026+" title="Expansion" description="Preview panes, integrated search, custom actions/plugins, and theming system." status="future" />
+</Timeline>
