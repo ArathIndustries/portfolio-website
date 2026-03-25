@@ -29,9 +29,9 @@ const stages: PipelineStage[] = [
     skills: ["Circuit Design", "Soldering & Prototyping", "Assembly Language", "C Programming", "Signal Processing Basics", "Electronic Systems", "Oscilloscopes & Multimeters", "Power Systems"],
   },
   {
-    years: "2021–now",
+    years: "2021–2026",
     title: "Civil Engineering",
-    summary: "professional design → substations → project coordination",
+    summary: "professional design → 6 months substations → project coordination",
     skills: ["Civil Engineering Design", "Power Substation Schematics", "Project Coordination", "Stormwater & Drainage", "Utility Design", "Permitting & Compliance", "Client Communication", "Team Collaboration"],
   },
   {
