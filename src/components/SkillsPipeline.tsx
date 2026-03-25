@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 
 interface PipelineStage {
-  number: string;
+  years: string;
   title: string;
   summary: string;
   skills: string[];
@@ -11,40 +11,52 @@ interface PipelineStage {
 
 const stages: PipelineStage[] = [
   {
-    number: "01",
-    title: "Hardware Foundations",
-    summary: "circuits → sensors → embedded systems",
-    skills: ["Arduino", "ESP32", "STM32", "Bluetooth Low Energy", "WiFi Bridges", "Acoustic Emission Sensors", "Signal Conditioning", "Soldering & Prototyping", "C/C++", "Assembly"],
+    years: "2015–2016",
+    title: "Civil Design",
+    summary: "associates degree → CAD → structural fundamentals",
+    skills: ["CAD Drafting", "Structural Systems", "Construction Documents", "Site Design", "Technical Drawing", "Blueprint Reading"],
   },
   {
-    number: "02",
-    title: "Software Layer",
-    summary: "scripting → APIs → full-stack applications",
-    skills: ["Python", "JavaScript", "TypeScript", "FastAPI", "React", "Next.js", "Tailwind CSS", "Node.js", "SQL", "REST API Design"],
+    years: "2017–2018",
+    title: "Community College",
+    summary: "core academics → math → sciences",
+    skills: ["Calculus", "Physics", "Chemistry", "Technical Writing", "Statistics Foundations"],
   },
   {
-    number: "03",
-    title: "Data & Visualization",
-    summary: "raw data → analysis → interactive dashboards",
-    skills: ["PostgreSQL", "Supabase", "Plotly.js", "Leaflet.js", "GeoJSON", "PapaParse", "Pandas", "CSV Processing", "Statistical Analysis", "Minitab"],
+    years: "2019–2021",
+    title: "Electronics",
+    summary: "circuits → soldering → signal fundamentals",
+    skills: ["Circuit Design", "Soldering & Prototyping", "Assembly Language", "C Programming", "Signal Processing Basics", "Electronic Systems", "Oscilloscopes & Multimeters", "Power Systems"],
   },
   {
-    number: "04",
-    title: "Intelligence",
-    summary: "ML pipelines → LLMs → edge inference",
-    skills: ["TensorFlow", "TFLite Micro", "Convolutional Neural Networks", "INT8 Quantization", "FFT & Spectrograms", "Prompt Engineering", "OpenRouter", "LLM Integration", "Document Extraction", "AI Summarization"],
+    years: "2021–now",
+    title: "Civil Engineering",
+    summary: "professional design → substations → project coordination",
+    skills: ["Civil Engineering Design", "Power Substation Schematics", "Project Coordination", "Stormwater & Drainage", "Utility Design", "Permitting & Compliance", "Client Communication", "Team Collaboration"],
   },
   {
-    number: "05",
-    title: "Deployment & Operations",
+    years: "2025–now",
+    title: "Industrial Engineering",
+    summary: "systems thinking → process improvement → quality",
+    skills: ["Statistical Process Control (SPC)", "DMAIC Methodology", "Quality Engineering", "Minitab", "Process Improvement", "Systems Thinking", "Operations Research", "Lean Manufacturing"],
+  },
+  {
+    years: "2025–now",
+    title: "Programming & Data",
+    summary: "Python → web frameworks → databases → visualization",
+    skills: ["Python", "JavaScript", "TypeScript", "HTML/CSS", "SQL", "React", "Next.js", "FastAPI", "Tailwind CSS", "PostgreSQL", "Supabase", "Plotly.js", "Leaflet.js", "GeoJSON", "PapaParse", "Web Scraping", "REST API Design", "MDX"],
+  },
+  {
+    years: "2025–now",
+    title: "AI & Edge Computing",
+    summary: "ML pipelines → LLMs → microcontroller inference",
+    skills: ["TensorFlow", "TFLite Micro", "Convolutional Neural Networks (CNNs)", "INT8 Quantization", "Fast Fourier Transform (FFT)", "Mel-Spectrograms", "Prompt Engineering", "Large Language Model (LLM) Integration", "AI Summarization", "Document Extraction", "Edge Inference", "Arduino", "ESP32", "STM32", "Bluetooth Low Energy (BLE)", "Acoustic Emission Sensors"],
+  },
+  {
+    years: "2025–now",
+    title: "Shipping Products",
     summary: "containers → CI/CD → production monitoring",
-    skills: ["Docker", "Vercel", "Render", "GitHub Actions", "Git", "Automated Scheduling", "Service Monitoring", "Watchdog Systems", "Environment Management", "Domain & DNS"],
-  },
-  {
-    number: "06",
-    title: "Engineering & Design",
-    summary: "systems thinking → process improvement → visual design",
-    skills: ["Industrial Engineering", "Civil Engineering", "SPC & DMAIC", "Quality Control", "Affinity Designer", "Blender", "Krita", "SVG Animation", "Data Visualization Design", "Technical Documentation"],
+    skills: ["Docker", "Vercel", "Render", "GitHub Actions", "Git", "CI/CD Pipelines", "Automated Scheduling", "Service Monitoring", "Watchdog Systems", "Environment Management", "Formspree", "Resend Email", "WebSocket"],
   },
 ];
 
@@ -56,7 +68,7 @@ export function SkillsPipeline() {
     if (!scrollRef.current) return;
     const card = scrollRef.current.querySelector("[data-stage]") as HTMLElement;
     if (!card) return;
-    const scrollAmount = card.offsetWidth + 16; // card width + gap
+    const scrollAmount = card.offsetWidth + 16;
     scrollRef.current.scrollBy({
       left: direction === "right" ? scrollAmount : -scrollAmount,
       behavior: "smooth",
@@ -112,13 +124,13 @@ export function SkillsPipeline() {
                 boxShadow: expanded === idx ? '0 0 15px rgba(255,136,0,0.08)' : 'none',
               }}
             >
-              {/* Header */}
               <div className="p-5">
+                {/* Year label */}
                 <span
                   className="font-mono text-xs tracking-widest block mb-2"
                   style={{ color: 'rgba(255,136,0,0.4)' }}
                 >
-                  {stage.number}
+                  {stage.years}
                 </span>
                 <h3
                   className="font-mono font-semibold text-sm mb-1"
@@ -130,7 +142,6 @@ export function SkillsPipeline() {
                   {stage.summary}
                 </p>
 
-                {/* Expand indicator */}
                 <div className="flex items-center gap-1 mt-3" style={{ color: 'rgba(255,136,0,0.4)' }}>
                   <span className="text-xs font-mono">{expanded === idx ? 'collapse' : `${stage.skills.length} skills`}</span>
                   <svg
@@ -147,7 +158,6 @@ export function SkillsPipeline() {
                 </div>
               </div>
 
-              {/* Expanded skills */}
               {expanded === idx && (
                 <div className="px-5 pb-5" style={{ borderTop: '1px solid rgba(255,136,0,0.1)' }}>
                   <div className="flex flex-wrap gap-1.5 pt-4">
@@ -165,7 +175,7 @@ export function SkillsPipeline() {
               )}
             </button>
 
-            {/* Arrow connector (except after last card) */}
+            {/* Arrow connector */}
             {idx < stages.length - 1 && (
               <div className="flex items-center px-2 pt-8 shrink-0">
                 <svg width="24" height="12" viewBox="0 0 24 12" fill="none">
@@ -183,7 +193,6 @@ export function SkillsPipeline() {
         ))}
       </div>
 
-      {/* Hide webkit scrollbar */}
       <style>{`
         [class*="overflow-x-auto"]::-webkit-scrollbar { display: none; }
       `}</style>
