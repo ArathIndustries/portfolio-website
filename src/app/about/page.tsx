@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { SkillsPipeline } from "@/components/SkillsPipeline";
 
 export const metadata: Metadata = {
   title: "About",
@@ -33,16 +34,6 @@ const capabilities = [
   },
 ];
 
-const skills = [
-  { category: "Engineering", items: ["Civil", "Industrial", "Electronics", "Quality (SPC/DMAIC)"] },
-  { category: "Programming", items: ["Python", "C/C++", "JavaScript", "TypeScript", "SQL", "Assembly"] },
-  { category: "AI & ML", items: ["LLM Integration", "Prompt Engineering", "TensorFlow/TFLite", "CNNs", "Signal Processing"] },
-  { category: "Web Development", items: ["Next.js", "React", "FastAPI", "Tailwind CSS", "Plotly.js", "Leaflet.js", "MDX"] },
-  { category: "Hardware & IoT", items: ["Arduino", "ESP32", "BLE", "WiFi Bridges", "Sensor Systems", "Acoustic Emission"] },
-  { category: "Data & Infrastructure", items: ["PostgreSQL", "Supabase", "Docker", "GitHub Actions", "Vercel", "Render"] },
-  { category: "Design", items: ["Affinity Suite", "Blender", "Krita", "SVG Animation", "Data Visualization"] },
-  { category: "Tools", items: ["Git", "Minitab", "Web Scraping", "REST APIs"] },
-];
 
 export default function AboutPage() {
   return (
@@ -82,29 +73,11 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Skills & Technologies */}
+      {/* Skills Pipeline */}
       <section className="mb-16">
-        <h2 className="text-2xl font-bold font-mono mb-6 text-gray-200">Skills & Technologies</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {skills.map((skillGroup) => (
-            <div key={skillGroup.category}>
-              <h3 className="font-mono font-semibold text-gray-300 mb-3">
-                {skillGroup.category}
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {skillGroup.items.map((skill) => (
-                  <span
-                    key={skill}
-                    className="px-3 py-1 text-sm rounded font-mono"
-                    style={{ background: 'rgba(255,136,0,0.08)', color: 'rgba(255,136,0,0.7)' }}
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        <h2 className="text-2xl font-bold font-mono mb-2 text-gray-200">The Stack</h2>
+        <p className="text-sm text-gray-500 mb-6">Hardware to deployment — click any stage to see the full depth.</p>
+        <SkillsPipeline />
       </section>
 
       {/* Founder CTA */}
