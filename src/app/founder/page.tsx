@@ -51,7 +51,7 @@ export default function FounderPage() {
           </p>
 
           <p>
-            When I&apos;m not building, I&apos;m reading philosophy, working outside with my hands, or taking long walks to the corner store for snacks.
+            When I&apos;m not building, I&apos;m probably thinking about building something else.
           </p>
         </div>
       </section>
