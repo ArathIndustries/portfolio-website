@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Tube Cards v3 — Path-based + Wave System</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --bg: #090706; --neon: #FF8800; --neon-rgb: 255,136,0; }
+
+  body {
+    background: var(--bg); color: #e0e0e0;
+    font-family: 'Inter', sans-serif;
+    min-height: 200vh; padding: 3rem 1rem;
+  }
+  .container { max-width: 800px; margin: 0 auto; }
+
+  #spark-canvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 9999;
+  }
+
+  .page-header { text-align: center; margin-bottom: 3rem; }
+  .page-header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.2rem; font-weight: 700; color: var(--neon);
+    text-shadow: 0 0 7px rgba(var(--neon-rgb),0.6), 0 0 20px rgba(var(--neon-rgb),0.3), 0 0 40px rgba(var(--neon-rgb),0.15);
+    display: inline-block;
+    animation: neon-flicker 8s ease-in-out infinite;
+  }
+  .page-header p { color: rgba(255,255,255,0.3); margin-top: 0.5rem; font-size: 0.85rem; }
+
+  @keyframes neon-flicker {
+    0%,19%,21%,23%,25%,54%,56%,100% { opacity:1; text-shadow:0 0 7px rgba(var(--neon-rgb),0.6),0 0 20px rgba(var(--neon-rgb),0.3),0 0 40px rgba(var(--neon-rgb),0.15); }
+    20%,24%,55% { opacity:0.85; text-shadow:0 0 4px rgba(var(--neon-rgb),0.4),0 0 12px rgba(var(--neon-rgb),0.15); }
+  }
+
+  /* === NEON TUBE CARD === */
+  .neon-tube-card {
+    position: relative; margin-bottom: 2rem; padding: 1.5rem;
+    background: rgba(13,11,10,0.85); border-radius: 8px;
+  }
+
+  .tube-border-svg {
+    position: absolute; inset: -6px;
+    width: calc(100% + 12px); height: calc(100% + 12px);
+    pointer-events: none; overflow: visible;
+  }
+
+  /* Same 5 tube layers as the neon sign — EXACT same values */
+  .tb-glass-edge {
+    fill: none; stroke: rgba(255,255,255,0.025);
+    stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .tb-glass {
+    fill: none; stroke: rgba(255,255,255,0.04);
+    stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .tb-bloom {
+    fill: none; stroke: var(--neon);
+    stroke-width: 7; stroke-linecap: round; stroke-linejoin: round;
+    opacity: 0.06;
+  }
+  .tb-light {
+    fill: none; stroke: var(--neon);
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .tb-core {
+    fill: none; stroke: #fff; stroke-width: 0.5;
+    stroke-linecap: round; stroke-linejoin: round; opacity: 0.35;
+  }
+
+  /* Card content */
+  .card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem; font-weight: 600; color: #e0e0e0; margin-bottom: 0.5rem;
+    position: relative; z-index: 1;
+  }
+  .card-desc {
+    font-size: 0.85rem; color: rgba(255,255,255,0.4); line-height: 1.5; margin-bottom: 1rem;
+    position: relative; z-index: 1;
+  }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; position: relative; z-index: 1; }
+  .card-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+    padding: 0.25rem 0.5rem; border-radius: 0.25rem;
+    background: rgba(var(--neon-rgb),0.08); color: rgba(var(--neon-rgb),0.7);
+  }
+  .neon-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(var(--neon-rgb),0.3) 20%, rgba(var(--neon-rgb),0.3) 80%, transparent);
+    box-shadow: 0 0 8px rgba(var(--neon-rgb),0.15); margin: 2rem 0;
+  }
+  .info {
+    text-align: center; font-size: 0.6rem; color: #333; margin-top: 3rem;
+    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="spark-canvas"></canvas>
+
+<!-- Shared SVG filters — same as neon sign -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <filter id="tube-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" result="b1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b2"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b3"/>
+      <feMerge><feMergeNode in="b3"/><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+</svg>
+
+<div class="container">
+  <div class="page-header">
+    <h1 id="page-title">Work</h1>
+    <p>A collection of tools, platforms, and research.</p>
+  </div>
+
+  <div class="neon-tube-card" id="card-1">
+    <svg class="tube-border-svg"></svg>
+    <h3 class="card-title">OpenChambers</h3>
+    <p class="card-desc">Municipal meeting intelligence platform — AI-powered summaries of TX public meetings. 1,961 meetings scraped across 150+ government portals in 16 days.</p>
+    <div class="card-tags"><span class="card-tag">Python</span><span class="card-tag">FastAPI</span><span class="card-tag">AI</span><span class="card-tag">Supabase</span></div>
+  </div>
+
+  <div class="neon-tube-card" id="card-2">
+    <svg class="tube-border-svg"></svg>
+    <h3 class="card-title">Texas Water Crisis Dashboard</h3>
+    <p class="card-desc">Interactive geospatial analytics dashboard for Texas water infrastructure analysis. 254 counties, 5 IE frameworks, delivered in 4 days.</p>
+    <div class="card-tags"><span class="card-tag">JavaScript</span><span class="card-tag">Plotly.js</span><span class="card-tag">Data Viz</span></div>
+  </div>
+
+  <div class="neon-divider"></div>
+
+  <div class="neon-tube-card" id="card-3">
+    <svg class="tube-border-svg"></svg>
+    <h3 class="card-title">Digital Twin — CNC Monitoring</h3>
+    <p class="card-desc">Wireless sensor network with TinyML for real-time CNC machine health monitoring. 54-72% cost reduction vs commercial DAQ systems.</p>
+    <div class="card-tags"><span class="card-tag">Arduino</span><span class="card-tag">TFLite</span><span class="card-tag">Python</span><span class="card-tag">BLE</span></div>
+  </div>
+
+  <div class="neon-tube-card" id="card-4">
+    <svg class="tube-border-svg"></svg>
+    <h3 class="card-title">TCEQ Permit Geowatcher</h3>
+    <p class="card-desc">Geospatial permit tracking with LLM-powered data extraction from TCEQ records.</p>
+    <div class="card-tags"><span class="card-tag">Python</span><span class="card-tag">FastAPI</span><span class="card-tag">Leaflet.js</span></div>
+  </div>
+</div>
+
+<div class="info">SVG path tubes · 5-layer strokes · wave interference · bidirectional surge · sparks</div>
+
+<script>
+const NEON = '#FF8800';
+const NEON_RGB = [255, 136, 0];
+
+// === BUILD SVG TUBE BORDERS ===
+// Generate a rounded rect as an SVG path string
+function roundedRectPath(w, h, r) {
+  return `M ${r},0 L ${w-r},0 Q ${w},0 ${w},${r} L ${w},${h-r} Q ${w},${h} ${w-r},${h} L ${r},${h} Q 0,${h} 0,${h-r} L 0,${r} Q 0,0 ${r},0 Z`;
+}
+
+// Get path total length + midpoints for spark positioning
+function getSegmentInfo(w, h, r, numSegs) {
+  const tmpSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  const tmpPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  tmpPath.setAttribute('d', roundedRectPath(w, h, r));
+  tmpSvg.appendChild(tmpPath);
+  document.body.appendChild(tmpSvg);
+  const totalLen = tmpPath.getTotalLength();
+  const segLen = totalLen / numSegs;
+
+  const midpoints = [];
+  for (let i = 0; i < numSegs; i++) {
+    const mid = tmpPath.getPointAtLength((i + 0.5) * segLen);
+    midpoints.push({ midX: mid.x, midY: mid.y });
+  }
+
+  document.body.removeChild(tmpSvg);
+  return { totalLen, segLen, midpoints };
+}
+
+const NUM_SEGS = 40;
+const cards = document.querySelectorAll('.neon-tube-card');
+const cardStates = [];
+
+function setupCards() {
+  cards.forEach((card, idx) => {
+    const svg = card.querySelector('.tube-border-svg');
+    const w = card.offsetWidth + 12; // account for inset: -6px
+    const h = card.offsetHeight + 12;
+    const r = 14; // slightly larger radius for the outer tube
+
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+
+    // Clear previous content
+    svg.innerHTML = '';
+
+    const d = roundedRectPath(w, h, r);
+    const { totalLen, segLen, midpoints } = getSegmentInfo(w, h, r, NUM_SEGS);
+
+    // === STATIC TUBE LAYERS (full path, always visible) ===
+    const glassEdge = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    glassEdge.setAttribute('d', d); glassEdge.setAttribute('class', 'tb-glass-edge');
+    svg.appendChild(glassEdge);
+
+    const glass = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    glass.setAttribute('d', d); glass.setAttribute('class', 'tb-glass');
+    svg.appendChild(glass);
+
+    const bloom = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    bloom.setAttribute('d', d); bloom.setAttribute('class', 'tb-bloom');
+    svg.appendChild(bloom);
+
+    // === PER-SEGMENT LIGHT + CORE ===
+    // Each segment is a COPY of the full path with stroke-dasharray
+    // showing only one segment's worth. This follows the actual curve perfectly.
+    const filterGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    filterGroup.setAttribute('filter', 'url(#tube-glow)');
+    svg.appendChild(filterGroup);
+
+    const lightSegs = [];
+    const coreSegs = [];
+
+    for (let i = 0; i < NUM_SEGS; i++) {
+      // Light segment — full path, dasharray shows only this segment
+      const lightPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      lightPath.setAttribute('d', d);
+      lightPath.setAttribute('stroke', NEON);
+      lightPath.setAttribute('stroke-width', '2');
+      lightPath.setAttribute('stroke-linecap', 'round');
+      lightPath.setAttribute('fill', 'none');
+      lightPath.setAttribute('stroke-dasharray', `${segLen + 0.5} ${totalLen}`);
+      lightPath.setAttribute('stroke-dashoffset', `${-i * segLen}`);
+      filterGroup.appendChild(lightPath);
+      lightSegs.push(lightPath);
+
+      // Core segment (white)
+      const corePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      corePath.setAttribute('d', d);
+      corePath.setAttribute('stroke', '#fff');
+      corePath.setAttribute('stroke-width', '0.5');
+      corePath.setAttribute('stroke-linecap', 'round');
+      corePath.setAttribute('fill', 'none');
+      corePath.setAttribute('stroke-dasharray', `${segLen + 0.5} ${totalLen}`);
+      corePath.setAttribute('stroke-dashoffset', `${-i * segLen}`);
+      corePath.style.opacity = '0.35';
+      svg.appendChild(corePath);
+      coreSegs.push(corePath);
+    }
+
+    cardStates[idx] = {
+      card, svg, bloom,
+      lightSegs, coreSegs, midpoints,
+      brightness: new Float32Array(NUM_SEGS).fill(1.0),
+      prevBrightness: new Float32Array(NUM_SEGS).fill(1.0),
+      waves: [],
+    };
+  });
+}
+
+// === WAVE SYSTEM — identical to neon sign ===
+function scheduleWave(state) {
+  const now = performance.now();
+  const n = NUM_SEGS;
+  const roll = Math.random();
+  let wave;
+
+  if (roll < 0.25) {
+    // Fast linear sweep
+    wave = { startTime: now, mode: 'linear', direction: Math.random() > 0.5 ? 1 : -1,
+      speed: 15 + Math.random() * 25, dip: 0.2 + Math.random() * 0.3,
+      holdMs: 30 + Math.random() * 40, recoveryMs: 80 + Math.random() * 100 };
+  } else if (roll < 0.45) {
+    // Slow linear sweep
+    wave = { startTime: now, mode: 'linear', direction: Math.random() > 0.5 ? 1 : -1,
+      speed: 40 + Math.random() * 60, dip: 0.3 + Math.random() * 0.2,
+      holdMs: 100 + Math.random() * 200, recoveryMs: 300 + Math.random() * 400 };
+  } else if (roll < 0.65) {
+    // Ripple from random origin
+    const origin = Math.floor(Math.random() * n);
+    wave = { startTime: now, mode: 'ripple', origin,
+      speed: 20 + Math.random() * 35, dip: 0.1 + Math.random() * 0.25,
+      holdMs: 40 + Math.random() * 60, recoveryMs: 100 + Math.random() * 150 };
+  } else if (roll < 0.8) {
+    // Bounce ripple
+    const origin = Math.floor(n * 0.3 + Math.random() * n * 0.4);
+    wave = { startTime: now, mode: 'ripple', origin,
+      speed: 8 + Math.random() * 12, dip: 0.05 + Math.random() * 0.1,
+      holdMs: 40 + Math.random() * 30, recoveryMs: 50 + Math.random() * 60, bounce: true };
+  } else if (roll < 0.92) {
+    // Single segment glitch
+    wave = { startTime: now, mode: 'single', target: Math.floor(Math.random() * n),
+      dip: 0.05 + Math.random() * 0.15,
+      holdMs: 60 + Math.random() * 100, recoveryMs: 80 + Math.random() * 120 };
+  } else {
+    // Full blackout (rare)
+    wave = { startTime: now, mode: 'linear', direction: 1,
+      speed: 3 + Math.random() * 5, dip: 0,
+      holdMs: 150 + Math.random() * 300, recoveryMs: 400 + Math.random() * 600 };
+  }
+  state.waves.push(wave);
+}
+
+function processWaves(state, now) {
+  const n = NUM_SEGS;
+  const brightness = state.brightness;
+  const prevBrightness = state.prevBrightness;
+  brightness.fill(1.0);
+
+  for (let w = state.waves.length - 1; w >= 0; w--) {
+    const wave = state.waves[w];
+    let allDone = true;
+
+    for (let i = 0; i < n; i++) {
+      let delay;
+      if (wave.mode === 'ripple') {
+        // Bidirectional — shortest distance around the ring
+        delay = Math.min(
+          Math.abs(i - wave.origin),
+          n - Math.abs(i - wave.origin)
+        ) * wave.speed;
+      } else if (wave.mode === 'single') {
+        if (i !== wave.target) continue;
+        delay = 0;
+      } else {
+        delay = (wave.direction === 1 ? i : n - 1 - i) * wave.speed;
+      }
+
+      const elapsed = now - wave.startTime - delay;
+      if (elapsed < 0) { allDone = false; continue; }
+
+      const total = wave.holdMs + wave.recoveryMs;
+      let b;
+      if (elapsed < wave.holdMs) {
+        b = wave.dip; allDone = false;
+      } else if (elapsed < total) {
+        const rt = (elapsed - wave.holdMs) / wave.recoveryMs;
+        b = wave.dip + (1 - wave.dip) * rt;
+        if (wave.bounce && rt > 0.3 && rt < 0.5) b *= 0.3 + Math.random() * 0.2;
+        allDone = false;
+      } else {
+        b = 1.0;
+      }
+      brightness[i] = Math.min(brightness[i], b);
+    }
+    if (allDone) state.waves.splice(w, 1);
+  }
+
+  // Apply brightness to segments
+  for (let i = 0; i < n; i++) {
+    state.lightSegs[i].style.opacity = brightness[i];
+    state.coreSegs[i].style.opacity = brightness[i] * 0.35;
+  }
+
+  // Bloom follows average brightness
+  let avg = 0;
+  for (let i = 0; i < n; i++) avg += brightness[i];
+  avg /= n;
+  state.bloom.style.opacity = avg * 0.06;
+
+  // prevBrightness is managed by the render loop — don't copy here
+}
+
+// Schedule waves per card
+function scheduleNextWave(stateIdx) {
+  setTimeout(() => {
+    const state = cardStates[stateIdx];
+    if (!state) return;
+    // Only surge visible cards
+    const r = state.card.getBoundingClientRect();
+    if (r.top < window.innerHeight && r.bottom > 0) {
+      scheduleWave(state);
+      if (Math.random() > 0.7) setTimeout(() => scheduleWave(state), 200 + Math.random() * 400);
+    }
+    scheduleNextWave(stateIdx);
+  }, 5000 + Math.random() * 12000);
+}
+
+setupCards();
+window.addEventListener('resize', setupCards);
+
+// Start wave schedulers for each card
+cardStates.forEach((_, i) => {
+  setTimeout(() => { scheduleWave(cardStates[i]); scheduleNextWave(i); }, 2000 + Math.random() * 3000);
+});
+
+// === SPARK SYSTEM ===
+const canvas = document.getElementById('spark-canvas');
+const ctx = canvas.getContext('2d', { alpha: true });
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const allSparks = [];
+let sparkCount = 0;
+const MAX_SPARKS = 150;
+const sparkPool = [];
+const bolts = [];
+
+function getSpark() { return sparkPool.length > 0 ? sparkPool.pop() : {}; }
+function releaseSpark(s) { sparkPool.push(s); }
+
+function initSpark(s, x, y, speed) {
+  const angle = -Math.PI * (0.2 + Math.random() * 0.6);
+  const velocity = (Math.random() * 1.2 + 0.5) * speed;
+  s.x = x; s.y = y;
+  s.vx = Math.cos(angle) * velocity + (Math.random() - 0.5) * 0.8;
+  s.vy = Math.sin(angle) * velocity;
+  s.life = 1.0; s.decay = Math.random() * 0.01 + 0.005;
+  s.size = Math.random() * 1.5 + 0.5;
+  s.r = NEON_RGB[0]; s.g = NEON_RGB[1]; s.b = NEON_RGB[2];
+  if (Math.random() > 0.6) { s.r = 255; s.g = 220; s.b = 180; }
+  s.gravity = 0.03 + Math.random() * 0.05;
+  s.trail = []; s.trailLen = Math.floor(Math.random() * 3 + 2);
+  return s;
+}
+
+function spawnBolt(x, y) {
+  const segs = []; let cx = x, cy = y;
+  for (let i = 0; i < Math.floor(Math.random() * 4 + 2); i++) {
+    const nx = cx + (Math.random()-0.5)*30, ny = cy + (Math.random()-0.5)*30;
+    segs.push({ x1: cx, y1: cy, x2: nx, y2: ny }); cx = nx; cy = ny;
+  }
+  bolts.push({ segments: segs, life: 1, decay: 0.05 + Math.random() * 0.03, r: NEON_RGB[0], g: NEON_RGB[1], b: NEON_RGB[2] });
+}
+
+// Spark on brightness dips (same as neon sign)
+function sparkOnDips(state) {
+  const rect = state.card.getBoundingClientRect();
+  for (let i = 0; i < NUM_SEGS; i++) {
+    const drop = state.prevBrightness[i] - state.brightness[i];
+    if (drop > 0.35 && Math.random() > 0.92) {
+      const mp = state.midpoints[i];
+      const sx = rect.left + mp.midX - 6;
+      const sy = rect.top + mp.midY - 6;
+      const count = Math.floor(drop * 3);
+      for (let j = 0; j < count && sparkCount < MAX_SPARKS; j++) {
+        allSparks.push(initSpark(getSpark(), sx + (Math.random()-0.5)*4, sy + (Math.random()-0.5)*4, 0.6 + drop * 0.5));
+        sparkCount++;
+      }
+      if (drop > 0.6 && Math.random() > 0.7) spawnBolt(sx, sy);
+    }
+  }
+}
+
+// Header sparks
+const headerEl = document.getElementById('page-title');
+function spawnHeaderSparks() {
+  const rect = headerEl.getBoundingClientRect();
+  if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+  const x = rect.left + Math.random() * rect.width;
+  const y = rect.top + Math.random() * rect.height;
+  const count = Math.floor(Math.random() * 5 + 2);
+  for (let i = 0; i < count && sparkCount < MAX_SPARKS; i++) {
+    allSparks.push(initSpark(getSpark(), x, y, 0.8));
+    sparkCount++;
+  }
+  if (Math.random() > 0.6) spawnBolt(x, y);
+  headerEl.style.opacity = '0.7';
+  setTimeout(() => { headerEl.style.opacity = ''; }, 100);
+}
+function scheduleHeaderSpark() {
+  setTimeout(() => { spawnHeaderSparks(); scheduleHeaderSpark(); }, 4000 + Math.random() * 8000);
+}
+setTimeout(() => { spawnHeaderSparks(); scheduleHeaderSpark(); }, 2000);
+
+// === RENDER LOOP ===
+function animate() {
+  const now = performance.now();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Process card waves + spark on dips
+  cardStates.forEach(state => {
+    // Save prev before processing
+    for (let i = 0; i < NUM_SEGS; i++) state.prevBrightness[i] = state.brightness[i];
+    processWaves(state, now);
+    sparkOnDips(state);
+  });
+
+  // Render sparks
+  let w = 0;
+  for (let i = 0; i < sparkCount; i++) {
+    const s = allSparks[i];
+    s.trail.push({ x: s.x, y: s.y });
+    if (s.trail.length > s.trailLen) s.trail.shift();
+    s.x += s.vx; s.y += s.vy; s.vy += s.gravity; s.vx *= 0.985; s.life -= s.decay;
+    if (s.life <= 0) { s.trail.length = 0; releaseSpark(s); continue; }
+    const a = s.life, r = s.size * Math.max(s.life, 0.3);
+
+    if (s.trail.length > 1) {
+      ctx.strokeStyle = `rgb(${s.r},${s.g},${s.b})`;
+      ctx.lineCap = 'round';
+      for (let t = 1; t < s.trail.length; t++) {
+        ctx.globalAlpha = (t / s.trail.length) * a * 0.3;
+        ctx.lineWidth = r * (t / s.trail.length) * 0.8;
+        ctx.beginPath(); ctx.moveTo(s.trail[t-1].x, s.trail[t-1].y); ctx.lineTo(s.trail[t].x, s.trail[t].y); ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = a * 0.12;
+    ctx.fillStyle = `rgb(${s.r},${s.g},${s.b})`;
+    ctx.beginPath(); ctx.arc(s.x, s.y, r * 3, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = a;
+    ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI * 2); ctx.fill();
+    if (s.life > 0.3) {
+      ctx.globalAlpha = a * 0.7; ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(s.x, s.y, r * 0.35, 0, Math.PI * 2); ctx.fill();
+    }
+    allSparks[w++] = s;
+  }
+  allSparks.length = w; sparkCount = w;
+
+  // Render bolts
+  for (let i = bolts.length - 1; i >= 0; i--) {
+    const b = bolts[i]; b.life -= b.decay;
+    if (b.life <= 0) { bolts.splice(i, 1); continue; }
+    ctx.lineCap = 'round';
+    ctx.globalAlpha = b.life * 0.2; ctx.strokeStyle = `rgb(${b.r},${b.g},${b.b})`; ctx.lineWidth = b.life * 6;
+    ctx.beginPath(); for (const seg of b.segments) { ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); } ctx.stroke();
+    ctx.globalAlpha = b.life; ctx.lineWidth = b.life * 2;
+    ctx.beginPath(); for (const seg of b.segments) { ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); } ctx.stroke();
+    ctx.globalAlpha = b.life * 0.7; ctx.strokeStyle = '#fff'; ctx.lineWidth = b.life * 0.8;
+    ctx.beginPath(); for (const seg of b.segments) { ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); } ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+</body>
+</html>
