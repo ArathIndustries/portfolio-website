@@ -64,15 +64,14 @@ export function Footer() {
                 </span>
               </Link>
             ))}
-            <a
-              href="/Sergio_Arath_Guzman_Resume.pdf"
-              download
+            <Link
+              href="/resume"
               className="transition-all duration-200 font-mono text-xs"
               style={{ color: 'rgba(255,136,0,0.4)' }}
-              aria-label="Download Resume"
+              aria-label="View Resume"
             >
               Resume
-            </a>
+            </Link>
           </div>
         </div>
       </div>
