@@ -37,17 +37,17 @@ export default function ResumePage() {
 
       {/* PDF Preview — fills remaining viewport */}
       <div
-        className="flex-1 rounded-lg overflow-hidden border"
+        className="rounded-lg overflow-hidden border"
         style={{
           borderColor: 'rgba(255,136,0,0.15)',
           background: '#fff',
-          minHeight: '700px',
+          height: 'calc(100vh - 120px)',
         }}
       >
         <iframe
           src="/Sergio_Arath_Guzman_Resume.pdf"
           title="Resume Preview"
-          className="w-full h-full border-0"
+          style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
         />
       </div>
     </div>
