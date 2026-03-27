@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function ResumePage() {
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -41,8 +41,8 @@ export default function ResumePage() {
         style={{
           borderColor: 'rgba(255,136,0,0.15)',
           background: '#fff',
-          height: 'calc(100vh - 160px)',
-          minHeight: '600px',
+          height: 'calc(100vh - 140px)',
+          minHeight: '700px',
         }}
       >
         <iframe
