@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 
 export default function ResumePage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="w-full px-4 sm:px-8 py-6 flex-1 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
           <Link
             href="/founder"
@@ -35,13 +35,12 @@ export default function ResumePage() {
         </a>
       </div>
 
-      {/* PDF Preview */}
+      {/* PDF Preview — fills remaining viewport */}
       <div
-        className="rounded-lg overflow-hidden border"
+        className="flex-1 rounded-lg overflow-hidden border"
         style={{
           borderColor: 'rgba(255,136,0,0.15)',
           background: '#fff',
-          height: 'calc(100vh - 140px)',
           minHeight: '700px',
         }}
       >
