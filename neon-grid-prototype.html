@@ -428,38 +428,72 @@ function handleCollision(nodeIdx, intensity1, intensity2) {
   const cy = rect.top + rect.height / 2;
 
   const diff = Math.abs(intensity1 - intensity2);
+  const combined = intensity1 + intensity2;
+
+  // All collisions get some sparks — bigger collision = more sparks
+  const baseCount = Math.floor(combined * 6 + 2);
+  for (let i = 0; i < baseCount && sparkCount < MAX_SPARKS; i++) {
+    allSparks.push(initSpark(getSpark(),
+      cx + (Math.random()-0.5) * rect.width * 0.6,
+      cy + (Math.random()-0.5) * rect.height * 0.4,
+      0.8 + combined * 0.4));
+    sparkCount++;
+  }
 
   if (diff < 0.15) {
-    // Similar intensity — constructive interference: bright flash + sparks
-    const count = Math.floor(Math.random() * 8 + 4);
-    for (let i = 0; i < count && sparkCount < MAX_SPARKS; i++) {
+    // Similar intensity — constructive interference: BIG flash + bolt shower
+    // Extra burst of sparks
+    const burstCount = Math.floor(Math.random() * 10 + 6);
+    for (let i = 0; i < burstCount && sparkCount < MAX_SPARKS; i++) {
       allSparks.push(initSpark(getSpark(),
-        cx + (Math.random()-0.5) * rect.width * 0.5,
-        cy + (Math.random()-0.5) * rect.height * 0.3,
-        1.2));
+        cx + (Math.random()-0.5) * rect.width * 0.8,
+        cy + (Math.random()-0.5) * rect.height * 0.5,
+        1.5 + combined * 0.3));
       sparkCount++;
     }
+    // Multiple bolts
     spawnBolt(cx, cy);
+    if (Math.random() > 0.3) spawnBolt(cx + (Math.random()-0.5)*40, cy + (Math.random()-0.5)*40);
 
-    // Flash the node
+    // Flash the node bright
     if (node.type === 'heading' || node.type === 'header') {
       const el = node.type === 'header' ? document.getElementById('site-logo') : document.getElementById('page-title');
-      el.style.textShadow = `0 0 20px rgba(${NEON_RGB.join(',')},1), 0 0 40px rgba(${NEON_RGB.join(',')},0.6)`;
-      setTimeout(() => { el.style.textShadow = ''; }, 150);
+      el.style.textShadow = `0 0 30px rgba(${NEON_RGB.join(',')},1), 0 0 60px rgba(${NEON_RGB.join(',')},0.6), 0 0 100px rgba(${NEON_RGB.join(',')},0.3)`;
+      setTimeout(() => { el.style.textShadow = ''; }, 250);
+    }
+
+    // Flash card bloom if it's a card
+    if (node.type === 'card' && node.cardIdx !== null) {
+      const state = cardStates[node.cardIdx];
+      if (state) {
+        state.card.style.boxShadow = `0 0 40px rgba(${NEON_RGB.join(',')},0.3), 0 0 80px rgba(${NEON_RGB.join(',')},0.15), 0 0 150px rgba(${NEON_RGB.join(',')},0.06)`;
+        setTimeout(() => { state.card.style.boxShadow = ''; }, 300);
+      }
     }
   } else if (intensity1 > intensity2 * 2 || intensity2 > intensity1 * 2) {
-    // One much stronger — absorbs the weaker (no special visual, just continues)
+    // One much stronger — absorbs weaker, single bolt at collision
+    if (Math.random() > 0.4) spawnBolt(cx, cy);
   } else {
-    // Moderate difference — partial cancellation, brief dim
+    // Moderate difference — partial cancellation, brief dim + small bolt
+    if (Math.random() > 0.5) spawnBolt(cx, cy);
     if (node.type === 'card' && node.cardIdx !== null) {
       const state = cardStates[node.cardIdx];
       if (state) {
         state.waves.push({
           startTime: performance.now(), mode: 'linear', direction: 1,
-          speed: 2, dip: 0.1, holdMs: 50, recoveryMs: 200
+          speed: 2, dip: 0.05, holdMs: 80, recoveryMs: 300
         });
       }
     }
+  }
+
+  // Trigger white neon response on collision node
+  if (node.type === 'card' && node.cardIdx !== null) {
+    triggerWhiteNeonResponse(`card-${node.cardIdx}`, combined * 0.5);
+  } else if (node.type === 'heading') {
+    triggerWhiteNeonResponse('heading', combined * 0.5);
+  } else if (node.type === 'header') {
+    triggerWhiteNeonResponse('header', combined * 0.5);
   }
 }
 
@@ -505,6 +539,8 @@ function triggerNodeSurge(nodeIdx, intensity) {
 
   if (node.type === 'card' && node.cardIdx !== null) {
     triggerWhiteNeonResponse(`card-${node.cardIdx}`, intensity);
+    // Try to arc to a neighbor
+    tryArc(node.cardIdx, intensity);
     // Trigger card wave system
     const state = cardStates[node.cardIdx];
     if (state) {
@@ -748,6 +784,86 @@ function sparkOnDips(state) {
 }
 
 // ============================================================
+// ARC SYSTEM — electrical arcs between nearby cards
+// ============================================================
+function tryArc(fromCardIdx, intensity) {
+  if (intensity < 0.5) return;
+
+  const fromState = cardStates[fromCardIdx];
+  if (!fromState) return;
+  const fromRect = fromState.card.getBoundingClientRect();
+
+  // Find nearest card
+  let nearestIdx = -1;
+  let nearestDist = Infinity;
+
+  cardStates.forEach((state, idx) => {
+    if (idx === fromCardIdx) return;
+    const r = state.card.getBoundingClientRect();
+    // Distance between closest edges
+    let dist;
+    if (r.top > fromRect.bottom) dist = r.top - fromRect.bottom;
+    else if (fromRect.top > r.bottom) dist = fromRect.top - r.bottom;
+    else dist = 0; // overlapping vertically
+
+    if (dist < nearestDist) { nearestDist = dist; nearestIdx = idx; }
+  });
+
+  if (nearestIdx < 0 || nearestDist > 120) return; // too far to arc
+
+  // Probability: stronger surge + closer distance = more likely
+  const arcChance = (intensity - 0.5) * 0.6 * (1 - nearestDist / 120);
+  if (Math.random() > arcChance) return;
+
+  const toState = cardStates[nearestIdx];
+  const toRect = toState.card.getBoundingClientRect();
+
+  // Pick random points on the facing edges
+  const fromX = fromRect.left + Math.random() * fromRect.width;
+  const fromBelow = toRect.top > fromRect.bottom;
+  const fromY = fromBelow ? fromRect.bottom : fromRect.top;
+  const toX = toRect.left + Math.random() * toRect.width;
+  const toY = fromBelow ? toRect.top : toRect.bottom;
+
+  // Build jagged arc path between the two points
+  const arcSegs = [];
+  const steps = 4 + Math.floor(Math.random() * 4);
+  let cx = fromX, cy = fromY;
+
+  for (let i = 0; i < steps; i++) {
+    const t = (i + 1) / steps;
+    const nx = fromX + (toX - fromX) * t + (Math.random() - 0.5) * 40;
+    const ny = fromY + (toY - fromY) * t + (Math.random() - 0.5) * 15;
+    arcSegs.push({ x1: cx, y1: cy, x2: nx, y2: ny });
+    cx = nx; cy = ny;
+  }
+  // Snap final segment to target
+  arcSegs[arcSegs.length - 1].x2 = toX;
+  arcSegs[arcSegs.length - 1].y2 = toY;
+
+  // Add as a bolt with slower decay (lingers longer than normal bolts)
+  bolts.push({
+    segments: arcSegs,
+    life: 1,
+    decay: 0.02 + Math.random() * 0.015,
+    r: NEON_RGB[0], g: NEON_RGB[1], b: NEON_RGB[2],
+  });
+
+  // Sparks at both connection points
+  for (let i = 0; i < 3 + Math.floor(Math.random() * 3) && sparkCount < MAX_SPARKS; i++) {
+    allSparks.push(initSpark(getSpark(), fromX + (Math.random()-0.5)*8, fromY + (Math.random()-0.5)*8, 0.7));
+    sparkCount++;
+  }
+  for (let i = 0; i < 2 + Math.floor(Math.random() * 3) && sparkCount < MAX_SPARKS; i++) {
+    allSparks.push(initSpark(getSpark(), toX + (Math.random()-0.5)*8, toY + (Math.random()-0.5)*8, 0.6));
+    sparkCount++;
+  }
+
+  // The receiving card gets a small surge from the arc
+  scheduleWave(toState, intensity * 0.4);
+}
+
+// ============================================================
 // SPARK SYSTEM
 // ============================================================
 const canvas = document.getElementById('spark-canvas');
@@ -890,8 +1006,108 @@ setupCards();
 buildGrid();
 window.addEventListener('resize', () => { resizeCanvas(); setupCards(); buildGrid(); });
 
-// Start schedulers
-setTimeout(() => { triggerGridSurge(0, 0.8); scheduleGridSurge(); }, 3000);
+// Start schedulers — first event is a collision test: two surges from opposite ends
+setTimeout(() => {
+  // Surge from top (header) and bottom (last card) simultaneously
+  triggerGridSurge(0, 0.8);
+  triggerGridSurge(gridNodes.length - 1, 0.75);
+}, 3000);
+
+// After the demo collision, start normal scheduling
+setTimeout(() => { scheduleGridSurge(); }, 8000);
+
+// === BIG BANG — rare, dramatic electrical event ===
+function triggerBigBang() {
+  // Pick a random card
+  const cardIdx = Math.floor(Math.random() * cardStates.length);
+  const state = cardStates[cardIdx];
+  if (!state) return;
+
+  const rect = state.card.getBoundingClientRect();
+  if (rect.top > window.innerHeight || rect.bottom < 0) return;
+
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  // Phase 1: Everything dips hard — power dropping
+  cardStates.forEach(s => {
+    s.waves.push({
+      startTime: performance.now(), mode: 'linear', direction: 1,
+      speed: 5, dip: 0.15, holdMs: 200, recoveryMs: 100
+    });
+  });
+
+  // Phase 2: The bang — after a tense dip
+  setTimeout(() => {
+    // Blackout the target card
+    state.waves.push({
+      startTime: performance.now(), mode: 'linear', direction: 1,
+      speed: 1, dip: 0, holdMs: 80, recoveryMs: 400
+    });
+
+    // Big spark shower from the card
+    const sparkBurst = 20 + Math.floor(Math.random() * 15);
+    for (let i = 0; i < sparkBurst && sparkCount < MAX_SPARKS; i++) {
+      allSparks.push(initSpark(getSpark(),
+        cx + (Math.random()-0.5) * rect.width * 0.8,
+        cy + (Math.random()-0.5) * rect.height * 0.6,
+        1.8 + Math.random() * 0.8));
+      sparkCount++;
+    }
+
+    // Multiple bolts radiating from the card
+    for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) {
+      spawnBolt(
+        cx + (Math.random()-0.5) * rect.width * 0.6,
+        cy + (Math.random()-0.5) * rect.height * 0.4
+      );
+    }
+
+    // Flash the card bloom huge
+    state.card.style.boxShadow =
+      `0 0 60px rgba(${NEON_RGB.join(',')},0.5),` +
+      `0 0 120px rgba(${NEON_RGB.join(',')},0.25),` +
+      `0 0 200px rgba(${NEON_RGB.join(',')},0.1)`;
+    setTimeout(() => { state.card.style.boxShadow = ''; }, 500);
+
+    // White neon elements on the card react hard
+    triggerWhiteNeonResponse(`card-${cardIdx}`, 1.0);
+
+    // Force arc attempt with high intensity
+    tryArc(cardIdx, 1.0);
+
+    // Propagate a strong grid surge outward from this card
+    const nodeIdx = gridNodes.findIndex(n => n.cardIdx === cardIdx);
+    if (nodeIdx >= 0) triggerGridSurge(nodeIdx, 1.0);
+
+  }, 300);
+}
+
+function scheduleBigBang() {
+  setTimeout(() => {
+    triggerBigBang();
+    scheduleBigBang();
+  }, 25000 + Math.random() * 35000);
+}
+// First big bang after 8 seconds so you can see it
+setTimeout(triggerBigBang, 8000);
+setTimeout(scheduleBigBang, 30000);
+
+// Also schedule occasional dual surges for natural collisions
+function scheduleCollisionSurge() {
+  setTimeout(() => {
+    if (Math.random() > 0.6) {
+      // Pick two different nodes
+      const a = Math.floor(Math.random() * gridNodes.length);
+      let b = Math.floor(Math.random() * gridNodes.length);
+      while (b === a) b = Math.floor(Math.random() * gridNodes.length);
+      triggerGridSurge(a, 0.5 + Math.random() * 0.5);
+      setTimeout(() => triggerGridSurge(b, 0.5 + Math.random() * 0.5), Math.random() * 500);
+    }
+    scheduleCollisionSurge();
+  }, 15000 + Math.random() * 20000);
+}
+setTimeout(scheduleCollisionSurge, 12000);
 
 // Start per-card wave schedulers (staggered so they don't all fire at once)
 cardStates.forEach((_, i) => {
