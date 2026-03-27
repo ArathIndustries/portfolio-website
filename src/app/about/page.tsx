@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { SkillsPipeline } from "@/components/SkillsPipeline";
 
 export const metadata: Metadata = {
   title: "About",
@@ -71,13 +70,6 @@ export default function AboutPage() {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* Skills Pipeline */}
-      <section className="mb-16">
-        <h2 className="text-2xl font-bold font-mono mb-2 text-gray-200">The Stack</h2>
-        <p className="text-sm text-gray-500 mb-6">Hardware to deployment — click any stage to see the full depth.</p>
-        <SkillsPipeline />
       </section>
 
       {/* Founder CTA */}

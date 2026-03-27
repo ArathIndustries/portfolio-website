@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skills Timeline Prototype — Arath Industries</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #090706;
+    --card-bg: rgba(13,11,10,0.85);
+    --neon: #FF8800;
+    --neon-rgb: 255,136,0;
+    --text: #e0e0e0;
+    --text-dim: rgba(255,255,255,0.5);
+    --text-dimmer: rgba(255,255,255,0.25);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 3rem 1rem;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; }
+
+  h2 {
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    color: var(--neon);
+    text-shadow: 0 0 20px rgba(var(--neon-rgb),0.4), 0 0 40px rgba(var(--neon-rgb),0.15);
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-dimmer);
+    margin-bottom: 3rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* === TIMELINE === */
+  .timeline { position: relative; padding: 1rem 0; }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    top: 0; bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, transparent 0%, rgba(var(--neon-rgb),0.15) 3%, rgba(var(--neon-rgb),0.15) 97%, transparent 100%);
+    filter: blur(1.5px);
+  }
+
+  .timeline-glow {
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    top: 0; width: 2px; height: 0;
+    background: linear-gradient(180deg, var(--neon) 0%, rgba(var(--neon-rgb),0.5) 60%, transparent 100%);
+    box-shadow: 0 0 12px rgba(var(--neon-rgb),0.4), 0 0 24px rgba(var(--neon-rgb),0.2);
+    transition: height 0.15s ease-out;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: 50%; transform: translate(-50%, -50%);
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--neon) 0%, rgba(var(--neon-rgb),0.8) 40%, transparent 70%);
+    box-shadow: 0 0 20px var(--neon), 0 0 40px rgba(var(--neon-rgb),0.5);
+    transition: top 0.15s ease-out;
+  }
+  .timeline-dot::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background: var(--neon);
+    animation: ping 2s cubic-bezier(0,0,0.2,1) infinite; opacity: 0.5;
+  }
+  @keyframes ping {
+    0% { transform: scale(1); opacity: 0.5; }
+    75%, 100% { transform: scale(2.5); opacity: 0; }
+  }
+
+  /* === TIMELINE ITEM === */
+  .timeline-item {
+    position: relative;
+    margin-bottom: 4rem;
+  }
+  .timeline-item:nth-child(odd) { padding-right: calc(50% + 2rem); }
+  .timeline-item:nth-child(even) { padding-left: calc(50% + 2rem); }
+
+  /* Node dot */
+  .node-dot {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    top: 2.5rem; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--bg); border: 2px solid rgba(var(--neon-rgb),0.3);
+    box-shadow: 0 0 0 2px var(--bg);
+    z-index: 2; transition: all 0.5s ease;
+  }
+  .timeline-item.active .node-dot {
+    background: var(--neon); border-color: var(--neon);
+    box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px rgba(var(--neon-rgb),0.3), 0 0 20px rgba(var(--neon-rgb),0.5);
+  }
+  .timeline-item.active .node-dot::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background: var(--neon); animation: ping 2s ease-in-out infinite; opacity: 0.3;
+  }
+
+  /* Connector */
+  .connector {
+    position: absolute; top: calc(2.5rem + 5px); height: 1px; width: 2rem; z-index: 1;
+    transition: all 0.5s;
+  }
+  .timeline-item:nth-child(odd) .connector {
+    right: calc(50% - 2rem + 6px);
+    background: linear-gradient(90deg, transparent, rgba(var(--neon-rgb),0.4));
+  }
+  .timeline-item:nth-child(even) .connector {
+    left: calc(50% - 2rem + 6px);
+    background: linear-gradient(90deg, rgba(var(--neon-rgb),0.4), transparent);
+  }
+  .timeline-item:not(.active) .connector { opacity: 0.2; }
+  .timeline-item.active .connector {
+    box-shadow: 0 0 8px rgba(var(--neon-rgb),0.2);
+    opacity: 1;
+  }
+
+  /* === NEON SIGN CARD === */
+  .card { perspective: 1000px; cursor: pointer; width: 100%; }
+  .card-inner {
+    position: relative; width: 100%; height: 240px;
+    transition: transform 0.6s ease; transform-style: preserve-3d;
+  }
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+
+  .card-front, .card-back {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+
+  /* Front — neon sign on brick */
+  .card-front {
+    background: var(--card-bg);
+    border: 1px solid rgba(var(--neon-rgb),0.08);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 1.5rem;
+  }
+  .timeline-item.active .card-front {
+    border-color: rgba(var(--neon-rgb),0.3);
+    box-shadow:
+      0 0 15px rgba(var(--neon-rgb),0.06),
+      inset 0 0 30px rgba(var(--neon-rgb),0.02);
+  }
+  .card-front:hover {
+    border-color: rgba(var(--neon-rgb),0.25);
+    box-shadow: 0 0 20px rgba(var(--neon-rgb),0.08);
+  }
+
+  /* Era name — neon glow */
+  .era-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--neon);
+    text-shadow:
+      0 0 7px rgba(var(--neon-rgb),0.6),
+      0 0 20px rgba(var(--neon-rgb),0.3),
+      0 0 40px rgba(var(--neon-rgb),0.15);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.02em;
+  }
+  .timeline-item:not(.active) .era-name {
+    opacity: 0.6;
+    text-shadow: 0 0 7px rgba(var(--neon-rgb),0.3);
+  }
+
+  /* Period */
+  .era-period {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: rgba(var(--neon-rgb),0.4);
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+  }
+
+  /* Summary flow */
+  .era-summary {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+
+  /* Tap hint */
+  .tap-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dimmer);
+    transition: color 0.3s;
+  }
+  .card-front:hover .tap-hint { color: rgba(var(--neon-rgb),0.5); }
+
+  /* Mounting bracket */
+  .mount-bracket {
+    width: 50px; height: 2px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 1px;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  /* Back — skill details */
+  .card-back {
+    transform: rotateY(180deg);
+    background: var(--card-bg);
+    border: 1px solid rgba(var(--neon-rgb),0.3);
+    box-shadow: 0 0 15px rgba(var(--neon-rgb),0.06);
+  }
+  .card-back-accent {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(180deg, var(--neon), rgba(var(--neon-rgb),0.2), var(--neon));
+    box-shadow: 0 0 8px rgba(var(--neon-rgb),0.3);
+  }
+  .card-back-content {
+    padding: 1.25rem 1.25rem 1rem 1.5rem;
+    height: 100%; display: flex; flex-direction: column;
+  }
+  .card-back-content h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--neon);
+    margin-bottom: 0.75rem;
+    text-shadow: 0 0 10px rgba(var(--neon-rgb),0.3);
+  }
+  .detail-list { list-style: none; flex: 1; overflow-y: auto; }
+  .detail-list li {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 0.4rem;
+  }
+  .detail-list li .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--neon); opacity: 0.5; flex-shrink: 0;
+    box-shadow: 0 0 4px rgba(var(--neon-rgb),0.4);
+  }
+  .detail-list li span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+  }
+  .card-back-footer {
+    padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 0.5rem;
+  }
+  .card-back-footer span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; color: var(--text-dimmer);
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 768px) {
+    .timeline::before, .timeline-glow, .timeline-dot { left: 1rem; }
+    .timeline-item:nth-child(odd),
+    .timeline-item:nth-child(even) { padding-left: 3rem; padding-right: 0; }
+    .node-dot { left: 1rem; }
+    .connector { display: none; }
+  }
+
+  .info {
+    text-align: center; font-size: 0.6rem; color: #333;
+    margin-top: 3rem; font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>The Journey</h2>
+  <p class="subtitle">from circuits to shipping products</p>
+
+  <div class="timeline" id="timeline">
+    <div class="timeline-glow" id="glow-line"></div>
+    <div class="timeline-dot" id="glow-dot"></div>
+
+    <!-- NOW: Shipping Products -->
+    <div class="timeline-item active" data-era="8">
+      <div class="node-dot"></div>
+      <div class="connector"></div>
+      <div class="card" onclick="this.classList.toggle('flipped')">
+        <div class="card-inner">
+          <div class="card-front">
+            <div class="mount-bracket"></div>
+            <div class="era-name">Shipping Products</div>
+            <div class="era-period">2025 — PRESENT</div>
+            <div class="era-summary">containers &rarr; CI/CD &rarr; production monitoring</div>
+            <div class="tap-hint">tap to explore</div>
+          </div>
+          <div class="card-back">
+            <div class="card-back-accent"></div>
+            <div class="card-back-content">
+              <h4>Skills Acquired</h4>
+              <ul class="detail-list">
+                <li><div class="dot"></div><span>Docker</span></li>
+                <li><div class="dot"></div><span>Vercel / Render</span></li>
+                <li><div class="dot"></div><span>GitHub Actions CI/CD</span></li>
+                <li><div class="dot"></div><span>Git</span></li>
+                <li><div class="dot"></div><span>Automated Scheduling</span></li>
+                <li><div class="dot"></div><span>Service Monitoring</span></li>
+                <li><div class="dot"></div><span>Watchdog Systems</span></li>
+                <li><div class="dot"></div><span>WebSocket</span></li>
+                <li><div class="dot"></div><span>Email Integration (Resend)</span></li>
+              </ul>
+              <div class="card-back-footer"><span>tap to go back</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI & Edge Computing -->
+    <div class="timeline-item" data-era="7">
+      <div class="node-dot"></div>
+      <div class="connector"></div>
+      <div class="card" onclick="this.classList.toggle('flipped')">
+        <div class="card-inner">
+          <div class="card-front">
+            <div class="mount-bracket"></div>
+            <div class="era-name">AI & Edge Computing</div>
+            <div class="era-period">2025 — PRESENT</div>
+            <div class="era-summary">ML pipelines &rarr; LLMs &rarr; microcontroller inference</div>
+            <div class="tap-hint">tap to explore</div>
+          </div>
+          <div class="card-back">
+            <div class="card-back-accent"></div>
+            <div class="card-back-content">
+              <h4>Skills Acquired</h4>
+              <ul class="detail-list">
+                <li><div class="dot"></div><span>TensorFlow / TFLite Micro</span></li>
+                <li><div class="dot"></div><span>CNNs / INT8 Quantization</span></li>
+                <li><div class="dot"></div><span>FFT & Mel-Spectrograms</span></li>
+                <li><div class="dot"></div><span>Prompt Engineering</span></li>
+                <li><div class="dot"></div><span>LLM Integration</span></li>
+                <li><div class="dot"></div><span>AI Summarization</span></li>
+                <li><div class="dot"></div><span>Arduino / ESP32 / STM32</span></li>
+                <li><div class="dot"></div><span>Bluetooth Low Energy</span></li>
+                <li><div class="dot"></div><span>Acoustic Emission Sensors</span></li>
+                <li><div class="dot"></div><span>Edge Inference</span></li>
+              </ul>
+              <div class="card-back-footer"><span>tap to go back</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Programming & Data -->
+    <div class="timeline-item" data-era="6">
+      <div class="node-dot"></div>
+      <div class="connector"></div>
+      <div class="card" onclick="this.classList.toggle('flipped')">
+        <div class="card-inner">
+          <div class="card-front">
+            <div class="mount-bracket"></div>
+            <div class="era-name">Programming & Data</div>
+            <div class="era-period">2025 — PRESENT</div>
+            <div class="era-summary">Python &rarr; web frameworks &rarr; databases &rarr; visualization</div>
+            <div class="tap-hint">tap to explore</div>
+          </div>
+          <div class="card-back">
+            <div class="card-back-accent"></div>
+            <div class="card-back-content">
+              <h4>Skills Acquired</h4>
+              <ul class="detail-list">
+                <li><div class="dot"></div><span>Python</span></li>
+                <li><div class="dot"></div><span>JavaScript / TypeScript</span></li>
+                <li><div class="dot"></div><span>React / Next.js</span></li>
+                <li><div class="dot"></div><span>FastAPI</span></li>
+                <li><div class="dot"></div><span>Tailwind CSS</span></li>
+                <li><div class="dot"></div><span>PostgreSQL / Supabase</span></li>
+                <li><div class="dot"></div><span>Plotly.js / Leaflet.js</span></li>
+                <li><div class="dot"></div><span>Web Scraping (11 scrapers)</span></li>
+                <li><div class="dot"></div><span>REST API Design</span></li>
+                <li><div class="dot"></div><span>SQL / GeoJSON / CSV</span></li>
+              </ul>
+              <div class="card-back-footer"><span>tap to go back</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Industrial Engineering -->
+    <div class="timeline-item" data-era="5">
+      <div class="node-dot"></div>
+      <div class="connector"></div>
+      <div class="card" onclick="this.classList.toggle('flipped')">
+        <div class="card-inner">
+          <div class="card-front">
+            <div class="mount-bracket"></div>
+            <div class="era-name">Industrial Engineering</div>
+            <div class="era-period">2025 — PRESENT</div>
+            <div class="era-summary">systems thinking &rarr; process improvement &rarr; quality</div>
+            <div class="tap-hint">tap to explore</div>
+          </div>
+          <div class="card-back">
+            <div class="card-back-accent"></div>
+            <div class="card-back-content">
+              <h4>Skills Acquired</h4>
+              <ul class="detail-list">
+                <li><div class="dot"></div><span>Statistical Process Control</span></li>
+                <li><div class="dot"></div><span>DMAIC Methodology</span></li>
+                <li><div class="dot"></div><span>Quality Engineering</span></li>
+                <li><div class="dot"></div><span>Minitab</span></li>
+                <li><div class="dot"></div><span>Process Improvement</span></li>
+                <li><div class="dot"></div><span>Systems Thinking</span></li>
+                <li><div class="dot"></div><span>Operations Research</span></li>
+                <li><div class="dot"></div><span>Lean Manufacturing</span></li>
+              </ul>
+              <div class="card-back-footer"><span>tap to go back</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Civil Engineering -->
+    <div class="timeline-item" data-era="4">
+      <div class="node-dot"></div>
+      <div class="connector"></div>
+      <div class="card" onclick="this.classList.toggle('flipped')">
+        <div class="card-inner">
+          <div class="card-front">
+            <div class="mount-bracket"></div>
+            <div class="era-name">Civil Engineering</div>
+            <div class="era-period">2021 — 2026</div>
+            <div class="era-summary">professional design &rarr; substations &rarr; project coordination</div>
+            <div class="tap-hint">tap to explore</div>
+          </div>
+          <div class="card-back">
+            <div class="card-back-accent"></div>
+            <div class="card-back-content">
+              <h4>Skills Acquired</h4>
+              <ul class="detail-list">
+                <li><div class="dot"></div><span>Civil Engineering Design</span></li>
+                <li><div class="dot"></div><span>Power Substation Schematics</span></li>
+                <li><div class="dot"></div><span>Project Coordination</span></li>
+                <li><div class="dot"></div><span>Stormwater & Drainage</span></li>
+                <li><div class="dot"></div><span>Utility Design</span></li>
+                <li><div class="dot"></div><span>Permitting & Compliance</span></li>
+                <li><div class="dot"></div><span>Client Communication</span></li>
+                <li><div class="dot"></div><span>Team Collaboration</span></li>
+              </ul>
+              <div class="card-back-footer"><span>tap to go back</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Electronics -->
+    <div class="timeline-item" data-era="3">
+      <div class="node-dot"></div>
+      <div class="connector"></div>
+      <div class="card" onclick="this.classList.toggle('flipped')">
+        <div class="card-inner">
+          <div class="card-front">
+            <div class="mount-bracket"></div>
+            <div class="era-name">Electronics</div>
+            <div class="era-period">2019 — 2021</div>
+            <div class="era-summary">circuits &rarr; sensors &rarr; embedded systems</div>
+            <div class="tap-hint">tap to explore</div>
+          </div>
+          <div class="card-back">
+            <div class="card-back-accent"></div>
+            <div class="card-back-content">
+              <h4>Skills Acquired</h4>
+              <ul class="detail-list">
+                <li><div class="dot"></div><span>Circuit Design</span></li>
+                <li><div class="dot"></div><span>Soldering & Prototyping</span></li>
+                <li><div class="dot"></div><span>Assembly Language</span></li>
+                <li><div class="dot"></div><span>C Programming</span></li>
+                <li><div class="dot"></div><span>Signal Processing</span></li>
+                <li><div class="dot"></div><span>Electronic Systems</span></li>
+                <li><div class="dot"></div><span>Oscilloscopes & Multimeters</span></li>
+                <li><div class="dot"></div><span>Power Systems</span></li>
+              </ul>
+              <div class="card-back-footer"><span>tap to go back</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Community College -->
+    <div class="timeline-item" data-era="2">
+      <div class="node-dot"></div>
+      <div class="connector"></div>
+      <div class="card" onclick="this.classList.toggle('flipped')">
+        <div class="card-inner">
+          <div class="card-front">
+            <div class="mount-bracket"></div>
+            <div class="era-name">Community College</div>
+            <div class="era-period">2017 — 2018</div>
+            <div class="era-summary">core academics &rarr; math &rarr; sciences</div>
+            <div class="tap-hint">tap to explore</div>
+          </div>
+          <div class="card-back">
+            <div class="card-back-accent"></div>
+            <div class="card-back-content">
+              <h4>Skills Acquired</h4>
+              <ul class="detail-list">
+                <li><div class="dot"></div><span>Calculus</span></li>
+                <li><div class="dot"></div><span>Physics</span></li>
+                <li><div class="dot"></div><span>Chemistry</span></li>
+                <li><div class="dot"></div><span>Technical Writing</span></li>
+                <li><div class="dot"></div><span>Statistics Foundations</span></li>
+              </ul>
+              <div class="card-back-footer"><span>tap to go back</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Civil Design (earliest) -->
+    <div class="timeline-item" data-era="1">
+      <div class="node-dot"></div>
+      <div class="connector"></div>
+      <div class="card" onclick="this.classList.toggle('flipped')">
+        <div class="card-inner">
+          <div class="card-front">
+            <div class="mount-bracket"></div>
+            <div class="era-name">Civil Design</div>
+            <div class="era-period">2015 — 2016</div>
+            <div class="era-summary">associates degree &rarr; CAD &rarr; structural fundamentals</div>
+            <div class="tap-hint">tap to explore</div>
+          </div>
+          <div class="card-back">
+            <div class="card-back-accent"></div>
+            <div class="card-back-content">
+              <h4>Skills Acquired</h4>
+              <ul class="detail-list">
+                <li><div class="dot"></div><span>CAD Drafting</span></li>
+                <li><div class="dot"></div><span>Structural Systems</span></li>
+                <li><div class="dot"></div><span>Construction Documents</span></li>
+                <li><div class="dot"></div><span>Site Design</span></li>
+                <li><div class="dot"></div><span>Technical Drawing</span></li>
+                <li><div class="dot"></div><span>Blueprint Reading</span></li>
+              </ul>
+              <div class="card-back-footer"><span>tap to go back</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="info">neon sign cards · scroll-driven glow · 3D flip · zigzag timeline</div>
+
+<script>
+const timeline = document.getElementById('timeline');
+const glowLine = document.getElementById('glow-line');
+const glowDot = document.getElementById('glow-dot');
+const items = document.querySelectorAll('.timeline-item');
+
+function updateGlow() {
+  const rect = timeline.getBoundingClientRect();
+  const timelineTop = rect.top + window.scrollY;
+  const timelineHeight = rect.height;
+  const scrollY = window.scrollY + window.innerHeight * 0.4;
+  const progress = Math.max(0, Math.min(1, (scrollY - timelineTop) / timelineHeight));
+  const glowHeight = progress * timelineHeight;
+
+  glowLine.style.height = glowHeight + 'px';
+  glowDot.style.top = glowHeight + 'px';
+
+  items.forEach(item => {
+    const itemRect = item.getBoundingClientRect();
+    const itemTop = itemRect.top + window.scrollY - timelineTop;
+    if (itemTop < glowHeight + 50) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+
+  requestAnimationFrame(updateGlow);
+}
+requestAnimationFrame(updateGlow);
+</script>
+</body>
+</html>

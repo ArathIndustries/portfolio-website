@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { SkillsTimeline } from "@/components/SkillsTimeline";
 
 export const metadata: Metadata = {
   title: "Founder",
@@ -54,6 +55,13 @@ export default function FounderPage() {
             When I&apos;m not building, I&apos;m probably thinking about building something else.
           </p>
         </div>
+      </section>
+
+      {/* The Journey */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold font-mono mb-2 text-gray-200">The Journey</h2>
+        <p className="text-sm text-gray-600 mb-8 font-mono">from circuits to shipping products</p>
+        <SkillsTimeline />
       </section>
 
       {/* Connect */}
