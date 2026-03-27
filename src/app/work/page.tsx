@@ -77,7 +77,7 @@ export default function WorkPage() {
       {/* Page Header */}
       <header className="mb-12 flex items-start justify-between">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-4 neon-text">Work</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-4 neon-text neon-flicker">Work</h1>
           <p className="text-gray-400 max-w-2xl">
             A collection of tools, platforms, and research spanning engineering, AI, and automation.
           </p>

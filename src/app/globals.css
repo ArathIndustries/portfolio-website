@@ -172,6 +172,62 @@ body::before {
   text-shadow: 0 0 8px rgba(var(--neon-r), var(--neon-g), var(--neon-b), 0.5);
 }
 
+/* === Neon flicker animation === */
+@keyframes neon-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+    text-shadow:
+      0 0 7px rgba(255,136,0,0.6),
+      0 0 20px rgba(255,136,0,0.3),
+      0 0 40px rgba(255,136,0,0.15);
+  }
+  20%, 24%, 55% {
+    opacity: 0.85;
+    text-shadow:
+      0 0 4px rgba(255,136,0,0.4),
+      0 0 12px rgba(255,136,0,0.15);
+  }
+}
+
+.neon-flicker {
+  animation: neon-flicker 8s ease-in-out infinite;
+}
+
+/* === Neon divider === */
+@keyframes border-glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.neon-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,136,0,0.3) 20%, rgba(255,136,0,0.3) 80%, transparent);
+  box-shadow: 0 0 8px rgba(255,136,0,0.15), 0 0 20px rgba(255,136,0,0.05);
+  animation: border-glow-pulse 4s ease-in-out infinite;
+}
+
+/* === Heading font === */
+h1, h2, h3 {
+  font-family: var(--font-jetbrains-mono), 'JetBrains Mono', monospace;
+}
+
+/* === Neon link hover === */
+a:not(.neon-btn):not(.neon-btn-filled):hover {
+  text-shadow: 0 0 8px rgba(255,136,0,0.3);
+}
+
+/* === Neon card === */
+.neon-card {
+  background: rgba(13,11,10,0.6);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+.neon-card:hover {
+  border-color: rgba(255,136,0,0.3);
+  box-shadow: 0 0 15px rgba(255,136,0,0.06), inset 0 0 30px rgba(255,136,0,0.02);
+}
+
 /* === Scrollbar === */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #090706; }

@@ -13,7 +13,7 @@ export default function BlogPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <header className="mb-12">
-        <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-4 neon-text">Blog</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-4 neon-text neon-flicker">Blog</h1>
         <p className="text-gray-400">
           Thoughts on engineering, AI, automation, and the intersection of
           technology and design.

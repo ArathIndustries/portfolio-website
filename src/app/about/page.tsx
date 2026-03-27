@@ -39,7 +39,7 @@ export default function AboutPage() {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       {/* Studio Identity */}
       <section className="mb-16">
-        <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-6 neon-text">Arath Industries</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-6 neon-text neon-flicker">Arath Industries</h1>
         <p className="text-lg text-gray-300 leading-relaxed mb-4">
           An engineering studio that designs and builds tools for people who are tired of doing things the hard way.
         </p>
@@ -71,6 +71,8 @@ export default function AboutPage() {
           ))}
         </div>
       </section>
+
+      <div className="neon-divider my-12" />
 
       {/* Founder CTA */}
       <section

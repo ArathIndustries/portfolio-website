@@ -35,7 +35,7 @@ export default function ContactPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-4 neon-text">Contact</h1>
+      <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-4 neon-text neon-flicker">Contact</h1>
       <p className="text-gray-400 mb-12">
         Have a project in mind or want to collaborate? Let&apos;s talk.
       </p>
@@ -52,6 +52,8 @@ export default function ContactPage() {
           ))}
         </ul>
       </section>
+
+      <div className="neon-divider my-12" />
 
       {/* Contact Form */}
       {submitted ? (

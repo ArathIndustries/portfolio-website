@@ -50,11 +50,11 @@ export function MouseGlow() {
       ctx.globalCompositeOperation = 'destination-out';
 
       // Subtle amber-tinted reveal at cursor
-      const r = 150;
+      const r = 180;
       const grad = ctx.createRadialGradient(smoothX, smoothY, 0, smoothX, smoothY, r);
-      grad.addColorStop(0, 'rgba(255,255,255,0.3)');
-      grad.addColorStop(0.25, 'rgba(255,255,255,0.15)');
-      grad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+      grad.addColorStop(0, 'rgba(255,255,255,0.4)');
+      grad.addColorStop(0.25, 'rgba(255,255,255,0.2)');
+      grad.addColorStop(0.5, 'rgba(255,255,255,0.06)');
       grad.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.fillStyle = grad;
       ctx.beginPath();

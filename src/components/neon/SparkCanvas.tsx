@@ -136,7 +136,7 @@ export function SparkCanvas({ bridgeRef }: SparkCanvasProps) {
       const avgB = bridgeRef.current.avgBrightness;
       if (sc) {
         // Wider elliptical glow — stretches horizontally to cover first/last letters
-        const glowRx = Math.min(w * 0.5, 700);
+        const glowRx = Math.min(w * 0.65, 900);
         const glowRy = Math.min(h * 0.35, 400);
         const glowR = Math.max(glowRx, glowRy);
         // Scale the canvas to draw an ellipse via radial gradient
@@ -144,10 +144,10 @@ export function SparkCanvas({ bridgeRef }: SparkCanvasProps) {
         mCtx.translate(sc.x, sc.y);
         mCtx.scale(glowRx / glowR, glowRy / glowR);
         const signGrad = mCtx.createRadialGradient(0, 0, 0, 0, 0, glowR);
-        signGrad.addColorStop(0, `rgba(255,255,255,${0.65 * avgB})`);
-        signGrad.addColorStop(0.25, `rgba(255,255,255,${0.4 * avgB})`);
-        signGrad.addColorStop(0.5, `rgba(255,255,255,${0.12 * avgB})`);
-        signGrad.addColorStop(0.75, `rgba(255,255,255,${0.02 * avgB})`);
+        signGrad.addColorStop(0, `rgba(255,255,255,${0.75 * avgB})`);
+        signGrad.addColorStop(0.2, `rgba(255,255,255,${0.45 * avgB})`);
+        signGrad.addColorStop(0.5, `rgba(255,255,255,${0.15 * avgB})`);
+        signGrad.addColorStop(0.75, `rgba(255,255,255,${0.04 * avgB})`);
         signGrad.addColorStop(1, 'rgba(255,255,255,0)');
         mCtx.fillStyle = signGrad;
         mCtx.beginPath(); mCtx.arc(0, 0, glowR, 0, Math.PI * 2); mCtx.fill();
@@ -157,11 +157,11 @@ export function SparkCanvas({ bridgeRef }: SparkCanvasProps) {
       // Mouse flashlight glow on mask
       smoothMouseX += (mouseX - smoothMouseX) * 0.15;
       smoothMouseY += (mouseY - smoothMouseY) * 0.15;
-      const mouseR = 150;
+      const mouseR = 180;
       const mouseGrad = mCtx.createRadialGradient(smoothMouseX, smoothMouseY, 0, smoothMouseX, smoothMouseY, mouseR);
-      mouseGrad.addColorStop(0, 'rgba(255,255,255,0.3)');
-      mouseGrad.addColorStop(0.25, 'rgba(255,255,255,0.15)');
-      mouseGrad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+      mouseGrad.addColorStop(0, 'rgba(255,255,255,0.4)');
+      mouseGrad.addColorStop(0.25, 'rgba(255,255,255,0.2)');
+      mouseGrad.addColorStop(0.5, 'rgba(255,255,255,0.06)');
       mouseGrad.addColorStop(1, 'rgba(255,255,255,0)');
       mCtx.fillStyle = mouseGrad;
       mCtx.beginPath(); mCtx.arc(smoothMouseX, smoothMouseY, mouseR, 0, Math.PI * 2); mCtx.fill();
