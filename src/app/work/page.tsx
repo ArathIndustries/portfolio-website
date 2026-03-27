@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { NeonTubeCard } from "@/components/neon";
 
 const projects = [
   {
@@ -104,10 +105,7 @@ export default function WorkPage() {
       <div className="space-y-8">
         {projects.map((project) => (
           <Link key={project.slug} href={`/work/${project.slug}`} className="block">
-          <article
-            className="rounded-lg border border-gray-800 overflow-hidden transition-all duration-200 hover:border-[var(--neon)] cursor-pointer"
-            style={{ background: 'rgba(13,11,10,0.6)' }}
-          >
+          <NeonTubeCard className="overflow-hidden cursor-pointer">
             {/* Live iframe preview */}
             {project.embed && (
               <div className="relative w-full" style={{ height: '400px' }}>
@@ -194,7 +192,7 @@ export default function WorkPage() {
                 </div>
               </div>
             </div>
-          </article>
+          </NeonTubeCard>
           </Link>
         ))}
       </div>
