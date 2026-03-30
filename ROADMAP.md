@@ -25,11 +25,10 @@ Replace Gmail on contact page and footer. Custom email is a documented trust sig
 
 ## Priority 2: Recruiter & Employer Experience
 
-### Downloadable Resume PDF
-- Create a clean, neon-themed PDF resume
-- Add download link on /founder page ("For Employers" section)
-- Optionally add to footer as a persistent link
-- Resume should complement the site, not duplicate it — focus on timeline, education, and role targeting
+### ~~Downloadable Resume PDF~~ ✅
+- ~~Create a clean, neon-themed PDF resume~~
+- ~~Add download link on /founder page ("For Employers" section)~~
+- Done — /resume page with PDF preview + download button
 
 ### Availability Signal
 Add a clear, confident statement of what you're open to:
@@ -70,8 +69,20 @@ Ensure all linked repos have clean, informative READMEs. Recruiters check these.
 
 ## Priority 4: Polish
 
-### Mobile Testing
-Test on a real phone before any major launch. Broken responsive design eliminates prospects before they read anything.
+### Mobile Interface Fixes
+- Fix overall mobile responsive layout (test on real phone)
+- Resume PDF: add pinch-to-zoom support on mobile
+- Founder page timeline cards: flipped cards (back side) can't scroll — fix overflow so the full content is accessible
+
+### Case Study & Content Review
+- Review each project's MDX case study for accuracy and completeness
+- Analyze and standardize development timeline conventions across all projects
+- Fix list/grid view toggle on /work page (currently non-functional)
+
+### Iframe Preview Fixes
+- OpenChambers: load the feed page instead of the welcome screen (URL param or route change)
+- Datathon Water Dashboard: center the view on the Texas map on initial load
+- Add visually interesting placeholder images for projects without live embeds
 
 ### Load Speed
 Run Lighthouse audit. Fast portfolio = trust signal. Slow = neglect signal.
