@@ -1,8 +1,8 @@
 export { NeonSign } from "./NeonSign";
 export { SparkCanvas } from "./SparkCanvas";
 export { MouseGlow } from "./MouseGlow";
-export { NeonGrid, NeonGridContext, useNeonGrid } from "./NeonGrid";
+export { NeonGrid, useNeonGrid } from "./NeonGrid";
 export { NeonTubeCard } from "./NeonTubeCard";
-export type { TubeCardHandle } from "./NeonTubeCard";
-export type { NeonGridContextValue } from "./NeonGrid";
+export { NeonGridContext } from "./NeonGridContext";
+export type { TubeCardHandle, WaveState, NeonGridContextValue } from "./types";
 export type { NeonBridge, Wave } from "./types";

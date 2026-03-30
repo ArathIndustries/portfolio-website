@@ -1,28 +1,15 @@
 'use client';
 
-import { useRef, useEffect, useId, useCallback, type ReactNode } from 'react';
+import { useRef, useEffect, useId, useCallback, useContext, type ReactNode } from 'react';
+import { NeonGridContext } from './NeonGridContext';
+import type { TubeCardHandle, WaveState } from './types';
 
-// ============================================================
-// Types
-// ============================================================
-
-export interface WaveState {
-  brightness: Float32Array;
-  avgBrightness: number;
-}
-
-export interface TubeCardHandle {
-  element: HTMLDivElement;
-  midpoints: { midX: number; midY: number }[];
-  lightSegs: SVGPathElement[];
-  coreSegs: SVGPathElement[];
-  bloom: SVGPathElement;
-  applyBrightness: (brightness: Float32Array) => void;
-}
+export type { TubeCardHandle, WaveState };
 
 interface NeonTubeCardProps {
   children: ReactNode;
   className?: string;
+  cardIndex?: number;
   cardRef?: (handle: TubeCardHandle | null) => void;
   waveState?: WaveState;
 }
@@ -76,10 +63,11 @@ function getSegmentInfo(
 // Component
 // ============================================================
 
-export function NeonTubeCard({ children, className = '', cardRef, waveState }: NeonTubeCardProps) {
+export function NeonTubeCard({ children, className = '', cardIndex, cardRef, waveState }: NeonTubeCardProps) {
   const outerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const filterId = useId();
+  const gridCtx = useContext(NeonGridContext);
 
   // Mutable refs for segment elements — survive rebuilds
   const lightSegsRef = useRef<SVGPathElement[]>([]);
@@ -203,36 +191,42 @@ export function NeonTubeCard({ children, className = '', cardRef, waveState }: N
     lightSegsRef.current = lightSegs;
     coreSegsRef.current = coreSegs;
 
+    // Build the handle
+    const handle: TubeCardHandle = {
+      element: card,
+      midpoints,
+      lightSegs,
+      coreSegs,
+      bloom: bloomEl!,
+      applyBrightness: (brightness: Float32Array) => {
+        let avg = 0;
+        for (let i = 0; i < NUM_SEGMENTS; i++) {
+          const b = brightness[i];
+          if (lightSegs[i]) lightSegs[i].style.opacity = String(b);
+          if (coreSegs[i]) coreSegs[i].style.opacity = String(b * 0.35);
+          avg += b;
+        }
+        avg /= NUM_SEGMENTS;
+        if (bloomEl) bloomEl.style.opacity = String(avg * 0.06);
+        if (card) {
+          const g = avg;
+          card.style.boxShadow =
+            `0 0 ${15 + g * 10}px rgba(${NEON_RGB},${g * 0.08}),` +
+            `0 0 ${50 + g * 30}px rgba(${NEON_RGB},${g * 0.04}),` +
+            `0 0 ${120 + g * 50}px rgba(${NEON_RGB},${g * 0.02}),` +
+            `0 0 ${200 + g * 80}px rgba(${NEON_RGB},${g * 0.008})`;
+        }
+      },
+    };
+
     // Notify parent via callback ref
-    if (cardRef) {
-      cardRef({
-        element: card,
-        midpoints,
-        lightSegs,
-        coreSegs,
-        bloom: bloomEl!,
-        applyBrightness: (brightness: Float32Array) => {
-          let avg = 0;
-          for (let i = 0; i < NUM_SEGMENTS; i++) {
-            const b = brightness[i];
-            if (lightSegs[i]) lightSegs[i].style.opacity = String(b);
-            if (coreSegs[i]) coreSegs[i].style.opacity = String(b * 0.35);
-            avg += b;
-          }
-          avg /= NUM_SEGMENTS;
-          if (bloomEl) bloomEl.style.opacity = String(avg * 0.06);
-          if (card) {
-            const g = avg;
-            card.style.boxShadow =
-              `0 0 ${15 + g * 10}px rgba(${NEON_RGB},${g * 0.08}),` +
-              `0 0 ${50 + g * 30}px rgba(${NEON_RGB},${g * 0.04}),` +
-              `0 0 ${120 + g * 50}px rgba(${NEON_RGB},${g * 0.02}),` +
-              `0 0 ${200 + g * 80}px rgba(${NEON_RGB},${g * 0.008})`;
-          }
-        },
-      });
+    if (cardRef) cardRef(handle);
+
+    // Auto-register with NeonGrid if cardIndex is provided
+    if (cardIndex != null && gridCtx.registerCard) {
+      gridCtx.registerCard(cardIndex, handle);
     }
-  }, [filterId, cardRef]);
+  }, [filterId, cardRef, cardIndex, gridCtx]);
 
   // Build on mount + rebuild on resize
   useEffect(() => {
@@ -297,6 +291,7 @@ export function NeonTubeCard({ children, className = '', cardRef, waveState }: N
       ref={outerRef}
       className={`relative ${className}`}
       style={{ background: 'rgba(13,11,10,0.85)', borderRadius: '8px' }}
+      {...(cardIndex != null ? { 'data-grid-node': 'card', 'data-card-idx': String(cardIndex) } : {})}
     >
       <svg
         ref={svgRef}

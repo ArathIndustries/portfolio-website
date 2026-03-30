@@ -1,3 +1,22 @@
+export interface TubeCardHandle {
+  element: HTMLDivElement;
+  midpoints: { midX: number; midY: number }[];
+  lightSegs: SVGPathElement[];
+  coreSegs: SVGPathElement[];
+  bloom: SVGPathElement;
+  applyBrightness: (brightness: Float32Array) => void;
+}
+
+export interface WaveState {
+  brightness: Float32Array;
+  avgBrightness: number;
+}
+
+export interface NeonGridContextValue {
+  registerCard: (idx: number, handle: TubeCardHandle) => void;
+  registerNode: (id: string, type: string, element: HTMLElement) => void;
+}
+
 export interface NeonBridge {
   letterZones: Element[];
   brightnessDips: { idx: number; drop: number }[];

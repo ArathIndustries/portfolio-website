@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  createContext,
   useContext,
   useEffect,
   useRef,
@@ -9,7 +8,8 @@ import {
   type ReactNode,
 } from "react";
 import { usePathname } from "next/navigation";
-import type { TubeCardHandle } from "./NeonTubeCard";
+import { NeonGridContext } from "./NeonGridContext";
+import type { TubeCardHandle, NeonGridContextValue } from "./types";
 import type { Wave } from "./types";
 
 // ============================================================
@@ -91,15 +91,7 @@ interface CardState {
 // CONTEXT
 // ============================================================
 
-export interface NeonGridContextValue {
-  registerCard: (idx: number, handle: TubeCardHandle) => void;
-  registerNode: (id: string, type: string, element: HTMLElement) => void;
-}
-
-export const NeonGridContext = createContext<NeonGridContextValue>({
-  registerCard: () => {},
-  registerNode: () => {},
-});
+// Context is defined in ./types to avoid circular deps
 
 export function useNeonGrid() {
   return useContext(NeonGridContext);
@@ -1101,7 +1093,7 @@ export function NeonGrid({ children }: NeonGridProps) {
     resize();
     window.addEventListener("resize", resize);
 
-    // Build grid after a short delay to let children mount
+    // Build grid after a delay to let children mount and register
     const buildDelay = addTimer(() => {
       buildGrid();
 
@@ -1110,7 +1102,7 @@ export function NeonGrid({ children }: NeonGridProps) {
         addTimer(() => {
           scheduleWave(state);
           scheduleLocalWavesForCard(idx);
-        }, 1500 + Math.random() * 2000);
+        }, 500 + Math.random() * 1500);
       });
 
       // Initial collision test — two surges from opposite ends
@@ -1139,7 +1131,7 @@ export function NeonGrid({ children }: NeonGridProps) {
       addTimer(() => {
         scheduleCollisionSurgeLoop();
       }, 12000);
-    }, 100);
+    }, 500);
 
     // ---- Scheduling loops ----
 
