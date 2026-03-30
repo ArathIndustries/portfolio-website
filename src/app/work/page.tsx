@@ -105,7 +105,7 @@ export default function WorkPage() {
       <div className="space-y-8">
         {projects.map((project, i) => (
           <Link key={project.slug} href={`/work/${project.slug}`} className="block">
-          <NeonTubeCard cardIndex={i} className="overflow-hidden cursor-pointer">
+          <NeonTubeCard cardIndex={i} className="cursor-pointer">
             {/* Live iframe preview */}
             {project.embed && (
               <div className="relative w-full" style={{ height: '400px' }}>

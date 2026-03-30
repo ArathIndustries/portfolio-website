@@ -202,16 +202,28 @@ export function NeonSign({ bridgeRef }: NeonSignProps) {
       processWaves(now);
 
       // Push dips to bridge for spark system
+      let maxDrop = 0;
       for (let i = 0; i < TOTAL_NODES; i++) {
         const drop = prevBrightness[i] - brightness[i];
         if (drop > 0.15) {
           bridgeRef.current.brightnessDips.push({ idx: i, drop });
+          if (drop > maxDrop) maxDrop = drop;
         }
         prevBrightness[i] = brightness[i];
       }
 
+      // Emit power events to parent frame (for iframe ↔ page sync)
+      if (window.parent !== window && frameCounter++ % 6 === 0) {
+        window.parent.postMessage({
+          type: 'neon-sign-power',
+          avgBrightness: bridgeRef.current.avgBrightness,
+          maxDrop,
+        }, '*');
+      }
+
       rafRef.current = requestAnimationFrame(tick);
     }
+    let frameCounter = 0;
 
     // Schedule first wave
     const firstTimer = setTimeout(() => {
@@ -233,7 +245,41 @@ export function NeonSign({ bridgeRef }: NeonSignProps) {
 
     rafRef.current = requestAnimationFrame(tick);
 
+    // Listen for voltage surges from parent page (iframe ↔ page sync)
+    function onMessage(e: MessageEvent) {
+      if (e.data?.type === 'neon-grid-surge') {
+        const intensity = e.data.intensity || 0.6;
+        // Fire a dramatic wave — energy flowing into the sign from outside
+        const now = performance.now();
+        wavesRef.current.push({
+          startTime: now,
+          mode: 'linear',
+          direction: Math.random() > 0.5 ? 1 : -1,
+          speed: 30 + Math.random() * 20,
+          dip: 0.15 + intensity * 0.25,
+          holdMs: 60 + Math.random() * 80,
+          recoveryMs: 150 + Math.random() * 200,
+        });
+        // Double-fire for bigger surges
+        if (intensity > 0.6) {
+          setTimeout(() => {
+            wavesRef.current.push({
+              startTime: performance.now(),
+              mode: 'ripple',
+              origin: Math.floor(Math.random() * TOTAL_NODES),
+              speed: 20 + Math.random() * 15,
+              dip: intensity * 0.15,
+              holdMs: 40 + Math.random() * 40,
+              recoveryMs: 100 + Math.random() * 100,
+            });
+          }, 150 + Math.random() * 200);
+        }
+      }
+    }
+    window.addEventListener('message', onMessage);
+
     return () => {
+      window.removeEventListener('message', onMessage);
       cancelAnimationFrame(rafRef.current);
       waveTimersRef.current.forEach(clearTimeout);
       waveTimersRef.current = [];

@@ -519,6 +519,16 @@ export function NeonGrid({ children }: NeonGridProps) {
             scheduleWave(state, intensity);
           }, 100 + Math.random() * 100);
         }
+        // Forward surge into any iframe inside this card (page → iframe power sync)
+        if (intensity > 0.3) {
+          const iframe = node.el.querySelector<HTMLIFrameElement>('iframe');
+          if (iframe?.contentWindow) {
+            iframe.contentWindow.postMessage({
+              type: 'neon-grid-surge',
+              intensity,
+            }, '*');
+          }
+        }
       } else if (node.type === "heading") {
         triggerWhiteNeonResponse("heading", intensity);
         // Flash the heading neon-text
@@ -1093,6 +1103,47 @@ export function NeonGrid({ children }: NeonGridProps) {
     resize();
     window.addEventListener("resize", resize);
 
+    // ---- Iframe ↔ Page power bridge ----
+    // Listen for brightness events from embedded NeonSign iframes
+    let iframeSurgeThrottle = 0;
+    function onIframeMessage(e: MessageEvent) {
+      if (e.data?.type !== 'neon-sign-power') return;
+      const now = performance.now();
+      const { maxDrop, avgBrightness } = e.data as { maxDrop: number; avgBrightness: number };
+
+      // When the sign flickers (brightness drops), trigger effects on the card containing the iframe
+      if (maxDrop > 0.2 && now - iframeSurgeThrottle > 800) {
+        iframeSurgeThrottle = now;
+        // Find which card contains this iframe by matching the source window
+        const iframes = document.querySelectorAll<HTMLIFrameElement>('iframe');
+        for (const iframe of iframes) {
+          if (iframe.contentWindow === e.source) {
+            const card = iframe.closest<HTMLElement>('[data-grid-node="card"]');
+            if (card) {
+              const cardIdx = parseInt(card.dataset.cardIdx || '0');
+              const state = cardStatesRef.current.get(cardIdx);
+              if (state) {
+                // Energy bleeds out of the iframe into the card's tube border
+                const intensity = Math.min(maxDrop * 1.5, 1.0);
+                scheduleWave(state, intensity);
+                // Spark at the card edge
+                sparkOnDips(cardIdx, state);
+                // Propagate to neighboring cards via grid surge
+                const nodeIdx = gridNodesRef.current.findIndex(
+                  n => n.type === 'card' && n.cardIdx === cardIdx
+                );
+                if (nodeIdx >= 0 && maxDrop > 0.35) {
+                  triggerGridSurge(nodeIdx, intensity * 0.7);
+                }
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+    window.addEventListener('message', onIframeMessage);
+
     // Build grid after a delay to let children mount and register
     const buildDelay = addTimer(() => {
       buildGrid();
@@ -1323,6 +1374,7 @@ export function NeonGrid({ children }: NeonGridProps) {
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("message", onIframeMessage);
       // Clear all tracked timers
       timersRef.current.forEach((id) => clearTimeout(id));
       timersRef.current.length = 0;

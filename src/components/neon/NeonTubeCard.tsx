@@ -298,7 +298,7 @@ export function NeonTubeCard({ children, className = '', cardIndex, cardRef, wav
         className="absolute pointer-events-none overflow-visible"
         style={{ inset: '-6px', width: 'calc(100% + 12px)', height: 'calc(100% + 12px)' }}
       />
-      <div className="relative z-[1]">
+      <div className="relative z-[1] overflow-hidden rounded-lg">
         {children}
       </div>
     </div>
