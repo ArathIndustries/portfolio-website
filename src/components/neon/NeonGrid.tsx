@@ -218,67 +218,84 @@ export function NeonGrid({ children }: NeonGridProps) {
       const int = intensity || 1;
       let wave: Wave;
 
-      if (roll < 0.25) {
+      // reach scales with intensity — weak flickers stay local, strong surges travel far
+      // base reach: 6-14 segments (15-35% of perimeter). int=1 can push to ~20 (50%)
+      // full perimeter (reach=n) only for rare big-bang-level events (int > 1.2)
+      const baseReach = Math.floor(6 + Math.random() * 8 + int * 8);
+      const reach = int > 1.2 ? n : Math.min(baseReach, n - 2);
+
+      if (roll < 0.30) {
+        // Quick linear sweep — most common idle flicker
         wave = {
           startTime: now,
           mode: "linear",
           direction: Math.random() > 0.5 ? 1 : -1,
-          speed: 50 + Math.random() * 40,
-          dip: (0.2 + Math.random() * 0.3) * int,
-          holdMs: 80 + Math.random() * 80,
-          recoveryMs: 250 + Math.random() * 200,
+          speed: 8 + Math.random() * 12,
+          dip: (0.15 + Math.random() * 0.25) * int,
+          holdMs: 30 + Math.random() * 40,
+          recoveryMs: 80 + Math.random() * 100,
+          reach,
         };
-      } else if (roll < 0.45) {
+      } else if (roll < 0.50) {
+        // Medium linear — slightly deeper dip
         wave = {
           startTime: now,
           mode: "linear",
           direction: Math.random() > 0.5 ? 1 : -1,
-          speed: 70 + Math.random() * 50,
-          dip: (0.3 + Math.random() * 0.2) * int,
-          holdMs: 120 + Math.random() * 120,
-          recoveryMs: 350 + Math.random() * 250,
+          speed: 12 + Math.random() * 15,
+          dip: (0.25 + Math.random() * 0.2) * int,
+          holdMs: 40 + Math.random() * 50,
+          recoveryMs: 100 + Math.random() * 120,
+          reach,
         };
-      } else if (roll < 0.65) {
+      } else if (roll < 0.70) {
+        // Ripple from random point
         const origin = Math.floor(Math.random() * n);
         wave = {
           startTime: now,
           mode: "ripple",
           origin,
-          speed: 45 + Math.random() * 40,
-          dip: (0.1 + Math.random() * 0.25) * int,
-          holdMs: 80 + Math.random() * 80,
-          recoveryMs: 250 + Math.random() * 200,
+          speed: 10 + Math.random() * 12,
+          dip: (0.1 + Math.random() * 0.2) * int,
+          holdMs: 30 + Math.random() * 40,
+          recoveryMs: 80 + Math.random() * 100,
+          reach: Math.floor(reach * 0.7), // ripples cover less
         };
-      } else if (roll < 0.8) {
+      } else if (roll < 0.82) {
+        // Subtle bounce ripple from center region
         const origin = Math.floor(n * 0.3 + Math.random() * n * 0.4);
         wave = {
           startTime: now,
           mode: "ripple",
           origin,
-          speed: 30 + Math.random() * 30,
+          speed: 6 + Math.random() * 8,
           dip: (0.05 + Math.random() * 0.1) * int,
-          holdMs: 80 + Math.random() * 60,
-          recoveryMs: 180 + Math.random() * 150,
+          holdMs: 25 + Math.random() * 30,
+          recoveryMs: 60 + Math.random() * 80,
           bounce: true,
+          reach: Math.floor(4 + Math.random() * 5), // very local
         };
-      } else if (roll < 0.92) {
+      } else if (roll < 0.94) {
+        // Single segment flicker
         wave = {
           startTime: now,
           mode: "single",
           target: Math.floor(Math.random() * n),
           dip: (0.05 + Math.random() * 0.15) * int,
-          holdMs: 100 + Math.random() * 120,
-          recoveryMs: 200 + Math.random() * 200,
+          holdMs: 40 + Math.random() * 60,
+          recoveryMs: 80 + Math.random() * 100,
         };
       } else {
+        // Slow gentle drift — barely perceptible, no dip, just subtle movement
         wave = {
           startTime: now,
           mode: "linear",
           direction: 1,
-          speed: 15 + Math.random() * 15,
+          speed: 4 + Math.random() * 6,
           dip: 0,
-          holdMs: 200 + Math.random() * 200,
-          recoveryMs: 400 + Math.random() * 400,
+          holdMs: 80 + Math.random() * 80,
+          recoveryMs: 150 + Math.random() * 150,
+          reach: Math.floor(10 + Math.random() * 10),
         };
       }
       state.waves.push(wave);
@@ -294,22 +311,29 @@ export function NeonGrid({ children }: NeonGridProps) {
     for (let w = state.waves.length - 1; w >= 0; w--) {
       const wave = state.waves[w];
       let allDone = true;
+      const reach = wave.reach ?? n; // default: full perimeter
+
       for (let i = 0; i < n; i++) {
+        let dist: number; // distance in segments from wave origin
         let delay: number;
         if (wave.mode === "ripple") {
-          delay =
-            Math.min(
-              Math.abs(i - (wave.origin ?? 0)),
-              n - Math.abs(i - (wave.origin ?? 0))
-            ) * (wave.speed ?? 40);
+          dist = Math.min(
+            Math.abs(i - (wave.origin ?? 0)),
+            n - Math.abs(i - (wave.origin ?? 0))
+          );
+          delay = dist * (wave.speed ?? 15);
         } else if (wave.mode === "single") {
           if (i !== wave.target) continue;
+          dist = 0;
           delay = 0;
         } else {
-          delay =
-            ((wave.direction ?? 1) === 1 ? i : n - 1 - i) *
-            (wave.speed ?? 40);
+          dist = (wave.direction ?? 1) === 1 ? i : n - 1 - i;
+          delay = dist * (wave.speed ?? 15);
         }
+
+        // Skip segments beyond reach
+        if (dist > reach) continue;
+
         const elapsed = now - wave.startTime - delay;
         if (elapsed < 0) {
           allDone = false;
@@ -329,6 +353,13 @@ export function NeonGrid({ children }: NeonGridProps) {
         } else {
           b = 1.0;
         }
+
+        // Fade dip near the reach limit (smooth falloff in last 30%)
+        if (reach < n && dist > reach * 0.7) {
+          const fade = 1 - (dist - reach * 0.7) / (reach * 0.3);
+          b = 1 - (1 - b) * fade;
+        }
+
         brightness[i] = Math.min(brightness[i], b);
       }
       if (allDone) state.waves.splice(w, 1);

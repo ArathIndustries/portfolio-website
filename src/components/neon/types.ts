@@ -35,4 +35,5 @@ export interface Wave {
   origin?: number;
   target?: number;
   bounce?: boolean;
+  reach?: number; // max segments the wave travels before fading (undefined = full perimeter)
 }
