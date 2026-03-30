@@ -148,6 +148,21 @@ body::before {
     inset 0 0 15px rgba(var(--neon-r), var(--neon-g), var(--neon-b), 0.15);
 }
 
+/* === White neon sub-elements — react to nearby surges === */
+.white-neon {
+  color: rgba(255,255,255,0.35);
+  text-shadow: 0 0 4px rgba(255,255,255,0.08), 0 0 12px rgba(255,255,255,0.03);
+  transition: text-shadow 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+.white-neon.surge-nearby {
+  color: rgba(255,255,255,0.6);
+  text-shadow: 0 0 6px rgba(255,255,255,0.2), 0 0 15px rgba(255,255,255,0.08), 0 0 30px rgba(255,255,255,0.03);
+}
+.white-neon.surge-dip {
+  opacity: 0.5;
+  text-shadow: 0 0 2px rgba(255,255,255,0.04);
+}
+
 /* === Dark prose overrides === */
 .prose {
   --tw-prose-body: #c0c0c0;

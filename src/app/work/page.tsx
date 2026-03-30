@@ -76,10 +76,10 @@ export default function WorkPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       {/* Page Header */}
-      <header className="mb-12 flex items-start justify-between">
+      <header className="mb-12 flex items-start justify-between" data-grid-node="heading">
         <div>
           <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-4 neon-text neon-flicker">Work</h1>
-          <p className="text-gray-400 max-w-2xl">
+          <p className="white-neon max-w-2xl" data-responds-to="heading">
             A collection of tools, platforms, and research spanning engineering, AI, and automation.
           </p>
         </div>
@@ -138,10 +138,10 @@ export default function WorkPage() {
 
             {/* Project info */}
             <div className="p-6">
-              <h3 className="font-mono font-semibold text-xl mb-2 text-gray-200">
+              <h3 className="font-mono font-semibold text-xl mb-2 text-gray-200 white-neon" data-responds-to={`card-${i}`}>
                 {project.title}
               </h3>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm mb-4 white-neon" data-responds-to={`card-${i}`}>
                 {project.description}
               </p>
 

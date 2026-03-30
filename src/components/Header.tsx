@@ -12,7 +12,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-[#090706]/80 backdrop-blur-sm" style={{ borderBottom: '1px solid rgba(255,136,0,0.08)' }}>
+    <header className="sticky top-0 z-50 bg-[#090706]/80 backdrop-blur-sm" data-grid-node="header" style={{ borderBottom: '1px solid rgba(255,136,0,0.08)' }}>
       <nav className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -29,14 +29,16 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-gray-400 hover:text-[var(--neon)] transition-colors font-mono text-sm"
+                className="white-neon hover:text-[var(--neon)] transition-colors font-mono text-sm"
+                data-responds-to="header"
               >
                 {link.label}
               </Link>
             ))}
             <Link
               href="/contact"
-              className="neon-btn font-mono text-sm"
+              className="neon-btn font-mono text-sm white-neon"
+              data-responds-to="header"
             >
               Hire Me
             </Link>
