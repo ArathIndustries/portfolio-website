@@ -1,0 +1,3 @@
+# Portfolio Website — Session Index
+
+- 2026-05-13 — **Brand architecture leveraged this existing site.** arath-industries.vercel.app discovered as already-deployed brand ("Building tools fit for how people work"). Locked two-layer pattern: Arath Industries = corporate, "Forged by Arath" = maker's mark. Tagline upgrade proposed: "Forged by Arath. Built for how you work." Site becomes public face; Forge stays private backend. Future site nav: Work / Forged / About / Hire Me. Full plan at `OneDrive\Summer 2026 Launch Plan\00_MASTER_PLAN.md` → [session a9a4abc7](C:\Users\Arath\OneDrive\Claude Memory\sessions\summaries\2026-05-13_Arath_a9a4abc7.md)
