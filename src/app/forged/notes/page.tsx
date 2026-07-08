@@ -1,20 +1,38 @@
 import type { Metadata } from "next";
+import { getCollection } from "@/lib/mdx";
+import { WritingList } from "@/components/WritingList";
 
 export const metadata: Metadata = {
   title: "Forged Notes — Arath Industries",
-  description: "Working notes and write-ups from the workshop.",
+  description: "Working notes from the workshop — what got built, what broke, what it taught.",
 };
 
 export default function ForgedNotesPage() {
+  const posts = getCollection("notes");
+
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-      <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-4 neon-text neon-flicker">
-        Forged Notes
-      </h1>
-      <p className="white-neon max-w-xl mx-auto mb-3">
-        Working notes and write-ups from the workshop.
-      </p>
-      <p className="text-gray-600 font-mono text-sm">In the forge — first release coming soon.</p>
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <header className="mb-12">
+        <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-4 neon-text neon-flicker">
+          Forged Notes
+        </h1>
+        <p className="text-gray-400">
+          Working notes from the workshop — what got built, what broke, and what it taught.
+          Raw and frequent; the polished record lives in{" "}
+          <a href="/publications" className="text-[var(--neon)] hover:underline">
+            Publications
+          </a>
+          .
+        </p>
+      </header>
+
+      {posts.length > 0 ? (
+        <WritingList posts={posts} basePath="/forged/notes" />
+      ) : (
+        <div className="text-center py-16">
+          <p className="text-gray-500 font-mono">In the forge — first note coming soon.</p>
+        </div>
+      )}
     </div>
   );
 }

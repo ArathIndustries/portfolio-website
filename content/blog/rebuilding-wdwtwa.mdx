@@ -1,0 +1,44 @@
+---
+title: "Rebuilding WDWTWA: a living site for a music collective in one day"
+description: "WordPress to Next.js in a working day — asset salvage via the WP REST API, a Discord-to-site publishing pipeline, and a 3D gallery. What worked, what broke, and what the platform APIs will actually let you do in 2026."
+date: "2026-07-08"
+tags: ["Next.js", "Web", "Discord", "Build Log", "AI-Assisted"]
+---
+
+I'm the webmaster for WDWTWA — Who Do We Think We Are — a music collective some friends and I run. The site was a three-page WordPress install on shared hosting, stock theme, last touched months ago. The goal wasn't just a facelift: I wanted a site that updates itself from what the collective already does — post music, post on socials, live their lives — instead of waiting for a webmaster to have a free weekend.
+
+This is the build log. I worked with Claude Code as the builder; my job was direction, decisions, and the domain knowledge. Total elapsed time from "here's my other website btw" to everything deployed: about a day.
+
+## Salvage first
+
+WordPress exposes a public REST API on every site (`/wp-json/wp/v2/`). No login needed — pages, media lists, and theme info are all publicly readable. That turned migration into a fetch loop: all 19 brand images (album covers, artist portraits, the collective's stamp-art logo) pulled straight off the old host and committed into the new repo, which is now the canonical archive of the collective's art regardless of what happens to the old hosting.
+
+Design lesson from the salvage: the logo — three marching figures in a distressed woodcut style, black over rough red — dictated the whole design system. We sampled the actual reds from the brand PNGs (#ED1E00 signal, #B21E09 field) rather than picking "a nice red," and the site's language followed from the artifact: broadside poster typography, xerox grain, hard-offset sticker borders, the marching trio looping across red bands.
+
+## The feed: what the platforms will and won't let you do
+
+The core idea was hashtag-triggered aggregation — an artist posts on Instagram or TikTok with a tag, and the post appears on the site. Research verdict: **that architecture is dead in 2026**, and it's worth knowing exactly why:
+
+- Instagram's hashtag API only returns posts from a 24-hour window, requires Meta business verification (legal-entity documents), and — the disqualifier — **won't tell you who posted**. The username field is explicitly excluded from hashtag results.
+- TikTok reserves hashtag discovery for its academic Research API. Not available to normal developers at any price.
+- Facebook removed hashtag search entirely back in 2018.
+
+The inversion that works: don't discover posts — let the artists deliver them. The collective already has a Discord, and artists already drop links there when they post. So: a `/post <link>` slash command, a signature-verified serverless endpoint, and the post gets committed to the site's repo, which triggers a rebuild. Rendering uses the platforms' official embed endpoints — the one surface Meta and TikTok never restricted, because embedding was never the thing they were defending. Zero API keys for content, zero app review, zero monthly services. The "hashtag" became a social convention (which channel you drop the link in) instead of a fragile technical filter.
+
+## The phone hero
+
+The landing page is an illustrated smartphone with wired earbuds, its screen scrolling a queue of the label's releases. One structural decision that will pay off later: the screen content is an ordinary DOM component, fully decoupled from the phone chassis. Spotify's artist-albums endpoint still works server-side with free client credentials (verified against the February 2026 API restrictions), so the queue can become self-updating without touching the visual.
+
+One thing no API provides: upcoming releases. Pre-save and countdown data is label-side only. That field is a hand-maintained list — which is fine, because we know our own release plans.
+
+## The 3D gallery
+
+One room per artist, art on the walls, click to zoom, a Spotify player and bio per room. Built procedurally in react-three-fiber — no downloaded gallery model, because the license research came back ugly (the best-looking three.js gallery repos on GitHub have no license file at all, which means all-rights-reserved).
+
+The bug worth writing down: the whole scene rendered black on first build. Root cause — everything (room geometry, lights, artwork) sat inside a single React Suspense boundary, so nothing mounted until every wall texture finished loading, and a WebGL probe plus an unlit debug cube were needed to prove the renderer itself was fine. Fix: shells and lights mount immediately; each artwork suspends on its own texture. If you're mixing Suspense with react-three-fiber, scope your boundaries to the thing that actually loads.
+
+## What shipped
+
+A phone-hero landing page, an auto-publishing Dispatches feed, a 3D gallery with a room per artist, all on Vercel with deploy-on-push — and a site whose routine updates (new release, new artist, new post) are one-line data edits or a Discord command, not a CMS session. The old site stays live until the DNS cutover: two records at the registrar, five minutes, reversible.
+
+The meta-lesson: the "living website" didn't come from scraping or clever automation against platform APIs. It came from noticing what the collective already does naturally and building the thinnest possible pipe from that behavior to the site.

@@ -14,6 +14,45 @@ const forgedLinks = [
   { href: "/forged/notes", label: "Notes" },
 ];
 
+const writingLinks = [
+  { href: "/blog", label: "Blog" },
+  { href: "/forged/notes", label: "Notes" },
+  { href: "/publications", label: "Publications" },
+];
+
+function NavDropdown({ label, links }: { label: string; links: { href: string; label: string }[] }) {
+  return (
+    <div className="relative group">
+      <button
+        className="white-neon hover:text-[var(--neon)] transition-colors font-mono text-sm inline-flex items-center gap-1"
+        data-responds-to="header"
+        aria-haspopup="true"
+      >
+        {label}
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
+          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+        </svg>
+      </button>
+      <div className="absolute left-0 top-full pt-2 hidden group-hover:block group-focus-within:block">
+        <div
+          className="flex flex-col min-w-[140px] rounded-md py-2 bg-[#090706]/95 backdrop-blur-sm"
+          style={{ border: '1px solid rgba(255,136,0,0.15)' }}
+        >
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="px-4 py-2 text-gray-400 hover:text-[var(--neon)] transition-colors font-mono text-sm"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -42,35 +81,8 @@ export function Header() {
               </Link>
             ))}
 
-            {/* Forged dropdown */}
-            <div className="relative group">
-              <button
-                className="white-neon hover:text-[var(--neon)] transition-colors font-mono text-sm inline-flex items-center gap-1"
-                data-responds-to="header"
-                aria-haspopup="true"
-              >
-                Forged
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                </svg>
-              </button>
-              <div className="absolute left-0 top-full pt-2 hidden group-hover:block group-focus-within:block">
-                <div
-                  className="flex flex-col min-w-[140px] rounded-md py-2 bg-[#090706]/95 backdrop-blur-sm"
-                  style={{ border: '1px solid rgba(255,136,0,0.15)' }}
-                >
-                  {forgedLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="px-4 py-2 text-gray-400 hover:text-[var(--neon)] transition-colors font-mono text-sm"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <NavDropdown label="Forged" links={forgedLinks} />
+            <NavDropdown label="Writing" links={writingLinks} />
 
             <Link
               href="/contact"
@@ -120,6 +132,19 @@ export function Header() {
               {/* Forged group */}
               <span className="text-gray-600 font-mono text-xs uppercase tracking-wider">Forged</span>
               {forgedLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="pl-4 text-gray-400 hover:text-[var(--neon)] transition-colors font-mono text-sm"
+                >
+                  {link.label}
+                </Link>
+              ))}
+
+              {/* Writing group */}
+              <span className="text-gray-600 font-mono text-xs uppercase tracking-wider">Writing</span>
+              {writingLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}

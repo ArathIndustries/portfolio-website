@@ -134,6 +134,39 @@ export function getAllBlogPosts(): BlogPost[] {
 }
 
 /**
+ * Generic writing collections (notes, publications) — same frontmatter shape
+ * as blog posts, different content/ subdirectory.
+ */
+export type WritingCollection = "notes" | "publications";
+
+export function getCollection(collection: WritingCollection): BlogPost[] {
+  const dir = path.join(contentDirectory, collection);
+  if (!fs.existsSync(dir)) {
+    return [];
+  }
+  const posts = fs
+    .readdirSync(dir)
+    .filter((name) => name.endsWith(".mdx"))
+    .map((filename) => {
+      const slug = filename.replace(/\.mdx$/, "");
+      const { data, content } = matter(fs.readFileSync(path.join(dir, filename), "utf8"));
+      return { slug, frontmatter: data as BlogFrontmatter, content };
+    });
+  return posts.sort(
+    (a, b) => new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime(),
+  );
+}
+
+export function getCollectionEntry(collection: WritingCollection, slug: string): BlogPost | null {
+  const filePath = path.join(contentDirectory, collection, `${slug}.mdx`);
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+  const { data, content } = matter(fs.readFileSync(filePath, "utf8"));
+  return { slug, frontmatter: data as BlogFrontmatter, content };
+}
+
+/**
  * Get a single blog post by slug
  */
 export function getBlogPostBySlug(slug: string): BlogPost | null {
