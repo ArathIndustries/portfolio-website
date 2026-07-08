@@ -1,12 +1,22 @@
 ---
 title: "Texas Water Crisis Dashboard"
-description: "Interactive geospatial analytics dashboard analyzing Texas water supply-demand crisis across counties, regions, and industrial sectors."
+description: "Water stress across 254 Texas counties projected to 2070 — five Industrial Engineering frameworks over 9 integrated datasets, delivered at datathon competition."
 tags: ["JavaScript", "Plotly.js", "Data Viz", "GeoJSON", "Python"]
 github: "https://github.com/ArathIndustries/datathon-water-analysis"
 live: "https://datathon-water-analysis.vercel.app"
 date: "2026-01-15"
 featured: true
 ---
+
+## Outcomes
+
+Kickoff to competition delivery in 4 days:
+
+- **254 counties and 16 TWDB regions** analyzed against **2020–2070** water projections
+- **9 datasets integrated** (5 TWDB, 2 EPA, census, regional boundaries) that don't normally talk to each other
+- **5 Industrial Engineering frameworks** applied to environmental data — Sankey, risk matrix, Pareto, regression, box plots
+- **26 passing tests** and fully reproducible Python data transformations
+- Presented as both analytical tool and presentation-ready deliverable at the datathon
 
 ## The Problem
 
@@ -33,10 +43,6 @@ The choropleth map supports county and region view toggles, a year slider (2020-
 ### Data Viewer
 
 A companion page lets users explore all 9 raw datasets — 5 TWDB sources, 2 EPA sources, and a master county dataset — with search, sort, pagination, and Comma-Separated Values (CSV) download. Every chart includes Plotly PNG export and methodology info-tips explaining the underlying calculations.
-
-## Results
-
-All data transformations are reproducible via Python scripts. The dashboard serves as both an analytical tool and a presentation-ready deliverable, with 1,319 lines of hand-written HTML/JS and 26 passing tests.
 
 ## Tech Stack
 

@@ -63,7 +63,7 @@ This signals experience and pre-qualifies clients. Junior portfolios never have 
 
 ### GitHub README Discipline
 Ensure all linked repos have clean, informative READMEs. Recruiters check these.
-- ArathIndustries/bd-monitor ✓ (has CLAUDE.md + docs)
+- ArathIndustries/openchambers ✓ (renamed from bd-monitor; has CLAUDE.md + docs — NOTE: repo is private, site "Code" links 404 for visitors until made public)
 - ArathIndustries/datathon-water-analysis — verify README quality
 - ArathIndustries/portfolio-website — verify README quality
 

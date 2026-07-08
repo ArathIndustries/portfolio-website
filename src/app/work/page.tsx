@@ -4,33 +4,24 @@ import { useState } from "react";
 import Link from "next/link";
 import { NeonTubeCard } from "@/components/neon";
 
-const projects = [
+const featuredProjects = [
   {
     slug: "openchambers",
     title: "OpenChambers",
-    description: "Municipal meeting intelligence platform — AI-powered summaries of TX public meetings.",
+    description: "1,961 public meetings scraped across 28 Texas agencies and AI-summarized for 50+ users — 11 custom scrapers covering 150+ government portals.",
     tags: ["Python", "FastAPI", "AI", "Supabase"],
-    github: "https://github.com/ArathIndustries/bd-monitor",
+    github: "https://github.com/ArathIndustries/openchambers",
     live: "https://openchambers.vercel.app/welcome",
     embed: "https://openchambers.vercel.app",
   },
   {
     slug: "datathon-water",
     title: "Texas Water Crisis Dashboard",
-    description: "Interactive geospatial analytics dashboard for Texas water infrastructure analysis.",
+    description: "Water stress across 254 Texas counties projected to 2070 — five IE frameworks pinpointing where industrial growth collides with supply. Delivered at datathon competition.",
     tags: ["JavaScript", "Plotly.js", "Data Viz"],
     github: "https://github.com/ArathIndustries/datathon-water-analysis",
     live: "https://datathon-water-analysis.vercel.app",
     embed: "https://datathon-water-analysis.vercel.app",
-  },
-  {
-    slug: "portfolio-website",
-    title: "Portfolio Website (Arath Industries)",
-    description: "Dark neon sign portfolio with interactive SVG animations and light-reactive brick wall.",
-    tags: ["Next.js", "React", "Tailwind CSS", "Canvas"],
-    github: "https://github.com/ArathIndustries/portfolio-website",
-    live: "https://arath-industries.vercel.app",
-    embed: "https://arath-industries.vercel.app",
   },
   {
     slug: "digital-twin",
@@ -38,6 +29,18 @@ const projects = [
     description: "Wireless sensor network with TinyML for real-time CNC machine health monitoring.",
     tags: ["Arduino", "TFLite", "Python", "BLE"],
   },
+  {
+    slug: "portfolio-website",
+    title: "Portfolio Website (Arath Industries)",
+    description: "Dark neon sign portfolio with interactive SVG animations and light-reactive brick wall.",
+    tags: ["Next.js", "React", "Tailwind CSS", "Canvas"],
+    github: "https://github.com/ArathIndustries/portfolio-website",
+    live: "https://arath.site",
+    embed: "https://arath-industries.vercel.app",
+  },
+];
+
+const otherProjects = [
   {
     slug: "tceq-geowatcher",
     title: "TCEQ Permit Geowatcher",
@@ -101,9 +104,9 @@ export default function WorkPage() {
         </button>
       </header>
 
-      {/* Projects */}
+      {/* Featured projects */}
       <div className="space-y-8">
-        {projects.map((project, i) => (
+        {featuredProjects.map((project, i) => (
           <Link key={project.slug} href={`/work/${project.slug}`} className="block">
           <NeonTubeCard cardIndex={i} className="cursor-pointer">
             {/* Live iframe preview */}
@@ -196,6 +199,36 @@ export default function WorkPage() {
           </Link>
         ))}
       </div>
+
+      {/* Other work — compact cards */}
+      <section className="mt-16">
+        <h2 className="text-xl sm:text-2xl font-bold font-mono mb-6 neon-text">Other Work</h2>
+        <div className="grid sm:grid-cols-2 gap-4">
+          {otherProjects.map((project) => (
+            <Link
+              key={project.slug}
+              href={`/work/${project.slug}`}
+              className="block p-5 rounded-lg border border-[rgba(255,136,0,0.12)] hover:border-[rgba(255,136,0,0.35)] bg-[rgba(255,136,0,0.02)] transition-colors"
+            >
+              <h3 className="font-mono font-semibold text-base mb-1 text-gray-200">
+                {project.title}
+              </h3>
+              <p className="text-sm text-gray-400 mb-3">{project.description}</p>
+              <div className="flex flex-wrap gap-2">
+                {project.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-2 py-1 text-xs rounded font-mono"
+                    style={{ background: 'rgba(255,136,0,0.08)', color: 'rgba(255,136,0,0.7)' }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
