@@ -42,6 +42,18 @@ const featuredProjects = [
 
 const otherProjects = [
   {
+    slug: "pm-simulator",
+    title: "PM Flight Simulator",
+    description: "Browser project-management simulator where rework-cycle and Monte Carlo dynamics make schedule slip and quality debt cascade realistically. 116 passing engine tests; every mechanic traces to a published model.",
+    tags: ["TypeScript", "React", "Simulation", "System Dynamics"],
+  },
+  {
+    slug: "wdwtwa-site",
+    title: "WDWTWA Collective Site",
+    description: "One-day WordPress-to-Next.js rebuild for a music collective — Discord-to-site publishing pipeline, interactive 3D gallery, design system derived from the collective's stamp art.",
+    tags: ["Next.js", "Three.js", "Discord API", "Vercel"],
+  },
+  {
     slug: "tceq-geowatcher",
     title: "TCEQ Permit Geowatcher",
     description: "Geospatial permit tracking with LLM-powered data extraction from TCEQ records.",

@@ -1,0 +1,25 @@
+---
+title: "WDWTWA Collective Site"
+description: "One-day WordPress-to-Next.js rebuild for a music collective — Discord-to-site publishing pipeline, interactive 3D gallery, and a design system derived from the collective's own stamp art."
+tags: ["Next.js", "Three.js", "React Three Fiber", "Discord API", "Tailwind CSS", "Vercel"]
+live: "https://wdwtwa-site.vercel.app"
+date: "2026-07-08"
+---
+
+## Outcomes
+
+Old site to new site in one working day:
+
+- **Full rebuild** of a WordPress site into Next.js 16 + Tailwind v4, deployed on Vercel with auto-deploy
+- **19 brand assets salvaged** from the old host via the WordPress REST API — the repo is now the canonical archive of the collective's art
+- **Discord-to-site publishing pipeline**: artists run `/post <link>` in the collective's Discord; a signature-verified serverless endpoint commits the post to the repo and it publishes automatically (~1 minute), rendered with official platform embeds — no scraping, no paid services, no API review processes
+- **Interactive 3D gallery** (react-three-fiber): one room per artist, click-to-zoom artwork, per-room bio and Spotify player, architected so visual reskins are material swaps and free-walk navigation is a controls swap
+- **Phone hero**: an illustrated smartphone playing a scrolling queue of the label's releases, wired earbuds drawn in SVG
+
+## The Design System
+
+The palette was sampled from the collective's Minute Men stamp logo (signal red #ED1E00 over deep brick #B21E09), and the visual language follows from the art: distressed broadside typography (Anton), xerox grain over the whole page, hard-offset "sticker" borders, and the marching-men trio looping across red bands as the signature motif.
+
+## The Living-Site Architecture
+
+The site is designed to update itself from the collective's normal behavior. Research ruled out hashtag scraping (Instagram's hashtag API withholds poster identity; TikTok reserves discovery for academic research), so the pipeline inverts the problem: the artists' own link-drop in Discord is the trigger, and platform oEmbed endpoints — the one surface Meta and TikTok never restricted — handle rendering. Spotify's artist-albums endpoint (still open to server-side client-credentials apps) feeds the release queue.

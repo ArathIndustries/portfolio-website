@@ -1,0 +1,31 @@
+---
+title: "PM Flight Simulator"
+description: "A project-management flight simulator — run a fictitious project with knobs and sliders while a rework-cycle / Monte Carlo engine makes the consequences cascade realistically."
+tags: ["TypeScript", "React", "Vite", "Simulation", "System Dynamics"]
+date: "2026-07-07"
+---
+
+## The Problem
+
+People who plan projects assume clean linear phases — A to B, done, on time, on budget — and real projects near-universally do not behave that way. Existing project-management education transmits the vocabulary (Gantt, CPM, EVM) without transmitting the felt experience of feedback dynamics: undiscovered rework, path convergence, the compounding cost of schedule pressure. Management flight simulators exist in academia but are dated and not engaging.
+
+## What I'm Building
+
+A browser game where rigor is the substrate and play is the surface. Every mechanic traces to a published model or an empirical dataset rather than invented numbers:
+
+1. **Rework cycle (system dynamics)** — To Do / In Process / Done stocks with a hidden undiscovered-rework stock; the mathematical heart of why projects slip
+2. **Monte Carlo + CPM/PERT** — probabilistic task durations over a dependency network, producing P50/P80 outcome distributions instead of single false-precision dates
+3. **Reference-class priors** — empirical overrun distributions calibrate the engine so a "typical" run lands where real projects land
+
+The player can win — deliver on time and on budget — but rarely, because the win rate is tuned toward the empirical base rate. The scarcity of winning is the calibration, not artificial difficulty.
+
+## Current State
+
+- Tick-based difference-equation engine in TypeScript, React front end, no runtime data dependencies
+- **116 passing tests**, build gate green at every commit
+- Checkpoint time model shipped: runs pause at kickoff, weekly status meetings, and the deadline; an unattended verification run reproduces the engine harness's exact day-86 outcome
+- In active development — gameplay workshop phase (negotiation mechanics next)
+
+## Tech Stack
+
+TypeScript, React 19, Vite, Vitest. Engine is pure difference equations — every mechanic is a swappable module against a spec'd interface.
