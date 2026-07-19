@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { SkillsTimeline } from "@/components/SkillsTimeline";
 
@@ -48,7 +49,7 @@ export default function FounderPage() {
           </p>
 
           <p>
-            I work part-time as a Civil Engineering Designer while studying full-time and building these tools on the side. The range is the point — hardware, software, data, design, infrastructure. Real problems don&apos;t fit neatly into one discipline, and neither do the solutions.
+            After years working part-time as a Civil Engineering Designer, I now do undergraduate research at Texas State — building a digital twin for CNC machine monitoring at the university makerspace — while studying full-time and building these tools on the side. The range is the point — hardware, software, data, design, infrastructure. Real problems don&apos;t fit neatly into one discipline, and neither do the solutions.
           </p>
 
           <p>
@@ -62,6 +63,34 @@ export default function FounderPage() {
         <h2 className="text-2xl font-bold font-mono mb-2 text-gray-200">The Journey</h2>
         <p className="text-sm text-gray-600 mb-8 font-mono">from circuits to shipping products</p>
         <SkillsTimeline />
+      </section>
+
+      {/* Credentials */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold font-mono mb-6 text-gray-200">Credentials</h2>
+        <div
+          className="flex items-center gap-5 p-5 rounded-lg border border-gray-800"
+          style={{ background: 'rgba(13,11,10,0.6)' }}
+        >
+          <Image
+            src="/iise-six-sigma-green-belt.png"
+            alt="IISE Six Sigma Green Belt certification badge"
+            width={88}
+            height={88}
+            className="flex-shrink-0"
+          />
+          <div>
+            <h3 className="font-mono font-semibold text-sm mb-1" style={{ color: 'rgba(255,136,0,0.8)' }}>
+              Six Sigma Green Belt
+            </h3>
+            <p className="text-sm text-gray-400 mb-1">
+              Institute of Industrial &amp; Systems Engineers (IISE)
+            </p>
+            <p className="text-xs font-mono text-gray-600">
+              Issued April 28, 2026 &middot; Valid through April 27, 2029
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Connect */}
