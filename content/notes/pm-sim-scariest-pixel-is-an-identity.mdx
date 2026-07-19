@@ -1,0 +1,28 @@
+---
+title: "The scariest thing on the screen is a mathematical identity"
+description: "First UI pass on the simulator: four screenshot moments, the status-line copy, and a hidden-debt visual that needed no invention."
+date: "2026-07-07"
+tags: ["PM Simulator", "Data Viz", "UI", "Build Log"]
+---
+
+Notes from the first build that produced a screen: chart panel, deadline slider, pressure gauge, verdict. Four moments captured from the running app.
+
+## Four screenshot moments
+
+1. **Initial** — Day 0, deadline slider resting exactly on "plan 50," every stock gray, pressure gauge reading "calm 0.00." The chart's deadline marker reads "deadline 50 (= plan)": the default commitment IS the naive plan. Caption angle: this dashboard is lying to you and it hasn't even started yet.
+2. **Mid-run** — Day 31, 57% done, status line says "On track." The perceived (blue) and real (green) curves are still nearly touching; the red wash between them is 2.7 tasks wide and growing. The player has no reason to worry. That is the trap working.
+3. **Loss** — the default run's ending: LATE, day 86, "36 days past the deadline (1.72× the plan)." The red gap wash blooms open exactly at the deadline line — the picture of debt surfacing precisely when there is no time left to absorb it.
+4. **Win** — deadline 100: ON TIME, day 73. Same team, same work, 13 days faster than the crunched run that "tried harder." Winning copy: "Enjoy it; it does not happen often."
+
+## The status line as narrator
+
+* Day 0: "kickoff. The plan says day 50. What could go wrong?"
+* Early, no pressure: "Day 31: 57% done. On track."
+* Pressure rising: "The deadline is getting loud." Then: "Crunch: output is up, quality is not."
+* The plateau escalation — the engine's core lesson as copy: "Day 51: 90% done. Nearly there…" then "Day 58: still 91% done." then "Day 64: still 92% done. The last 10% has its own schedule."
+* Overdue: "Nobody mentions the plan anymore."
+* Abandoned (the 10× cap): "Some projects don't end; they stop."
+
+## The design note worth keeping
+
+The chart's hidden-debt region needed no invented visual. Perceived-done minus real-done equals the undiscovered-rework stock divided by total work — identically, by the model's own equations — so the area between the two completion curves IS the hidden debt, and it wears the same critical red as that stock's bar segment. The scariest element on the screen is a mathematical identity, not a decoration.

@@ -1,0 +1,33 @@
+---
+title: "Four phases, a calm meter, late anyway"
+description: "Chaining Requirements → Design → Build → Test: the handoff trap renders on schedule, and a spec prediction about crunch inverts at the defaults."
+date: "2026-07-10"
+tags: ["PM Simulator", "Simulation", "Systems Modeling", "Build Log"]
+---
+
+Phase chaining landed: Requirements → Design → Build → Test, each phase running the same engine, with gates that open downstream phases when upstream *looks* done enough — which is precisely when hidden debt peaks. Contamination carries upstream defect density into downstream quality.
+
+## Headline metrics (chained untouched runs, four 25-task phases)
+
+```
+T_plan_chain = 50 days (naive serial plan, total work 100)
+
+deadline    T_true   overrun   plateauShare
+      25      78     1.56      0.551
+      50      66     1.32      0.424
+     100      66     1.32      0.424
+```
+
+Single-phase reference at the same total work: the naive deadline delivers day 86 (1.72×). The chained naive run lands EARLIER (66) — each phase carries the full default staff under the equal-params placeholder, so the chain has up to 4× the aggregate capacity once gates overlap. A calibration flag, not a conclusion.
+
+## The handoff trap, measured
+
+At the naive deadline, every downstream phase opens on inputs carrying roughly 4–5% hidden defect density (Design opens day 10, Build day 20, Test day 29), compounding down the chain as the hidden rework re-inflates. The trap needed no scripting: downstream opens when upstream looks done, and upstream looks done exactly when its debt is largest.
+
+## The prediction that inverted
+
+The spec predicted late-opening phases could open straight into crunch — the "Test squeeze." At the default parameters the opposite happened: per-phase pressure never leaves zero anywhere in the chained naive run. Each phase's perceived remaining work (25 tasks at most, blind to hidden rework) never outruns the shared deadline at per-phase capacity.
+
+Consequence: the chained overrun is carried ENTIRELY by the rework and contamination channel, with no death-spiral amplification — and the crunch meter reads calm for the whole run, verified live on screen. A project four phases deep, sliding 32% past plan, with a pressure gauge that never twitches: that is either a calibration bug or an uncomfortably realistic statement about phase-level dashboards. Recorded as a flag with the candidate fixes named (per-phase staffing shares, or a chain-aware pressure signal) — engine changes, so they wait for a spec addendum first.
+
+On the game surface, honesty was the design rule: one board per phase, and the presented phase inherits the model's own blindness — so when upstream debt resurfaces, the board visibly flips BACK to a phase the player thought was closed. The handoff trap renders itself.

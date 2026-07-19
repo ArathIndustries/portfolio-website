@@ -1,0 +1,22 @@
+---
+title: "The plan lies to you on the exact day it comes due"
+description: "First runs of the simulator's rework engine: the 90% plateau, crunch that manufactures 24 extra days, and a spec falsified within ten minutes."
+date: "2026-07-07"
+tags: ["PM Simulator", "Simulation", "Systems Modeling", "Build Log"]
+---
+
+First observations from the v0.1 engine harness. Default parameters are all assumed placeholders — the ratios are the story, not the absolute values. The naive plan says 50 days.
+
+| deadline set | actual finish | overrun | "90% done" at | plateau share |
+|---|---|---|---|---|
+| 25 (aggressive) | day 97 | 1.94× | day 52 | 46% |
+| 38 | day 93 | 1.86× | day 49 | 47% |
+| 50 (the naive plan) | day 86 | 1.72× | day 49 | 43% |
+| 75 | day 73 | 1.46× | day 50 | 32% |
+| 100 (relaxed) | day 73 | 1.46× | day 50 | 32% |
+
+## Three things the numbers say
+
+1. **The plan lies to you on the exact day it comes due.** Committing to the 50-day plan, the project reads "90% done" on day 49 — right on schedule — then takes 37 more days. 43% of the whole project happens inside the plateau the dashboard can't see.
+2. **The deadline you set changes how long the project takes.** Same team, same work: deadline 25 finishes day 97; deadline 100 finishes day 73. Crunch generated 24 extra days out of pure rework. And the "safe" move is also a lever with a floor: 75 and 100 produce identical outcomes because pressure never engages.
+3. **A test falsified the spec on day one.** The spec claimed perceived progress must visibly regress; the model proved it only stalls — with constant-rate discovery, completion always keeps pace with discovery because discovered work recycles through completion at a lag. Regression requires discovery *acceleration* (the testing-phase burst), which is deferred scope. I wrote a pinning test for the current behavior instead. My acceptance suite caught my spec overclaiming within ten minutes of the engine existing.

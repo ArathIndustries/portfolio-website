@@ -1,0 +1,39 @@
+---
+title: "Brooks's law emerged; nobody scripted it"
+description: "The resource-management pack shipped with zero engine changes — and 'adding people to a late project makes it later' fell out of the flow structure."
+date: "2026-07-07"
+tags: ["PM Simulator", "Simulation", "Systems Modeling", "Build Log"]
+---
+
+The resource pack landed: hiring, onboarding drag, mentor tax, QA investment, live earned-value panel.
+
+## The architectural story: zero engine changes
+
+The whole pack shipped without touching the engine. The step function already took its parameters fresh every tick; nobody had exploited it. The extension is one page of discipline: total work immutable (it is the conservation constant), the timestep fixed (it is the integrator), every change logged as a run event — and conservation holds for free, because parameters only scale flows and every flow appears once as outflow, once as inflow. Time-varying staffing had been a deferred engine feature for one day; then it was a game-layer afternoon.
+
+Key parameters (all assumed, playtest tuning surface): requisitions clear in 5 days, arrivals take 15 days to become veterans, recruits contribute 10% capacity while onboarding, and each unit of recruit share drags team quality by 0.25 — the mentor tax.
+
+## Finding 1: Brooks's law emerged; it was not tuned in
+
+Delivery day at a relaxed deadline: hire on day 5 → **68**; no hire → **73**; hire on day 55 → **75**. The ordering held at all 12 points of a candidate parameter grid before the values were frozen.
+
+Mechanism: late in a run the work stocks are small, so capacity stops binding — a late hire's added capacity is wasted while its mentor tax still degrades every completion, and those defects need a discovery-lag's worth of time to resurface. "Adding people to a late project makes it later" is a consequence of the flow structure, not a scripted rule.
+
+Bonus: the early hire *also* hurts first (real progress at day 18: 29.84 hired vs 30.60 not) — it only pays after the recruits vest. The parameter point was chosen to keep that dip: at a higher recruit-capacity fraction the gain outruns the mentor tax immediately and the Brooks story vanishes from the debrief.
+
+## Finding 2: QA is strictly dominant except for the bill
+
+Aggressive QA at the naive commitment cuts the hidden-rework peak 8.9 → 7.1 AND ends the run 86 → 72 — faster discovery returns rework while capacity can still absorb it. The only counterweight is the spend rate (total cost roughly $275k → $360k). Playtest flag: if players always max QA, the price is wrong, not the physics.
+
+## Finding 3: EVM lies on schedule
+
+Earned value is computed from reported progress by design. So a full veteran run showed SPI 1.00 — the board had reported 100% — while CPI read 0.76 and projected-at-completion sat $87k over. The schedule index went blind exactly when the progress bar did; the cost index told the truth because money cannot be perceived-done. The two indices disagreeing IS the instrument teaching.
+
+## Copy that earned its place
+
+* Feed: "Headcount requisition filed: +2 engineers. Procurement has been engaged. Procurement will circle back."
+* Feed: "Procurement clears the requisition. 2 engineers arrive — onboarding. They know where the coffee is. Nothing else yet."
+* Feed: "2 recruits are now certified load-bearing. Mentors may stand down."
+* QA dial: "Quality Engineering Uplift Program engaged — Standard tier. Truth, at list price."
+* EVM caption: "Figures derive from reported progress. The Office finds them reassuring."
+* Debrief recap: "Day 5: you requested 2 engineers. Day 10: Procurement agreed. Day 25: they became useful."

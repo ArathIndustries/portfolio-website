@@ -1,0 +1,37 @@
+---
+title: "Risk events only bite in the tail"
+description: "Designing the incident-card layer: a measured surprise about when shocks matter, a zero-new-seams discipline, and insurance that is exactly testable."
+date: "2026-07-07"
+tags: ["PM Simulator", "Game Design", "Simulation", "Build Log"]
+---
+
+The risk-event layer landed: six incident cards — vendor slip, resignation, Leadership scope injection, compliance week, an intern windfall, a fiscal cross-charge — each with a trigger window, a mitigation, and (for some) an insurance product. Every number is an assumed placeholder; nothing enters the state equations except through the two existing extension seams.
+
+## Finding 1: discovery shocks are tail-dependent — a measured surprise that became a design input
+
+A compliance week (discovery slowed 1.6× for 7 days) fired at day 30 changed the delivery day by less than one integer day. Fired at day 50, it cost 2 days. The intern windfall (discovery 4× faster for 5 days) at day 55 saved 10 full days.
+
+Mechanism: early in a run, capacity binds and discovery speed barely matters; in the tail, discovery IS the run. Consequence — not a tuning patch but a roster change: both discovery-shock events got late eligibility windows so they can only fire where they bite. The intern's script working when no hidden mess exists yet would be a nothing-burger, and now it can't happen.
+
+## Finding 2: the windfall's zero-seam form
+
+The first idea for the windfall — a one-shot transfer of hidden rework straight back to To-Do — would have needed a new engine operation; no existing pure function moves that flow. The shipped form tells the same story through the existing parameter seam: "the intern's script finds the hidden defects fast" is just a temporary discovery-rate burst. Conservation holds by the existing argument with no new proof obligation. When an event needs a new engine verb, ask whether an existing seam tells the same story.
+
+## Finding 3: insurance neutralization is exactly testable
+
+An insured run's trajectory equals the no-event run's trajectory tick for tick; only the premium differs on the cost ledger. Pinned as equality, not approximation — the cleanest acceptance test in the layer.
+
+## Finding 4: two kinds of uncertainty, kept separate on purpose
+
+Parameter luck (invisible, per-run, drawn at the start) and dated, named, resolvable incidents now coexist. The debrief separates them: the incident report audits events — windfalls included, "a good day, on the record" — while the odds card still shows the luck.
+
+## Copy pool
+
+* Vendor slip: "Your strategic supply partner has paused all deliverables to 'focus on their transformation journey.' The journey is Chapter 11."
+* Resignation: "Your senior engineer has resigned 'to pursue growth.' Their badge worked this morning. It does not now."
+* Scope: "Leadership has additional thoughts. The thoughts are attached. They are now in scope."
+* Windfall: "The intern's script actually works. Nobody is more surprised than the intern."
+* Cross-charge: "A cross-charge has arrived from a program you have never heard of. It is your line item now. Finance calls this 'shared success.'"
+* Insurance blurb: "Two of everything, in case one of everything has a journey."
+* Insured quiet (debrief): "No incidents. The premiums bought quiet. Quiet is not refundable."
+* The injected scope card: "Stakeholder Alignment Layer (per Leadership) — Nobody scoped it. Everybody signed it. It ships with the rest."

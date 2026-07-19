@@ -1,0 +1,43 @@
+---
+title: "Heavy tails and landmines: the individual-employee layer"
+description: "What the 90/10 folk rule actually has behind it, an identity move that kept 83 tests green untouched, and a fired engineer's fading fingerprints."
+date: "2026-07-07"
+tags: ["PM Simulator", "Simulation", "Game Design", "Build Log"]
+---
+
+The roster layer landed: named engineers with hidden individual stats, 1:1 reads, PIPs, firing, a review-audit. Before writing any of it, I checked what the folk wisdom about individual performance actually has behind it.
+
+## The evidence note — what "90/10" really has behind it
+
+* **Heavy-tailed individual performance is a sourced direction.** O'Boyle and Aguinis 2012, "The Best and the Rest" (*Personnel Psychology* 65): 5 studies, 198 samples, 633,263 individuals; performance fits Paretian, not Gaussian, distributions.
+* **Scope caveat on the record.** Beck, Beatty and Sackett 2014: for typical rated in-role job performance, much observed non-normality is a measurement artifact. The claim is strongest for countable output, weakest for supervisor ratings.
+* **Distribution family.** Joo, Aguinis and Bradley 2017 (distribution pitting): pure power laws usually lose to lognormal or exponential-tail fits; the lognormal's generative mechanism — proportionate differentiation — is the natural compounding-skill story. So the game draws lognormal, not bounded-Pareto.
+* **Price's law is a contested heuristic** (Nicholls 1988 rejects the square-root-half hypothesis empirically).
+* **Design consequence:** heavy tails ship as a sourced direction; no fixed ratio (90/10, sqrt-N-half) appears anywhere as a claim; the tests assert concentration only directionally.
+
+## Finding 1: the identity move made the refactor invisible
+
+Individual draws are double-normalized: the founding roster's weights sum exactly to headcount, and contribution-weighted quality offsets sum to zero. Consequence: at any full default roster, the individual layer reproduces the old aggregate team model to 1e-12 — all 83 baseline tests stayed green untouched, zero tolerances moved. The aggregates deviate exactly and only when a verb acts on a specific person. The deviation IS the mechanic.
+
+## Finding 2: Price-style concentration emerges, not scripted
+
+At the chosen lognormal spread, the top-3-of-10 weight share runs median around 0.60 (minimum 0.38 over 2,000 seeds); attributed output share over a real run beats proportional by 1.25×. Pinned directionally — above 0.3 on every seed tested — never as a ratio.
+
+## Finding 3: landmine dilution is fast
+
+A fired person's share of the hidden-rework stock: about 20% two days after the fire, about 4% one discovery-lag later — the survivors keep generating errors while the departed only drain. Gameplay consequence: the review-audit is time-sensitive; commissioned late, the ghost fades into the noise. (This also broke the first landmine test — a coarse probe grid missed a 4% slice. Probe before fix.)
+
+## Finding 4: emergent story from independent draws
+
+In a verification run, the engineer put on a PIP on day 25 was the same person the resignation event took on day 27. Nothing coordinated the two seeded draws; the debrief's personnel file reads like authored drama.
+
+## Copy pool
+
+* Roster meta: everyone is "Band 4 · $800/day" — the flat salary IS the joke.
+* 1:1 cap: "Your calendar declines the second 1:1. One sync per day is the wellness policy."
+* Reads: "keeps pace; meticulous — their work rarely comes back. (first impression)" / "fast and loose — expect returns."
+* PIP: "HR calls it 'support.' The team heard about it before HR finished the sentence."
+* Fire button tooltip: "Immediate. Whatever they left in the walls stays in the walls."
+* Ghost return (debrief): "Day 49: their work resurfaced. M. Okafor is not here to take it back."
+* Review: "Of the last 8 returns, 4 trace to the same hands: S. Marsh."
+* Vibe line: "QA has started a folder. Unofficially, the folder has V. Weber's name on it."

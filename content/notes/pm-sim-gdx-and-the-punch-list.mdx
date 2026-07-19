@@ -1,0 +1,86 @@
+---
+title: "Welcome to GDX — and the punch-list fix"
+description: "Naming the corporation, writing 36 task cards where tone is the tell, and turning an endgame rounding bug into a teaching surface."
+date: "2026-07-07"
+tags: ["PM Simulator", "Game Design", "Writing", "Build Log"]
+---
+
+## The premise in one paragraph
+
+You are a project manager at GDX — a vast, deliberately generic corporation, engineering/software/science in domain. The acronym is never expanded; in-fiction, nobody the player meets knows what it stands for. Your boss (D. Reyes, Delivery Manager) is the one named human. Everything above the boss is plural and euphemistic: "Leadership has noticed." / "The Division is pleased." The ominousness is ambient bureaucratic dread under the corporate satire — never plot, never horror.
+
+Why a three-letter acronym over "the Firm" or a pronounceable pseudo-name: the acronym does more work — it reads like a ticker, a badge, a building, and explains nothing. A name invites lore; the premise wants ambient genericness.
+
+## The 36-title card table (the tonal contrast IS the archetype signal)
+
+**Gold-plating** (usually safe to cut — absurdly specific technical bloat):
+
+| Title | Blurb |
+|---|---|
+| Migrate logging to hexagonal architecture (initiative) | The logs are fine. The diagram won an internal award. |
+| Dark-mode pass for the internal metrics portal | The portal has eleven users. One asked. |
+| Kubernetes migration for the cafeteria menu service | Uptime target: five nines. It is a lunch menu. |
+| Rewrite the config parser in Rust (exploratory) | The parser works. That is considered the problem. |
+| GraphQL federation layer (Phase 0) | Nobody asked. The whitepaper implies Leadership might. |
+| Telemetry dashboard for the telemetry dashboards | Observability of the observability. |
+| Blockchain provenance for lab notebooks | Immutable. Auditable. Unread. |
+| Custom internal typeface (Phase II) | Phase I shipped the kerning study. |
+| Microservice split of the calendar monolith | The monolith is 4,000 lines. The split plan is 6,000. |
+| AI summarizer for status reports | Turns reports nobody reads into shorter reports nobody reads. |
+| Sub-millisecond cache tier for the org chart | The org chart changes quarterly. The cache is ready. |
+| Executive telemetry widget | One number, very large, on a screen near the elevators. |
+
+**Process** (sometimes cuttable — compliance and bureaucracy parody):
+
+| Title | Blurb |
+|---|---|
+| ISO-9001 re-certification refresher: the refresher | The training about the training. Attendance is recorded centrally. |
+| Export-control attestation, Form 71-C | You do not export anything. Sign it anyway. |
+| Data-retention acknowledgment sweep | Acknowledge that you acknowledge the policy. |
+| Vendor security questionnaire | Forty pages. Question 12 is about fax machines. |
+| Change Advisory Board pre-read | The change is one line. The pre-read is nine pages. |
+| Quarterly access re-certification | Confirm 214 people still need what they already have. |
+| Lab safety walkthrough sign-off | The hazard is a beaker of water. The form does not know that. |
+| Dependency license audit | Legal wants the list. The list wants a bigger spreadsheet. |
+| Capacity planning memo | Finance wants a number. Any number. They will hold you to it. |
+| Release readiness checklist review | Sixty items. Item 1 is "complete the checklist." |
+| Time-tracking category realignment | Code 4410 is now 4410-B. All hours must be restated. |
+| Incident postmortem template migration | Blameless, per the template. The template has a blame field. |
+
+**Load-bearing** (almost never cuttable — deadpan real infrastructure; the deadpan is the signal):
+
+| Title | Blurb |
+|---|---|
+| Payment gateway integration | Money goes in. Receipts come out. Everything else is decoration. |
+| Sensor calibration pipeline | Every reading downstream is off by whatever this is off by. |
+| Auth token refresh | Sessions die quietly without it. |
+| Database migration dry run | Practice the cutover before the cutover. |
+| Audit logging | Nobody reads logs. Until Legal does. |
+| Error-budget alarms | Wires the pager to reality. |
+| Rollback path | The undo button for launch day. |
+| Input validation sweep | Dull. Also the front door. |
+| Rate limiter | Invisible when it works. Famous when it fails. |
+| Backup restore test | A backup is a rumor until you restore it. |
+| Timezone handling fixes | The demo is fine. Sydney is not. |
+| Load test at 2x traffic | Launch day never sends average traffic. |
+
+Noise design: some bloat wears a serious title (the cache tier, the executive widget), some plumbing sounds cuttable (timezone fixes, the dry run).
+
+## Best lines across the other surfaces
+
+* Offer brief: "Scope arrived pre-approved. By whom is not recorded."
+* Offer brief: "The last PM was promoted to a floor nobody has been to. The one before is 'pursuing other opportunities.'"
+* Visibility line: "Low visibility. Your report is filed. Filed is the good outcome."
+* Boomerang: the card "was marked Done. The mark has been withdrawn."
+* Boomerang: "Integration has referred" the card "back to the Division. The Division has referred it to you."
+* Note from above, late delivery: "A lessons-learned has been scheduled. You are the lesson."
+* Note from above, win: "On the date, on the money. The Division is pleased. Pleased is now the baseline. Something bigger is already on your desk."
+* Stabilization tail: "everything is 'done.' Integration disagrees." / card tag: "punch list — done, not accepted"
+
+## The punch-list fix — round toward the uncomfortable truth
+
+A playtest bug: the board read all-Done while the run kept going. Root cause was presentation rounding — the board allocates 24 cards over continuous stocks, and once the residual work drops below half a card, the Done column rounds to 24/24 while the engine honestly grinds out the tail for days.
+
+The fix was NOT to make the board round more precisely. It was to make the limbo visible: the final card is held open as a punch-list item ("done, not accepted," dashed edge) until the engine's residual rework actually drains, with a one-shot status line at tail entry — "everything is 'done.' Integration disagrees." The limbo is real project experience, so the fix converts a rounding artifact into a teaching surface.
+
+Pattern candidate: when a presentation layer must round honest continuous state, round toward the uncomfortable truth, not the comfortable one.

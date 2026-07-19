@@ -1,0 +1,25 @@
+---
+title: "A thousand replays, zero on time"
+description: "Monte Carlo over the simulator's rework engine: the naive plan's on-time probability is 0.000, and the whole game lives on a cliff between 1× and 2× the plan."
+date: "2026-07-07"
+tags: ["PM Simulator", "Monte Carlo", "Simulation", "Build Log"]
+---
+
+The stochastic layer landed: productivity luck drawn per replication from a Beta-PERT distribution, 1,000 replications per deadline, everything bit-reproducible from the seed. The plan says 50 days.
+
+```
+T_plan = 50 days; N = 1000; k ~ BetaPERT(0.8, 1.0, 1.5)
+
+deadline   modalT     P50     P80     P90   P(onTime)
+      25      97      98     105     108      0.000
+      50      86      88      98     102      0.000
+     100      73      74      80      83      1.000
+```
+
+`modalT` is the deterministic run at k = 1 — the "everything goes exactly as typically expected" case. `P(onTime)` is the fraction of replications finishing by the deadline.
+
+## Three story hooks
+
+1. **The naive plan has literally zero chance.** At the default deadline (equal to the plan), 0 of 1,000 simulated projects finished on time. Not "risky" — the on-time probability at the plan every planner writes down first is 0.000. The earliest finisher in the distribution still needs about 36 days more than the plan, because the plan ignores rework and the rework ignores luck.
+2. **Even the median world beats the plan you modeled.** P50 (88) is worse than the modal run (86) at every deadline tested: the most-likely-case run is not the median outcome, because the luck distribution is right-skewed (mean 1.05, mode 1.0). Budgeting to the modal case loses even before anything goes unusually wrong.
+3. **The odds cliff.** On-time probability is 0.000 at deadlines 25 and 50, and 1.000 at 100. Every interesting commitment decision lives on the cliff face between 1× and 2× the naive plan — so the game's odds preview needs resolution in that band. And the crunch penalty compounds in the tail: committing to 25 instead of 100 costs 25 days at the 80th percentile. Asking for the project in half the time makes it take a third longer.

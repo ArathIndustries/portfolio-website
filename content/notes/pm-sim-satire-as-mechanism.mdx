@@ -1,0 +1,31 @@
+---
+title: "Corporate satire as a game mechanic"
+description: "The task-card copy table where a voice direction started doing mechanical work — plus three findings the game layer produced about audits, boomerangs, and an empty win band."
+date: "2026-07-07"
+tags: ["PM Simulator", "Game Design", "Writing", "Build Log"]
+---
+
+The game layer landed on top of the engine: a 24-card task board, a scope-cut verb, check-ins, a debrief. The interesting artifact is the card copy table — the first place where a design mechanic and a voice direction do mechanical work together.
+
+## The card copy table as mechanism
+
+Task cards have hidden archetypes: gold-plating is usually safe to cut, process work sometimes, load-bearing work almost never (cut-safety 0.65 / 0.35 / 0.10, all assumed placeholder values). The copy weakly signals which is which, and the signals are noisy by design.
+
+The corporate-satire voice direction landed mid-build, and it turned out to STRENGTHEN the mechanic rather than decorate it: bloat is written in the language of the deck it came from ("Q3 Alignment Deck (v7_FINAL_final2)", "Stakeholder Synergy Pre-Read"), process in the language of ceremony ("Mandatory Compliance Refresher: The Refresher"), and load-bearing work in deadpan engineering English ("Payment reconciliation job. Boring nightly batch. Money counts on it."). The register contrast IS the smell the player learns. The noise survives because some plumbing sounds cuttable ("Audit logging — nobody looks at logs. Until Legal does.") and some bloat wears an executive title ("Executive Demo Skin").
+
+## Finding: the no-skip win band is empty
+
+The budget buys 60 staffed days; the deterministic engine's floor is 73 days even with full padding. So on-time AND on-budget is unreachable without successful scope cuts — the cut verb is not a side gamble, it is the only door to the win at current values. Either this is the design (wins are rare, skill = sniffing bloat) or the contingency needs retuning at playtest. Pinned in a test; decision deferred to playtest.
+
+## Finding: the audit under-reads the coming churn
+
+At the naive run's trap moment (day 49, board says 90%), hidden rework is only about 8% of what's marked Done — discovery drains the debt stock continuously, and it peaks AFTER the deadline crossing. So a player who buys the truth-audit on day 49 gets an honest snapshot that still understates the two weeks of churn ahead. "The truth costs money and is already stale" is a better lesson than the one we designed. This falsified a test assumption at implementation — I expected the audit to read more than 10% hollow.
+
+## Finding: first boomerangs land pre-deadline
+
+At defaults the first Done card flips back around day 15, well before the day-50 trap beat. The returns intensify near the deadline because hidden rework is peaking there — so the onboarding's "NOW a Done card flips back" beat is anchored to the overdue moment, where the density is readable, not to the literal first return. Nothing is staged; the beat survives contact with the real engine, just less binary than the script implied.
+
+## Two lines that earned their place
+
+* The debrief's odds card reads the Monte Carlo numbers back in fiction: "A thousand replays of this assignment at your commitment: not one finished by day 50. Even money by day 88; a safe bet by day 98." The player reads their own postmortem in the same sentence shape as the research observation.
+* Best satire line doing double duty as a mechanism statement: "Committed date was today. I need a new number, and this time I need it to be load-bearing."
