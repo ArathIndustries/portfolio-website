@@ -1,0 +1,46 @@
+---
+title: "Thinking Narrator"
+description: "A localhost web player that reads Claude Code's extended thinking aloud near-live — neural voices, karaoke word tracking, and full session replay — built v1 to v8 in a single day."
+tags: ["Python", "TTS", "Web Audio", "Claude Code", "Developer Tools"]
+github: "https://github.com/ArathIndustries/thinking-narrator"
+date: "2026-07-26"
+---
+
+## The Problem
+
+Claude Code shows its reasoning as collapsible "thinking" text in the terminal — and then that reasoning effectively disappears. While an agent works through a long task, the only way to know *what it is actually thinking* is to sit and watch the terminal. Alt-tab away and you lose the thread; come back later and the thoughts from an hour ago are buried in scrollback.
+
+The discovery that started the project: every thinking block is written to a session transcript file (JSONL) on disk within seconds of being generated. Measured from inside a running session, the file updates per message segment — roughly the moment each batch of tool calls starts executing. The model's inner monologue was already being published, live, to a file nobody was reading.
+
+## What I Built
+
+A narrator that turns that file into an ambient audio channel. Keep working — or watch another screen entirely — while Claude's reasoning is spoken in a neural voice and word-highlighted in a browser player.
+
+### Transcript Tailing
+
+A zero-dependency Python core incrementally tails every session transcript, extracts thinking blocks (skipping subagent sidechains), and resolves session titles. It only ever reads — the chats it observes are never touched. The same core powers three entry points: an ambient command-line watcher, a single-chat command-line app, and the web player.
+
+### The Web Player
+
+A stdlib HTTP server on localhost serves a dark, broadcast-console player: a session sidebar with unread badges, each chat's full thought history as clickable cards, and live follow of whichever chat is currently generating — with one-click locking to a single conversation. Thoughts synthesize to speech through Microsoft Edge's neural Text-to-Speech (TTS) voices (47 available, free, no API key), cached as MP3s so replays and scrubbing are instant, with Windows SAPI as the offline fallback.
+
+### Karaoke Word Tracking
+
+The TTS engine emits a timestamp for every spoken word. The player aligns those timestamps against the original text and lights up the exact word being spoken — read text bright, unread text dimmed, view auto-scrolling like a teleprompter. Seeking and speed changes stay in sync because the timings live in media time.
+
+### Creature Comforts
+
+Hardware media keys with Windows overlay metadata, keyboard shortcuts, a play-through mode that pre-synthesizes the next thought for gapless audiobook-style replay of a session's history, pause/resume by clicking the playing card, unread badges, a cache cap with oldest-first eviction, and a desktop shortcut that starts everything minimized — double-launching just opens the page.
+
+## Tech Stack
+
+Python (stdlib only on the server side) + edge-tts for neural synthesis with word boundary events, vanilla JavaScript and CSS for the player (no frontend framework), Windows SAPI fallback, winmm MCI for CLI audio playback, Git + GitHub.
+
+## Development Timeline
+
+<Timeline>
+  <TimelineItem date="Jul 2026" title="v1–v2: Prove the pipe" description="Measured transcript flush timing empirically, then built the tail-and-speak core and multi-chat watching with per-session voices — same morning." status="completed" />
+  <TimelineItem date="Jul 2026" title="v3–v4: The app" description="Session picker, history replay, neural voices, auto-follow of the active chat with runtime lock/unlock." status="completed" />
+  <TimelineItem date="Jul 2026" title="v5–v8: The player" description="Localhost web player: karaoke word tracking, custom transport, per-session cached views, media keys, play-through with prefetch, desktop launcher." status="completed" />
+  <TimelineItem date="Aug 2026" title="Live with it" description="A week of daily use decides what gets built next — only friction proven by real listening makes the roadmap." status="current" />
+</Timeline>

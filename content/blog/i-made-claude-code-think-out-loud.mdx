@@ -1,0 +1,56 @@
+---
+title: "I Made Claude Code Think Out Loud"
+description: "Claude Code writes its reasoning to a file on disk, live, while it works. I turned that file into a radio station — neural voices, karaoke word tracking, full session replay — in one day. Build log, measured facts, and the Windows gotchas."
+date: "2026-07-26"
+tags: ["Claude Code", "Python", "TTS", "Build Log", "AI-Assisted"]
+---
+
+This started as an idle question in the middle of an unrelated session. Claude Code shows its reasoning as gray collapsible "thinking" text in the terminal, and I asked: does that text take up context? Where does it even go?
+
+The answer changed my afternoon. Every thinking block is written to a session transcript — a JSONL file on disk — and it's written *live*. By end of day I had a player in my browser reading Claude's inner monologue aloud in a neural voice, highlighting each word as it's spoken, while I worked in other windows. This is the build log.
+
+## The measurement that started it
+
+Before building anything, we proved the pipe. From *inside* a running session, Claude grepped its own transcript: a thinking block generated minutes earlier was already on disk, while the block generated seconds before the check wasn't yet. Conclusion: Claude Code flushes each message segment roughly when that segment's tool calls start executing. The lag between "model thinks something" and "it's readable in a file" is one tool-execution cycle — seconds, not turns.
+
+Two more facts fell out of poking at the transcript:
+
+- Thinking blocks aren't uniform. The same session held raw thinking (9,848 characters) and short model-produced summaries (184 characters). The file stores exactly what the terminal shows you.
+- Within a turn, thinking rides along in every follow-up request; across turns it's stripped from the model's context. The transcript on disk is the only place the reasoning persists.
+
+Your tools are already publishing data like this. The whole project is downstream of one grep.
+
+## v1 in an hour, then the ratchet
+
+Version 1 was crude: tail the newest transcript, extract thinking blocks, pipe them through Windows' built-in SAPI voice. It worked, and it sounded like a fax machine reading a novel. Every version after that answered a real complaint from actually using it:
+
+- **"What if I have multiple chats open?"** → tail every session at once, give each chat its own voice, prefix with "Session 2" when things get crowded.
+- **"I want to replay past thoughts."** → session picker, replay all or the last N blocks, then keep following live.
+- **"Can we get smoother voices?"** → Microsoft Edge exposes 47 neural English voices through the free, keyless `edge-tts` package. Christopher and Aria replaced the fax machine.
+- **"The terminal isn't intuitive for this."** → the pivotal call of the day: move to the browser. Pause, scrub, volume, speed — a week of terminal UI work, or one audio element that does all of it natively. The server stayed Python stdlib; the player became a localhost web page.
+
+One design ruling I got wrong and was overruled on: I had long thoughts truncating at 1,500 characters ("that's 75 seconds of speech, sensible default"). The response — *"what is the point of stopping the thoughts if that is literally what I want this to do."* Truncation became opt-in, and a skip key replaced it. Defaults encode assumptions; the user's purpose beats the builder's arithmetic.
+
+## The karaoke feature was already in the data
+
+The favorite feature — the exact word being spoken lights up amber, read text bright, unread dimmed, the view scrolling like a teleprompter — sounds like the hard part. It wasn't, because the TTS engine was already emitting a timestamp for every spoken word. The whole feature is one parameter (`boundary="WordBoundary"` — the library defaults to sentence-level, discovered when the first attempt returned zero words) plus an alignment loop that walks the timestamps against the original text and skips tokens the voice normalizes, like digits read as words.
+
+Lesson worth stealing: before engineering a feature, check what your pipeline already produces. The best data is the data that's already there.
+
+## The Windows tax
+
+Three defects worth documenting because each one will bite someone else:
+
+1. **A second server bound an in-use port with no error.** Python's `http.server` sets `SO_REUSEADDR`, and on Windows that lets a duplicate server silently bind and serve. The "port already in use" handler never fired. Fix: probe the port with an actual connection attempt before binding.
+2. **A force-killed process produced an empty log.** Python block-buffers stdout when it's redirected; killing the process discards the buffer. Everything now runs line-buffered.
+3. **Bash ate my PowerShell.** Testing SAPI through Git Bash mangled every `$variable` before PowerShell saw it. Speech calls go through argument lists, never through a shell string.
+
+## Where it landed
+
+Fifteen commits later: a desktop shortcut starts the server minimized and opens the player. It follows whichever chat is generating, switches voices when I switch chats, badges the sessions I'm not watching, and turns any session's history into a gapless audiobook — the next thought synthesizes while the current one speaks. Hardware media keys work. Settings survive reloads. The server binds localhost only, holds one dependency, and never writes to the transcripts it reads.
+
+The division of labor, same as my other build logs: Claude Code wrote the code and measured its claims; I set direction, caught what use revealed (the prefetch gap, the truncation ruling, "I can't tell if it's loading"), and made the calls. Six defects were found by testing during the build. All six were fixed and re-verified the same day.
+
+Total elapsed: one day, from "where does the thinking text go?" to a tool I'll leave running tomorrow.
+
+Code: [github.com/ArathIndustries/thinking-narrator](https://github.com/ArathIndustries/thinking-narrator)

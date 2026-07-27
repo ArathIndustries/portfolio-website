@@ -42,6 +42,13 @@ const featuredProjects = [
 
 const otherProjects = [
   {
+    slug: "thinking-narrator",
+    title: "Thinking Narrator",
+    description: "Reads Claude Code's extended thinking aloud near-live — neural voices, karaoke word tracking, session replay. Localhost web player built v1 to v8 in one day.",
+    tags: ["Python", "TTS", "Web Audio", "Claude Code"],
+    github: "https://github.com/ArathIndustries/thinking-narrator",
+  },
+  {
     slug: "pm-simulator",
     title: "PM Flight Simulator",
     description: "Browser project-management simulator where rework-cycle and Monte Carlo dynamics make schedule slip and quality debt cascade realistically. 116 passing engine tests; every mechanic traces to a published model.",
