@@ -18,11 +18,7 @@ export default function ForgedNotesPage() {
         </h1>
         <p className="text-gray-400">
           Working notes from the workshop — what got built, what broke, and what it taught.
-          Raw and frequent; the polished record lives in{" "}
-          <a href="/publications" className="text-[var(--neon)] hover:underline">
-            Publications
-          </a>
-          .
+          One chronological feed; formal write-ups carry a publication badge.
         </p>
       </header>
 

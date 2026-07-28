@@ -100,44 +100,11 @@ export function getFeaturedProjects(): Project[] {
 }
 
 /**
- * Get all blog posts from content/blog directory
- * Returns posts sorted by date (newest first)
+ * Writing collections. "notes" is the one chronological feed (2026-07-26 IA
+ * ruling): it absorbed the former Blog and Publications; publication entries
+ * carry a `publication` tag.
  */
-export function getAllBlogPosts(): BlogPost[] {
-  const blogDirectory = path.join(contentDirectory, "blog");
-
-  // Return empty array if directory doesn't exist or is empty
-  if (!fs.existsSync(blogDirectory)) {
-    return [];
-  }
-
-  const filenames = fs.readdirSync(blogDirectory);
-  const mdxFiles = filenames.filter((name) => name.endsWith(".mdx"));
-
-  const posts = mdxFiles.map((filename) => {
-    const slug = filename.replace(/\.mdx$/, "");
-    const filePath = path.join(blogDirectory, filename);
-    const fileContents = fs.readFileSync(filePath, "utf8");
-    const { data, content } = matter(fileContents);
-
-    return {
-      slug,
-      frontmatter: data as BlogFrontmatter,
-      content,
-    };
-  });
-
-  // Sort by date (newest first)
-  return posts.sort((a, b) => {
-    return new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime();
-  });
-}
-
-/**
- * Generic writing collections (notes, publications) — same frontmatter shape
- * as blog posts, different content/ subdirectory.
- */
-export type WritingCollection = "notes" | "publications";
+export type WritingCollection = "notes";
 
 export function getCollection(collection: WritingCollection): BlogPost[] {
   const dir = path.join(contentDirectory, collection);
@@ -164,24 +131,4 @@ export function getCollectionEntry(collection: WritingCollection, slug: string):
   }
   const { data, content } = matter(fs.readFileSync(filePath, "utf8"));
   return { slug, frontmatter: data as BlogFrontmatter, content };
-}
-
-/**
- * Get a single blog post by slug
- */
-export function getBlogPostBySlug(slug: string): BlogPost | null {
-  const filePath = path.join(contentDirectory, "blog", `${slug}.mdx`);
-
-  if (!fs.existsSync(filePath)) {
-    return null;
-  }
-
-  const fileContents = fs.readFileSync(filePath, "utf8");
-  const { data, content } = matter(fileContents);
-
-  return {
-    slug,
-    frontmatter: data as BlogFrontmatter,
-    content,
-  };
 }

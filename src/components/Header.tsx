@@ -4,20 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 
 const navLinks = [
-  { href: "/work", label: "Work" },
+  { href: "/work", label: "Projects" },
   { href: "/about", label: "About" },
 ];
 
-const forgedLinks = [
+const toolsLinks = [
+  { href: "/forged/tools", label: "Apps" },
   { href: "/forged/sheets", label: "Sheets" },
-  { href: "/forged/tools", label: "Tools" },
-  { href: "/forged/notes", label: "Notes" },
-];
-
-const writingLinks = [
-  { href: "/blog", label: "Blog" },
-  { href: "/forged/notes", label: "Notes" },
-  { href: "/publications", label: "Publications" },
 ];
 
 function NavDropdown({ label, links }: { label: string; links: { href: string; label: string }[] }) {
@@ -81,15 +74,22 @@ export function Header() {
               </Link>
             ))}
 
-            <NavDropdown label="Forged" links={forgedLinks} />
-            <NavDropdown label="Writing" links={writingLinks} />
+            <NavDropdown label="Tools" links={toolsLinks} />
+
+            <Link
+              href="/forged/notes"
+              className="white-neon hover:text-[var(--neon)] transition-colors font-mono text-sm"
+              data-responds-to="header"
+            >
+              Feed
+            </Link>
 
             <Link
               href="/contact"
               className="neon-btn font-mono text-sm white-neon"
               data-responds-to="header"
             >
-              Hire Me
+              Contact
             </Link>
           </div>
 
@@ -129,9 +129,9 @@ export function Header() {
                 </Link>
               ))}
 
-              {/* Forged group */}
-              <span className="text-gray-600 font-mono text-xs uppercase tracking-wider">Forged</span>
-              {forgedLinks.map((link) => (
+              {/* Tools group */}
+              <span className="text-gray-600 font-mono text-xs uppercase tracking-wider">Tools</span>
+              {toolsLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -142,24 +142,19 @@ export function Header() {
                 </Link>
               ))}
 
-              {/* Writing group */}
-              <span className="text-gray-600 font-mono text-xs uppercase tracking-wider">Writing</span>
-              {writingLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="pl-4 text-gray-400 hover:text-[var(--neon)] transition-colors font-mono text-sm"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              <Link
+                href="/forged/notes"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-gray-400 hover:text-[var(--neon)] transition-colors font-mono text-sm"
+              >
+                Feed
+              </Link>
               <Link
                 href="/contact"
                 onClick={() => setMobileMenuOpen(false)}
                 className="neon-btn font-mono text-sm w-fit"
               >
-                Hire Me
+                Contact
               </Link>
             </div>
           </div>

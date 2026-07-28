@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { getAllProjects, getAllBlogPosts } from "@/lib/mdx";
+import { getAllProjects, getCollection } from "@/lib/mdx";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://arath.site";
@@ -36,7 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/blog`,
+      url: `${baseUrl}/forged/notes`,
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.9,
@@ -51,13 +51,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  const posts = getAllBlogPosts();
-  const blogPages = posts.map((post) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
+  const posts = getCollection("notes");
+  const feedPages = posts.map((post) => ({
+    url: `${baseUrl}/forged/notes/${post.slug}`,
     lastModified: new Date(post.frontmatter.date),
     changeFrequency: "monthly" as const,
     priority: 0.7,
   }));
 
-  return [...staticPages, ...projectPages, ...blogPages];
+  return [...staticPages, ...projectPages, ...feedPages];
 }

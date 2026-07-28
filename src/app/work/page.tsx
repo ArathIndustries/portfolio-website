@@ -100,7 +100,7 @@ export default function WorkPage() {
       {/* Page Header */}
       <header className="mb-12 flex items-start justify-between" data-grid-node="heading">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-4 neon-text neon-flicker">Work</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-4 neon-text neon-flicker">Projects</h1>
           <p className="white-neon max-w-2xl" data-responds-to="heading">
             A collection of tools, platforms, and research spanning engineering, AI, and automation.
           </p>

@@ -13,6 +13,22 @@ const nextConfig: NextConfig = {
         destination: "/work/:slug",
         permanent: true,
       },
+      // 2026-07-26 IA ruling: Blog + Publications merged into the one writing feed
+      {
+        source: "/blog",
+        destination: "/forged/notes",
+        permanent: true,
+      },
+      {
+        source: "/blog/:slug",
+        destination: "/forged/notes/:slug",
+        permanent: true,
+      },
+      {
+        source: "/publications",
+        destination: "/forged/notes",
+        permanent: true,
+      },
     ];
   },
 };
