@@ -80,7 +80,7 @@ export default function AboutPage() {
         style={{ border: '1px solid rgba(255,136,0,0.15)', background: 'rgba(255,136,0,0.02)' }}
       >
         <p className="text-gray-400 mb-4">
-          Arath Industries is a one-person studio founded by Sergio Arath Guzman — an Industrial Engineering student, civil design professional, and self-taught developer who started seeing inefficiencies everywhere and couldn&apos;t stop building tools to fix them.
+          Arath Industries is a one-person studio founded by Sergio Arath Guzman — an Industrial Engineering student, undergraduate researcher, and self-taught developer who spent years in civil design, started seeing inefficiencies everywhere, and couldn&apos;t stop building tools to fix them.
         </p>
         <Link href="/founder" className="neon-btn font-mono text-sm inline-block">
           Meet the Founder

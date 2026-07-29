@@ -42,6 +42,18 @@ const featuredProjects = [
 
 const otherProjects = [
   {
+    slug: "modulab",
+    title: "modulab",
+    description: "Physical sensor modules driving live 3D physics scenes in the browser — Web Serial and Web Bluetooth in, JSON scene documents out. No install, no build step, in-app scene editor.",
+    tags: ["JavaScript", "Three.js", "Web Serial", "Web Bluetooth"],
+  },
+  {
+    slug: "powder-of-life",
+    title: "Powder Of Life — Nano 33 BLE Port",
+    description: "Open-source fork porting a physical-computing library from 8-bit AVR to the nRF52840 — three type-width bugs and one Unity serial defect that silently blocked all data. Confirmed on hardware.",
+    tags: ["Arduino", "C++", "Unity", "Open Source"],
+  },
+  {
     slug: "thinking-narrator",
     title: "Thinking Narrator",
     description: "Reads Claude Code's extended thinking aloud near-live — neural voices, karaoke word tracking, session replay. Localhost web player built v1 to v8 in one day.",

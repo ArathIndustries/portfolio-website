@@ -1,0 +1,51 @@
+---
+title: "modulab — Physical Modules, Live in the Browser"
+description: "A browser platform that connects real sensor hardware to 3D physics scenes over Web Serial and Web Bluetooth — no install, no build step, scenes defined as JSON documents."
+tags: ["JavaScript", "Three.js", "cannon-es", "Web Serial", "Web Bluetooth", "Arduino"]
+github: "https://github.com/ArathIndustries/modulab"
+live: "https://arathindustries.github.io/modulab/"
+date: "2026-07-27"
+---
+
+## The Problem
+
+Connecting a physical sensor to a live 3D model normally means a game engine, a toolchain, and an install: Unity or Unreal, a serial plugin, a project scaffold, and a build for every machine that wants to see it. That cost is fine for a product team and prohibitive for a lesson, a demo, or an afternoon of curiosity. The result is that most microcontroller projects stop at a serial monitor printing numbers.
+
+Every modern desktop browser already ships the two pieces that make the install unnecessary: Web Serial and Web Bluetooth for the input, WebGL for the render. The missing piece was a runtime that treats a scene as data rather than as compiled code.
+
+## What I Built
+
+A platform where a sensor module, a wire protocol, and a 3D scene are three independently replaceable parts. Open a Uniform Resource Locator (URL), pick a transport, and a physical knob drives a physics body.
+
+### Scenes as Data
+
+A scene is a JavaScript Object Notation (JSON) document — objects, rigid bodies, imported models, nodes, drivers, patches, and overlays — instantiated at load time by the engine. Authoring a new bench means writing a JSON file, not writing code. The loader is deliberately permissive: an unrecognized field warns and continues rather than failing the scene.
+
+### The Editor
+
+Selection by raycast, move and rotate gizmos, undo across 60 snapshots, and a selection-scoped inspector written in sentences rather than field labels — "Knob 0 turns this object", with rest, swing, response, and flip as the tunable terms. Objects can be added, deleted, renamed, and reparented; drivers are editable in-app; edits persist to per-scene local drafts that track their baseline, so an upstream scene change surfaces a notice and a Restore button instead of silently overwriting the work.
+
+### Overlays
+
+Five overlay types render inside the world rather than in side panels: force and velocity vectors, live-quantity labels, solver contact impulses, motion trails, and sparkline graphs of pivot angle and angular velocity. The design rule is that the first read must work without interaction — hovering adds detail, it does not reveal the point.
+
+### Transports
+
+Four input paths feed one shared stream: Universal Serial Bus (USB) serial with Data Terminal Ready (DTR) asserted, Bluetooth Low Energy (BLE), a synthetic demo signal, and manual sliders. Protocol v0 is a plain text frame — trivial enough that any microcontroller that can print a line can join — with a v1 hello handshake layered on top for boards that can describe their own channels.
+
+### Firmware
+
+A reference dual-transport sketch for the Arduino Nano 33 BLE streams six channels at 50 Hz over USB and Bluetooth simultaneously, with the pin map written as the place you edit to add input. It is compile-verified against the board's core; the first hardware smoke test on a physical rig is still open, and nothing on this page claims otherwise.
+
+## Tech Stack
+
+Vanilla JavaScript with native ES modules and no build step, Three.js for rendering and cannon-es for rigid-body physics (both vendored into the repo), Web Serial and Web Bluetooth for input, GitHub Pages for hosting, and Arduino C++ for the reference module firmware.
+
+## Development Timeline
+
+<Timeline>
+  <TimelineItem date="Jul 26, 2026" title="MVP" description="Three views, dual-transport firmware, and the v0/v1 wire protocol — sensor input driving a live 3D scene in the browser." status="completed" />
+  <TimelineItem date="Jul 27, 2026" title="Scenes as data + authoring" description="Engine rewritten around JSON scene documents; in-app editor with gizmos, undo, inspector, driver CRUD, and baseline-tracked drafts; five overlay types." status="completed" />
+  <TimelineItem date="Aug 2026" title="Hardware smoke test" description="Bare-board USB and Bluetooth check, then a serial test on a second rig. Feel constants — analog scale and joint friction — stay unvalidated until real knobs move them." status="current" />
+  <TimelineItem date="Later" title="Lesson layer" description="Mass on parts to drive torque arcs, stress coloring, computed expressions, and per-channel metadata so a module can describe its own units and ranges." status="future" />
+</Timeline>

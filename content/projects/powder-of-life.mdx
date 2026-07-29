@@ -1,0 +1,47 @@
+---
+title: "Powder Of Life — Arduino Nano 33 BLE Port"
+description: "An open-source fork that ports a physical-computing library from 8-bit AVR to the nRF52840, fixing three architecture bugs and one Unity serial defect that silently blocked all data."
+tags: ["Arduino", "C++", "Unity", "C#", "Embedded", "Open Source"]
+github: "https://github.com/ArathIndustries/PowderOfLife"
+date: "2026-07-26"
+---
+
+## The Problem
+
+Powder Of Life is a physical-computing framework by Andrew Frueh: sensors, actuators, and a small neuron-and-engine model that wires them together, plus a Unity package that mirrors the hardware as a digital twin over a plain serial protocol. It targets the classic Arduino Nano — an 8-bit ATmega328P.
+
+The Nano 33 Bluetooth Low Energy (BLE) shares the same form factor and almost nothing else: a 32-bit ARM Cortex-M4 (nRF52840), a different Arduino core (Mbed OS instead of AVR), native Universal Serial Bus (USB) Communications Device Class (CDC) rather than a USB-to-serial bridge, and 3.3 V pins that are not 5 V tolerant. Upstream does not compile on it. Getting the newer board working meant finding what breaks when portable-looking C++ moves to a wider architecture.
+
+## What I Changed
+
+The library is honest portable Arduino C++ — no AVR registers, no PROGMEM, no SoftwareSerial — so the failures were not where the architecture difference is visible. They were in the type widths.
+
+### A Sign-Width Bug That Only Appears on 32-Bit
+
+The MPU-6050 inertial sensor returns signed 16-bit registers. Upstream assembled them with `Wire.read() << 8 | Wire.read()` into an `int`. On AVR an `int` is 16 bits, so the sign bit landed correctly by accident of the platform. On ARM an `int` is 32 bits, so every negative reading became a large positive one — −1 read as 65535. The buffer is now `int16_t`, and the high and low bytes are read in separate statements, because C++ does not define the evaluation order of the two `Wire.read()` calls inside one expression.
+
+### Analog Pin Indexing
+
+Upstream passed bare channel numbers to `analogRead()` and hardcoded `pin + 14` for pin-mode calls. Both are AVR conventions that hold only because A0 happens to equal 14 on a classic Nano. `setPin(n)` now maps to `A0 + n`, which is identical on AVR and correct on Mbed cores.
+
+### A Baud Rate That Silently Truncated
+
+`SerialNode` stored the baud rate in an `unsigned int` — 16 bits on AVR, so any rate above 65535, including the common 115200, wrapped. Now `unsigned long` on both architectures.
+
+### The Unity Fix That Made It Work at All
+
+The port compiled, the board streamed, and Unity still received nothing. The cause was on the host side: .NET defaults `DtrEnable` to false, and a native-USB CDC device does not transmit until the host asserts Data Terminal Ready (DTR). The board enumerated, Unity opened the port, and no bytes ever arrived — with no error to explain it. This fork's Unity package asserts DTR and Request To Send (RTS) before opening. The classic Nano's USB-to-serial bridge streams regardless, so the change is safe on both boards.
+
+### A Wiring Warning at the Top of the Page
+
+The original tutorial wires the potentiometers across 5 V, which is correct for a 5 V board. Following it on a Nano 33 BLE puts 5 V on an analog pin of a part that is not 5 V tolerant, which can permanently damage the microcontroller. The warning now sits at the top of the README and the porting document rather than in a footnote: pot outer legs to 3V3 and ground, wipers to A0 and A1. The reading range is unchanged, because the analog-to-digital reference scales with the supply.
+
+## Verification
+
+Compile-verified with `arduino-cli` against both `arduino:mbed_nano:nano33ble` and `arduino:avr:nano`, confirming no regression on the original target. Confirmed on hardware end to end on 2026-07-26 — potentiometers to board to serial to the Unity digital twin — by the first external user of the fork, on their own rig. The DTR change was required in that test; the stock Unity package received no data.
+
+The serial message protocol, the neuron and engine model, and every example are unchanged, so the fork stays protocol-compatible with upstream on both the firmware and Unity sides. Released as v0.2.0 with the library source checked in — upstream ships it only as a zip archive — so the archive can be rebuilt from readable code.
+
+## Tech Stack
+
+Arduino C++ targeting nRF52840 (Mbed OS core) and ATmega328P (AVR core), `arduino-cli` for reproducible compile verification, Unity with a C# serial client, and Git with an upstream remote retained for future rebases.
