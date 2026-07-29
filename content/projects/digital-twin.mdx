@@ -13,7 +13,7 @@ The research question: can a low-cost edge computing stack — microcontrollers,
 
 ## What I Built
 
-This is an academic research project at Texas State University under Dr. Sachin Shendokar (Manufacturing Engineering), inspired by Lee et al.'s 97.37% accuracy on ductile-brittle classification using Acoustic Emission + Convolutional Neural Networks (CNN). The project has two phases: a completed wireless proof of concept, and an ongoing production deployment targeting the HAAS VF-2YT.
+This is an academic research project at Texas State University under Dr. Sachin Shendokar (Manufacturing Engineering), inspired by Lee et al.'s 97.37% accuracy on ductile-brittle classification using Acoustic Emission + Convolutional Neural Networks (CNN). The project has two phases: a completed wireless proof of concept, and a production deployment targeting the HAAS VF-2YT that reached first captures before pausing in June 2026.
 
 ### Proof of Concept: Musical Notes Classifier
 
@@ -23,7 +23,7 @@ Before investing in AE sensors, I validated the entire edge-inference pipeline u
 
 The production system replaces the Nano with an STM32F746 Discovery board ($55) — its 2.4 MSPS Analog-to-Digital Converter (ADC) can sample up to 1.2 MHz Nyquist, which is essential for capturing AE signals in the 100–500 kHz band that characterize aluminum machining. A KRN KRNBB-PCP broadband AE sensor (with built-in preamplifier) mounts directly on the HAAS VF-2YT, feeding conditioned signal through a voltage divider into the STM32's ADC. The CNN will be retrained on real machining data across four classes: ductile (continuous chip formation), brittle (chip fragmentation), transition/chatter (unstable cutting), and idle.
 
-Data collection follows Lee et al.'s methodology: sweeps across 5 spindle speeds (12,000–18,000 RPM), 5 feed rates (5–35 micrometers per second), and 3 tool diameters (0.5–1.0 mm) on Al 6061 aluminum — 56 parameter combinations targeting 200+ labeled samples.
+The planned data collection follows Lee et al.'s methodology: sweeps across 5 spindle speeds (12,000–18,000 RPM), 5 feed rates (5–35 micrometers per second), and 3 tool diameters (0.5–1.0 mm) on Al 6061 aluminum — 56 parameter combinations targeting 200+ labeled samples. What exists so far is the first slice of that: 11 capture sessions of 30 events each recorded on the HAAS VF-2YT in May 2026, of which one is a real cut on 6061-T6. The contrast classes the classifier needs are the next capture campaign, not a finished dataset.
 
 ### Budget Impact
 
@@ -36,7 +36,7 @@ The hardware pivot from commercial DAQ to microcontrollers saved 54–72% of the
 
 ### Known Issues
 
-There's a confidence calibration bug in the wireless pipeline — values occasionally exceed 1000% on the browser dashboard, likely caused by incorrect INT8 dequantization in the BLE or WiFi bridge firmware. This is the top priority fix before production data collection begins.
+A confidence calibration bug in the wireless pipeline puts values above 1000% on the browser dashboard, likely from incorrect INT8 dequantization in the BLE or WiFi bridge firmware. A second defect sits in the analysis path: the push script computes a 2048-point Fast Fourier Transform, giving 488 Hz bins, so the band reported as 100–400 kHz actually covers 50–200 kHz. The raw captures are unaffected — only the band label and the derived band math. Both are open.
 
 ## Tech Stack
 
@@ -49,11 +49,9 @@ STM32F746 Discovery (production), Arduino Nano 33 BLE Rev2 (Proof of Concept (PO
   <TimelineItem date="Feb 2026" title="Hardware Analysis" description="Documented Nano 33 BLE limitations (100 kHz Nyquist — insufficient for AE). Built sensor-board compatibility matrix. Recommended STM32F746 as production platform." status="completed" />
   <TimelineItem date="Mar 6, 2026" title="Notes CNN Deployed" description="12-class musical note classifier trained, INT8 quantized (176 KB), and running real-time inference on Nano 33 BLE with external mic. Validated that edge ML pipeline works." status="completed" />
   <TimelineItem date="Mar 9, 2026" title="Wireless POC Validated" description="Full pipeline working end-to-end: Nano (mic→FFT→CNN→BLE) → ESP32 (WiFi AP) → Browser dashboard. Proved wireless architecture is viable for production." status="completed" />
-  <TimelineItem date="Mar 14, 2026" title="Hardware Procurement" description="STM32F746, ESP32-S3, piezo test kit, and cables ordered. AE sensor quotes pending from KRN and Vallen." status="current" />
-  <TimelineItem date="Mar 21, 2026" title="Signal Chain Validation" description="Mount sensor on HAAS VF-2YT. Validate signal conditioning circuit and ADC capture quality at 2.4 MSPS." status="future" />
-  <TimelineItem date="Apr 6, 2026" title="Dataset Complete" description="200+ labeled samples across ductile, brittle, transition, and idle classes. 56 parameter combinations of speed, feed rate, and tool diameter on Al 6061." status="future" />
-  <TimelineItem date="Apr 14, 2026" title="Production Model Deployed" description="Multi-class CNN trained on real AE data, INT8 quantized, deployed on STM32F746 with live classification." status="future" />
-  <TimelineItem date="May 1, 2026" title="Physical Module" description="3D-printed enclosure housing STM32F746 + ESP32-S3 + signal conditioning. Mounted on HAAS VF-2YT for permanent monitoring." status="future" />
-  <TimelineItem date="May 8, 2026" title="Presentation" description="Live demo at Texas State Makerspace for faculty and industry panel. Working prototype classifying machining modes in real time." status="future" />
-  <TimelineItem date="May 31, 2026" title="Publication" description="Submit review paper and journal article documenting methodology, experimental results, and comparison to Lee et al.'s 97.37% benchmark." status="future" />
+  <TimelineItem date="Mar 14, 2026" title="Hardware Procurement" description="STM32F746, ESP32-S3, piezo test kit, and cables ordered; AE sensor sourcing settled on STEMINC PZT discs." status="completed" />
+  <TimelineItem date="May 27, 2026" title="Signal Chain and First Captures" description="Sensor mounted on the HAAS VF-2YT and the capture path run end to end at 1 MSPS: 11 trial sessions of 30 events each, spanning machine-off, idle at five spindle speeds, and two preamp gain settings — including one real cut on 6061-T6 aluminum. Validity check on the first idle baseline came back clean." status="completed" />
+  <TimelineItem date="May 31, 2026" title="Makerspace Closeout Submitted" description="Closeout package delivered: project report, operating manual, closeout brief, supporting figures, video deliverables, and a curated snapshot of every source file the documents reference." status="completed" />
+  <TimelineItem date="Jun 17, 2026" title="Monitoring Pi Rebuilt" description="Dashboard host reflashed to Ubuntu Server 24.04 with the deploy bugs from the previous build backported. The platform itself was not redeployed onto it before the pause." status="completed" />
+  <TimelineItem date="Since Jun 2026" title="Paused" description="Work stopped after the rebuild and has not resumed. Remaining to close the research question: a contrast-class capture campaign across real cuts at multiple feeds, speeds, depths, and materials; a classifier trained on that data without label leakage; and the platform deployed onto the monitoring Pi. The 13-section article is drafted and awaiting advisor review." status="current" />
 </Timeline>
