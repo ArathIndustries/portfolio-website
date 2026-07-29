@@ -35,7 +35,7 @@ const featuredProjects = [
     description: "Dark neon sign portfolio with interactive SVG animations and light-reactive brick wall.",
     tags: ["Next.js", "React", "Tailwind CSS", "Canvas"],
     github: "https://github.com/ArathIndustries/portfolio-website",
-    live: "https://arath.site",
+    live: "https://arathindustries.com",
     embed: "https://arath-industries.vercel.app",
   },
 ];

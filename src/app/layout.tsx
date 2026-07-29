@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   keywords: ["portfolio", "engineering", "AI", "automation", "web development", "industrial engineering"],
   authors: [{ name: "Sergio Arath Guzman" }],
   creator: "Sergio Arath Guzman",
-  metadataBase: new URL("https://arath.site"),
+  metadataBase: new URL("https://arathindustries.com"),
   openGraph: {
     type: "website",
     locale: "en_US",

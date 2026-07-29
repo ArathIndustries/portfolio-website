@@ -1,5 +1,6 @@
-# robots.txt for arath.site
+# robots.txt for arathindustries.com
+# arath.site 308-redirects here (2026-07-28 ruling); it is not a separate site.
 User-agent: *
 Allow: /
 
-Sitemap: https://arath.site/sitemap.xml
+Sitemap: https://arathindustries.com/sitemap.xml

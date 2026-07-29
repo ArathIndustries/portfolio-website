@@ -25,7 +25,8 @@
 
 ## External references
 
-- Live: https://arath.site (also arath-industries.vercel.app)
-- Domain: arath.site — DNS pointed to Vercel, verified live 2026-07-07 (registrar: Bluehost)
+- Live: https://arathindustries.com (canonical since 2026-07-28; also arath-industries.vercel.app)
+- Domain: arathindustries.com — registered 2026-07-28 at Cloudflare Registrar, Cloudflare nameservers (finley/ximena), apex + www as CNAME → cname.vercel-dns.com with CNAME flattening, both DNS-only. Managed via `Claude Memory\tools\cloudflare\cf.ps1`.
+- Old domain: arath.site — 308-redirects to arathindustries.com via host rules in `next.config.ts` (not the Vercel dashboard). Registrar of record is **Network Solutions** (managed in the Bluehost portal), expires 2027-01-16. Keep it renewed indefinitely; the redirect only works while the name is owned. Its Cloudflare zone exists but is PENDING — nameservers still at Bluehost. arath.site also carries live MAIL records (MX → mail.arath.site, Bluehost) plus Resend and Amazon SES sending credentials; a redirect affects web only, mail is untouched.
 - Repo: ArathIndustries/portfolio-website
 - Deploy: Vercel auto-deploy on push to master

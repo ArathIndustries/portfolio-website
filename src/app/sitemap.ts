@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import { getAllProjects, getCollection } from "@/lib/mdx";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://arath.site";
+  const baseUrl = "https://arathindustries.com";
 
   const staticPages = [
     {
