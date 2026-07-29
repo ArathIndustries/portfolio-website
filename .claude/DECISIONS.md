@@ -37,3 +37,20 @@
 **Reasoning:** A visitor reading the old page saw a project mid-March and on track. Removing rather than re-dating the unmet milestones avoids replacing one unverifiable claim with another.
 **Alternatives considered:** Trim to verified only, ending at May with no pause language; minimal fix moving the "current" marker and stripping stale dates while keeping all milestones.
 **Not decided here:** whether the gain-confound finding — features tracking preamp gain more strongly than machine state — belongs on the public page. It stays internal for now, consistent with the "polished public, honest internal" framing agreed during the closeout review. Raise it if the page is ever used to support a research claim.
+
+## 2026-07-28 — arathindustries.com becomes the canonical domain (Arath, interactive session)
+
+**Context:** Brand pivot from the personal arath.site to the studio name. Two questions were ruled the same night: what the new domain is FOR, and which registrar/mailbox stack carries it.
+**Decision:** (1) arathindustries.com is PRIMARY; arath.site 308-redirects in and stays registered permanently so the resume PDF, GitHub profile, and printed links keep resolving. (2) Cloudflare Registrar holds the name; Cloudflare Email Routing forwards into the existing Gmail, accepting that Email Routing is inbound-only and sending uses Gmail send-as. Registrar and mailbox are independent — moving to Zoho or Workspace later is an MX change, not a domain move.
+**Reasoning:** One property, one brand, one mailbox. The split-site alternative doubled the maintenance for two audiences that are currently the same audience.
+**Alternatives considered:** Split studio vs personal across the two domains; park the new name on a redirect and defer the architecture.
+
+## 2026-07-28 — Implementation choices made during the cutover
+
+**Apex uses CNAME flattening, not a hardcoded A record.** The Vercel CLI recommended `76.76.21.21` while the live arath.site apex served `216.198.79.1`; the CLI on this machine is four majors behind, so the two sources genuinely disagreed. Because the zone is on Cloudflare, both apex and www are `CNAME → cname.vercel-dns.com` with flattening at the apex. This tracks whatever IPs Vercel issues and cannot go stale, which removes a documented recurring failure (webdev-matrix already warned the apex IP differs between projects).
+
+**Host redirects live in `next.config.ts`, not the Vercel dashboard.** Version-controlled, reviewable, and deploys atomically with the app. Covers arath.site, www.arath.site, and www.arathindustries.com → the apex. Apex chosen as canonical over www: both were serving 200, which is duplicate content.
+
+**All Cloudflare records are DNS-only.** Orange-clouding in front of Vercel is a known cause of certificate-issuance failure and redirect loops. Separately, on the imported arath.site zone, Cloudflare had proxied 13 of 14 A/CNAME records by default including `mail.arath.site` — the MX target. Cloudflare's proxy speaks HTTP only, so that configuration would have broken inbound mail the moment nameservers switched. Corrected while the zone was still pending.
+
+**Not changed: arath.site mail.** It carries live MX to Bluehost plus Resend and Amazon SES sending records. The redirect is web-only. arath.site is therefore not a domain that can simply be dropped later — something still sends as it, and what that is has not been established.
