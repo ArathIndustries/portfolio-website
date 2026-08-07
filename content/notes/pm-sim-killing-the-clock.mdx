@@ -1,0 +1,27 @@
+---
+title: "Killing the clock: from idle ticker to turn-based work week"
+description: "The playtest verdict that retired the simulator's real-time loop, and what deleting the timer — rather than rerouting it — bought."
+date: "2026-07-10"
+tags: ["PM Simulator", "Game Design", "Playtest", "Build Log"]
+---
+
+The simulator ran on a real-time clock: sim-days ticking by at a chosen speed, pause channels for meetings and incidents, an Advance button to hop between them. Playtesting my own veteran build produced the verdict that killed it:
+
+"Running on a continuous timer does not give you room to play with and touch all of the various settings... it simply feels like you're just sitting and watching something idly click by."
+
+The earlier rounds had already hinted at this — asked about pacing, my honest answer was "Advance solves it," meaning checkpoint-hopping was the only mode I actually used. The ambient clock was dead code in the design before it was dead code in the repo.
+
+The diagnosis, once named, was simple: an idle-game clock on a management-game decision surface. Idle time is right when watching is the content. Here the content is decisions, so time should advance when the player is done deciding — the Football Manager loop, not the Cookie Clicker loop.
+
+## The replacement: a turn is a day, a week is a beat
+
+* The day opens paused; the player acts freely — board, roster, negotiation, QA — then presses End day, which resolves exactly one day into a day-stamped log.
+* Monday brings the weekly roundup meeting; deadline day and phase handoffs greet the day open as scheduled beats.
+* Run week executes days until the next stop — meeting, incident, verdict — so routine stretches compress without a timer.
+* An incident memo interrupts the day resolution and, on resolve, re-enters it where it cut in — multi-day interruptions compose instead of colliding.
+
+Structurally, the change was one added scan in the advance loop — and a pile of deletions: the interval timer, the speed table, play/pause, all gone rather than rerouted. A source-scan test now pins that the run hook contains no timer at all.
+
+Deleting a time model is the kind of change that quietly breaks everything, so the proof obligation was explicit: a scripted sequence of player verbs — scope cuts, a renegotiation, a QA change — replayed through the old continuous loop and the new turn loop, requiring bit-identical engine state at every tick. Green. The clock was presentation all along, which is exactly why it could feel wrong without the model being wrong.
+
+The side effect nobody planned: the event feed finally found its purpose. As an ambient ticker it decorated; as the day log — "what happened today," rendered per End-day press — it became the turn's consequence report. Same data, same lines; the loop gave them a job.

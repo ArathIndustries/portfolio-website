@@ -1,0 +1,28 @@
+---
+title: "One seed, a thousand honest replays"
+description: "Design notes on the simulator's randomness: why replication streams get their own hashed seeds, and why the gamma sampler throws instead of guessing."
+date: "2026-07-07"
+tags: ["PM Simulator", "Simulation", "Engineering", "Build Log"]
+---
+
+The Monte Carlo layer needs 1,000 independent replications that reproduce bit-identically from one seed — the odds the game shows a player must be the same odds every time, on every machine. Two decisions worth recording.
+
+## Per-replication streams: hash, don't chain
+
+Each replication i gets its own RNG stream seeded by a hash of (seed, i): add a golden-ratio Weyl stride (i times 0x9E3779B9), then a two-round avalanche mixer with low-bias constants.
+
+Why not simpler options:
+
+* **Feeding seed+i directly into the base generator** leaves adjacent replication streams correlated through its additive state increment — replication 5 and replication 6 would share structure exactly where independence matters most.
+* **Chaining** (derive stream i's seed by drawing from stream i−1) makes replication i depend on having drawn i−1 first, which forecloses ever running replications in parallel.
+
+The Weyl stride separates the indices; the avalanche decorrelates nearby inputs. Every number in the odds table reproduces from the seed, and any replication can be regenerated alone.
+
+## Fail loud in the samplers
+
+Two guard decisions in the distribution code:
+
+* The normal sampler draws from a half-open range that includes zero, and the log inside Box–Muller needs a strictly positive input — so it feeds 1−u, not u. A one-character bug class, eliminated by construction.
+* The gamma sampler throws a RangeError below shape 1 rather than shipping the boost that would handle it. The Beta-PERT parameters the game uses guarantee the shape stays at or above 1 — and a silent wrong-tail bug in the luck distribution would be strictly worse than a crash. If the parameters ever change, the sampler refuses loudly instead of skewing the odds quietly.
+
+The theme in both: in a simulation whose product is a probability, randomness infrastructure is a correctness surface, not plumbing.

@@ -1,0 +1,26 @@
+---
+title: "No curve can price a hold"
+description: "Tuning the negotiation economy with brute-force strategy grids: two exploits found before any player could, and a structural argument for a direct price."
+date: "2026-07-09"
+tags: ["PM Simulator", "Game Design", "Balance", "Build Log"]
+---
+
+The negotiation layer gives the player real levers: promise a delivery date against the org's expectation band, stake a multiplier on the outcome, renegotiate mid-run, or walk. Every lever is an exploit surface. Before freezing any pricing value, I ran the candidate strategies through a brute-force grid — every fixed policy plus the obvious adaptive ones, 1,000 replications per row — and let the argmax speak.
+
+## Exploit 1: lock tight, then renegotiate
+
+The grid's best row under the draft pricing: promise an aggressive date at a high stake multiplier, then renegotiate outward once the stake is locked. Expected standing gain +9.0 per run while every honest row sat near zero or negative. The draft had priced renegotiation by lateness only, so the stretch was nearly free once the multiplier was frozen.
+
+## The structural finding: no multiplier curve can price a hold
+
+The deeper problem: holding a deeply padded promise could not be priced by ANY curve on the stake multiplier. At a near-certain date the expected outcome delta is positive and the multiplier is non-negative — so the expected value of holding is non-negative no matter what curve you draw, while every counter-accepting row goes negative. Even a multiplier of zero leaves the hold weakly best.
+
+If a behavior can't be priced through an existing lever, it needs its own price. Shipped: a flat sting for holding at commit, plus a renegotiation stake term scaled by relative stretch. After one tuning iteration the exploit row measures −3.0, and the policy-renegotiation row lands at −1.0 — a usable escape valve, not a dominant strategy.
+
+## Exploit 2, found at the next layer: the free outward stretch
+
+Adding the kickoff meeting (the team blurts out its own estimate — the "take" — before the run starts) re-opened the seam in a new shape: promise the org's anchor, then renegotiate to the team's number on day 0 at par stake. Nearly free again, for the same root cause — the base curve priced lateness, the stake term priced only the premium above par, and nothing priced the stretch itself. Fix in the same named lane: a stretch price independent of the multiplier. After it, every take-following row is negative but still far better than holding a doomed date, which is the intended shape — the kickoff ask reads as priced insurance, not an oracle and not a sucker button.
+
+## The method note
+
+Both exploits were found by the grid before any human played them, and both fixes were verified by re-running the same grid — the pricing debate became measurement. The acceptance tests now pin the grid itself: no strategy row may dominate the intended play. One wording lesson: the natural clause "the honest strategy weakly dominates" was unsatisfiable as written, because the win probability is structurally zero for every row in this fixture — ties on a dead metric fail any candidate. Acceptance criteria for a balance property have to name the metric that actually discriminates.

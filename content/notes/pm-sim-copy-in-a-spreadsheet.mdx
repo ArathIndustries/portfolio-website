@@ -1,0 +1,28 @@
+---
+title: "Moving 450 strings into a spreadsheet without breaking the game"
+description: "Making every line of game copy editable in Excel — with a compile-checked placeholder contract, extraction by execution, and a round-trip proof."
+date: "2026-07-09"
+tags: ["PM Simulator", "Engineering", "Tooling", "Build Log"]
+---
+
+The game's copy — card blurbs, meeting lines, debrief verdicts, satire pools — had grown to about 450 strings living in a TypeScript module. I wanted it editable in a spreadsheet: open the CSV in Excel, change a line, regenerate, done. The risk is obvious — hundreds of strings, many with placeholder tokens, some render-pinned by tests, and one silent mismatch would ship a broken sentence or a crash. Three mechanisms carried the migration.
+
+## 1. A compile-checked placeholder contract
+
+The CSV is the source of truth; a generator emits a typed constants module. String lookups go through three helpers: plain strings, formatted strings, and rotation pools. The formatted helper's parameter type is extracted from the generated string literal itself via template-literal types — the set of tokens in the CSV IS the function signature.
+
+Verified live, both directions: rename a token in the CSV and the exact call site fails to compile; add a stray token to a plain string and its lookup site fails to compile. A copy editor cannot break the game in a way the build doesn't catch.
+
+## 2. Extraction by execution, not retyping
+
+Migrating the existing strings by hand would have been the error-prone part. Instead a one-shot script imports the OLD module and harvests text by running it: data exports read directly, template functions called with sentinel arguments that get rewritten to tokens, branchy functions called once per branch, embedded constants substituted back to tokens with exactly-once assertions. Zero strings retyped.
+
+## 3. A round-trip proof before trusting any of it
+
+A throwaway verifier bundled the pre-refactor module and the new CSV-backed module side by side and asserted export parity, deep equality on all data, and pointwise equality of every function over branch-covering inputs — including 500 seeded RNG streams through the rotation pools. 1,119 checks, zero mismatches; any function missing from the input table fails the verifier, so coverage is structural, not hopeful. Then the full test suite passed unchanged on the first run — the game's text is byte-identical.
+
+## The guardrails that earn their keep later
+
+The build gate validates the CSV before every build: strict UTF-8 (a NUL byte suggests a UTF-16 save, a replacement character suggests an ANSI save — both named in the error, because both are exactly what Excel does), quoting errors with line numbers, duplicate keys, stray braces, pool contiguity. Staleness detection rewrites the generated file and fails, so a forgotten regen costs one re-run, not a debugging session. Every failure mode was drilled deliberately — saved as UTF-16, broken quote, duplicate key, stale regen — each fails with a named reason.
+
+The pattern note: both of this migration's dominant risks were mechanized away — extraction by executing the old code, correctness by type-level contract — rather than managed by diligence. Diligence doesn't survive string number 300.
