@@ -10,6 +10,12 @@ export interface ProjectFrontmatter {
   title: string;
   description: string;
   image?: string;
+  // Natural pixel dimensions of `image`. When both are present the project page
+  // renders the image at its own aspect ratio instead of cropping to 16:9 —
+  // required for posters, which lose content under an object-cover crop.
+  imageWidth?: number;
+  imageHeight?: number;
+  imageCaption?: string;
   tags: string[];
   github?: string;
   live?: string;

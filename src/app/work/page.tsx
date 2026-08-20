@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { NeonTubeCard } from "@/components/neon";
 
 const featuredProjects = [
@@ -28,6 +29,7 @@ const featuredProjects = [
     title: "Digital Twin — CNC Monitoring",
     description: "Wireless sensor network with TinyML for real-time CNC machine health monitoring.",
     tags: ["Arduino", "TFLite", "Python", "BLE"],
+    image: "/images/digital-twin-poster.png",
   },
   {
     slug: "portfolio-website",
@@ -160,8 +162,26 @@ export default function WorkPage() {
               </div>
             )}
 
-            {/* No embed — placeholder */}
-            {!project.embed && (
+            {/* No embed, but a poster/still image — show it instead */}
+            {!project.embed && project.image && (
+              <div className="relative w-full overflow-hidden" style={{ height: '400px', background: 'rgba(255,136,0,0.02)' }}>
+                <Image
+                  src={project.image}
+                  alt={`${project.title} — poster`}
+                  fill
+                  className="object-cover object-top"
+                  sizes="(max-width: 1024px) 100vw, 1024px"
+                />
+                {/* Fade to card, matching the embed treatment */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+                  style={{ background: 'linear-gradient(transparent, rgba(13,11,10,0.9))' }}
+                />
+              </div>
+            )}
+
+            {/* No embed and no image — placeholder */}
+            {!project.embed && !project.image && (
               <div
                 className="w-full flex items-center justify-center"
                 style={{ height: '180px', background: 'rgba(255,136,0,0.02)', borderBottom: '1px solid rgba(255,136,0,0.06)' }}

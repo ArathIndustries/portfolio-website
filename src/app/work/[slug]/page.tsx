@@ -93,8 +93,42 @@ export default async function WorkDetailPage({ params }: WorkPageProps) {
         </div>
       </header>
 
-      {/* Project Image */}
-      {frontmatter.image && (
+      {/* Project Image. With imageWidth/imageHeight the image keeps its own
+          aspect ratio and links to the full-resolution file; without them it
+          falls back to the cropped 16:9 hero. */}
+      {frontmatter.image && frontmatter.imageWidth && frontmatter.imageHeight && (
+        <figure className="mb-12">
+          <a
+            href={frontmatter.image}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block rounded-lg overflow-hidden border border-[rgba(255,136,0,0.15)] hover:border-[rgba(255,136,0,0.4)] transition-colors"
+          >
+            <Image
+              src={frontmatter.image}
+              alt={frontmatter.imageCaption || frontmatter.title}
+              width={frontmatter.imageWidth}
+              height={frontmatter.imageHeight}
+              className="w-full h-auto"
+              sizes="(max-width: 768px) 100vw, 768px"
+              priority
+            />
+          </a>
+          <figcaption className="mt-3 flex flex-wrap items-baseline justify-between gap-2 text-xs text-gray-500 font-mono">
+            {frontmatter.imageCaption && <span className="max-w-xl">{frontmatter.imageCaption}</span>}
+            <a
+              href={frontmatter.image}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[var(--neon)] hover:underline whitespace-nowrap"
+            >
+              Open full size ({frontmatter.imageWidth}x{frontmatter.imageHeight}) &rarr;
+            </a>
+          </figcaption>
+        </figure>
+      )}
+
+      {frontmatter.image && !(frontmatter.imageWidth && frontmatter.imageHeight) && (
         <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-12">
           <Image src={frontmatter.image} alt={frontmatter.title} fill className="object-cover" priority />
         </div>
