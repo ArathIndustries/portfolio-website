@@ -286,6 +286,13 @@ export const blockSchemas: Record<string, BlockSchema> = {
     },
     defaultProps: { items: [{ title: "Tool", status: "", description: "What it does.", tags: "JavaScript, SVG", github: "https://github.com/", live: "https://" }] },
   },
+  ComingSoon: {
+    description: "Centered placeholder for a section that has not launched: title, glowing intro and a small status note.",
+    editing: "in-place",
+    category: "Site",
+    fields: { title: text(true, "Title"), intro: textarea(true, "Introduction"), note: text(true, "Status note") },
+    defaultProps: { title: "Section title", intro: "What this section will hold.", note: "In the forge — first release coming soon." },
+  },
   // ---------------------------------------------------------------- Text
   Markdown: {
     description: "A run of Markdown prose. This is what plain text between components becomes on disk.",
