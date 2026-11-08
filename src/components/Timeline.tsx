@@ -1,6 +1,6 @@
 import React from "react";
 
-interface TimelineItemProps {
+export interface TimelineItemProps {
   date: string;
   title: string;
   description: string;
@@ -59,7 +59,16 @@ export function TimelineItem({ date, title, description, status = 'completed' }:
   );
 }
 
-export function Timeline({ children }: { children: React.ReactNode }) {
+export interface TimelineProps {
+  children?: React.ReactNode;
+  /** Studio-style usage: pass the items as data instead of child elements. */
+  items?: TimelineItemProps[];
+}
+
+export function Timeline({ children, items }: TimelineProps) {
+  const body = items
+    ? items.map((item, i) => <TimelineItem key={i} {...item} />)
+    : children;
   return (
     <div className="relative py-8 not-prose">
       {/* Vertical line */}
@@ -72,7 +81,7 @@ export function Timeline({ children }: { children: React.ReactNode }) {
       />
 
       <div className="flex flex-col gap-10">
-        {children}
+        {body}
       </div>
 
       <style>{`
