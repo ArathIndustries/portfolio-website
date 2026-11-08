@@ -12,9 +12,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { mdxToPuck } from "./convert/mdxToPuck";
 import { puckToMdx } from "./convert/puckToMdx";
+import { configFromEnv, promote, publish, status } from "./publish";
 
 const repoRoot = path.resolve(__dirname, "..");
 const contentDir = path.join(repoRoot, "content");
+// Publishing goes to STUDIO_REMOTE (default origin); see studio/publish.ts.
+const publishCfg = configFromEnv(repoRoot);
 
 const ROUTE_PREFIX: Record<string, string> = {
   projects: "/work",
@@ -83,6 +86,17 @@ function fileApi(): Plugin {
               fs.writeFileSync(abs, mdx, "utf8");
               return json(200, { ok: true, bytes: Buffer.byteLength(mdx) });
             }
+          }
+          // Publish flow (studio/publish.ts). Git runs with argument arrays only.
+          if (url.pathname === "/api/publish/status" && req.method === "GET") {
+            return json(200, status(publishCfg, url.searchParams.get("fetch") !== "0"));
+          }
+          if (url.pathname === "/api/publish" && req.method === "POST") {
+            const body = JSON.parse((await readBody(req)) || "{}") as { title?: string };
+            return json(200, publish(publishCfg, typeof body.title === "string" ? body.title : ""));
+          }
+          if (url.pathname === "/api/promote" && req.method === "POST") {
+            return json(200, promote(publishCfg));
           }
           return json(404, { error: "not found" });
         } catch (e) {

@@ -11,7 +11,7 @@ npm run studio:roundtrip             # MDX -> Puck -> MDX over every content fil
 py studio/examples/make_figure.py    # regenerate public/studio-examples/figure.json and table.csv
 ```
 
-The editor loads `?file=showcase/studio-showcase.mdx` (any file under `content/`). Publish writes the MDX back to that file; nothing is committed or pushed.
+The editor loads `?file=pages/home.mdx` (any file under `content/`, including the home page). "Save to preview" writes the MDX back to the file, commits `content/` on the branch `studio/preview` and pushes it; "Promote to live" moves master to that branch. See "Publish flow" below. Set `STUDIO_REMOTE=<name>` to point both at a different git remote (the tests used a throwaway bare repository); the default is `origin`.
 
 Puck is installed as `@puckeditor/core@0.24.0`. The `@measured/puck` package name stopped at 0.20.2; 0.21 and later ship under `@puckeditor/core` (same project, MIT).
 
@@ -24,7 +24,9 @@ Puck is installed as `@puckeditor/core@0.24.0`. The `@measured/puck` package nam
 | `studio/schema.ts` | Fields, defaultProps, description and editing mode per block. No React, so the converters can load it under Node. |
 | `studio/blocks.tsx` | The Puck config. Zips `blockComponents` and `blockSchemas`; throws at startup if a block exists on one side only. |
 | `studio/convert/mdxToPuck.ts`, `puckToMdx.ts` | The converters. `roundtrip.ts` is the test. |
-| `studio/vite.config.ts` | Vite app plus the file API (`/api/pages`, `/api/page`). Serves the site's `public/`. |
+| `studio/vite.config.ts` | Vite app plus the file API (`/api/pages`, `/api/page`) and the publish API (`/api/publish`, `/api/promote`, `/api/publish/status`). Serves the site's `public/`. Aliases `next/link` to `studio/shims/next-link.tsx` so blocks keep client-side navigation on the site. |
+| `studio/publish.ts` | The git side of publishing: preview branch, promote, status. Plain Node, no Vite; see "Publish flow". |
+| `src/app/page.tsx` | The home page: renders `content/pages/home.mdx` through `mdxComponents`. The page is one `NeonSignHero` block. |
 | `studio/App.tsx`, `main.tsx`, `studio.css` | The editor shell. `studio.css` imports `src/app/globals.css`, so the canvas uses the site's Tailwind theme. |
 | `src/app/showcase/[slug]/page.tsx` | Renders `content/showcase/*.mdx`. Test route, unlinked. |
 | `studio/screenshots/` | `capture.py` and the PNGs listed below. |
@@ -109,11 +111,32 @@ Bundle (measured on `.next/static/chunks` after that build, uncompressed; Next 1
 
 None of the three library chunks appears in any page's initial script list; a page that does not use the block never fetches it. Not measured: the initial-script total of master before this branch, so the exact delta the block code itself adds to the shared chunks is unknown (the showcase and note pages load the same 11 files, which puts an upper bound of the showcase route's own code at a few KB).
 
-Not verified or not done in this spike: publishing to a preview branch; the hub iframe; touch drag on a phone; the Markdown block's rich-text editing (it is a plain textarea, and the canvas preview uses react-markdown, which does not render MDX-only syntax such as inline JSX); syntax highlighting in CodeBlock; MapLibre's demo tiles and the Embed block load from the network when the page is viewed.
+Not verified or not done: the hub iframe; touch drag on a phone; the Markdown block's rich-text editing (it is a plain textarea, and the canvas preview uses react-markdown, which does not render MDX-only syntax such as inline JSX); syntax highlighting in CodeBlock; MapLibre's demo tiles and the Embed block load from the network when the page is viewed.
 
-## Home page assessment
+## Publish flow
 
-`src/app/page.tsx` is a 33-line client component with four pieces:
+Two steps, two buttons in Puck's header (its own Publish button is replaced through the `headerActions` override):
+
+1. **Save to preview** (`PUT /api/page`, then `POST /api/publish`). Writes the MDX, then builds the branch `studio/preview` as `<remote>/master` plus the working tree's `content/` folder, as one commit `studio: <page title>`, and force-pushes it. The branch is rebuilt from master every time, so it never drifts and never needs rebasing. Nothing is checked out: the tree is built in a temporary index file (`GIT_INDEX_FILE`), so the working tree and the current branch are untouched. Vercel builds every pushed branch; the response and the "preview site" link carry the address pattern `https://arath-industries-git-studio-preview-arathindustries-projects.vercel.app`.
+2. **Promote to live** (`POST /api/promote`, after a confirm dialog). Fast-forwards master to `studio/preview` when master has not moved; otherwise merges `--no-ff` in a throwaway worktree. Pushes master.
+
+`GET /api/publish/status` fetches the remote and reports whether the preview is ahead of or behind master, the last preview commit, and content files changed on disk but not yet saved. The second bar under the studio title shows it.
+
+All git calls are `execFile("git", [...args])` with argument arrays; the page title is one argv entry after `-m`. The remote name comes from `STUDIO_REMOTE` (checked against `[A-Za-z0-9_.-]+`, default `origin`).
+
+Tested 2026-11-08 against a bare repository added as the remote `spiketest`, seeded with master (`a2277dc`): status before (`previewExists: false`); an edit to `content/pages/home.mdx` and publish produced `00504bb studio: Home` on the bare remote, status `1 ahead, 0 behind`; promote fast-forwarded master to `00504bb`. Then a second publish (`66d8285`), an unrelated commit pushed to the remote's master (`dff2522`), status `1 ahead, 1 behind`, and promote produced the merge `857f1c7 Merge studio/preview into master (studio promote)` with both parents. From the editor (Playwright, 1440 px): the two buttons were present and Puck's Publish was not; "Save to preview" wrote 247 bytes, pushed `4ca0278 studio: Home`, and the status bar read "1 ahead of master"; the working tree was clean afterwards (the saved file was byte-identical). Not tested from the editor: a confirmed promote (the dialog was dismissed); the merge path only ran headlessly.
+
+Vercel preview deployments: the repository has no `vercel.json`, and GitHub's deployment records (read with `gh api`) show only `Production` deployments by `vercel[bot]`, all for master; master is the only branch that has ever been pushed, so there is no record either way of a branch deployment. Vercel's project default is to build every branch. Confirm once by looking at the first `studio/preview` push in the Vercel dashboard; the Vercel settings were not changed.
+
+## Home page as a block (done)
+
+The home page is `content/pages/home.mdx`, one `<NeonSignHero … />` with the tagline and the two call-to-action labels and links as fields. `src/app/page.tsx` reads that file and renders it with `MDXRemote` and the same `mdxComponents` as the other routes; page metadata stays the layout's default, as before. `NeonSignHero` owns the bridge ref and renders `SparkCanvas` and `NeonSign` inside one block; the markup is the old page's, unchanged.
+
+Parity, measured 2026-11-08: production builds before and after the change, served with `next start` on 24045, screenshots with Playwright at 1440x900 and 390x844 with `requestAnimationFrame` stubbed, `Math.random` fixed at 0.5, CSS animations and transitions off and canvases hidden (the same script for both shots): **0 differing pixels of 1,296,000 at 1440 and 0 of 329,160 at 390**. Round-trip over 35 files: 34 byte-identical (`home.mdx` included); the showcase page is the one documented difference.
+
+The original assessment, kept for the record:
+
+`src/app/page.tsx` was a 33-line client component with four pieces:
 
 1. `SparkCanvas` with a shared `bridgeRef`: the fixed full-screen spark and flashlight overlay.
 2. `NeonSign` with the same `bridgeRef`: the hand-drawn neon letters that report brightness dips and letter positions into the bridge so the sparks fly from the right places.
@@ -122,4 +145,4 @@ Not verified or not done in this spike: publishing to a preview branch; the hub 
 
 Pieces 3 and 4 are a `Hero`-shaped block today (title-less hero with subtitle and two CTAs; the current Hero has one CTA, so either add a second CTA pair or a `Buttons` block). Pieces 1 and 2 are the problem: they are two components joined by a mutable ref created in the page, and the ref is what makes the sparks follow the letters. A block boundary cannot pass a ref between two sibling blocks. The honest conversion is one block, `NeonSignHero`, that owns the ref and renders both `SparkCanvas` and `NeonSign` internally, with a field or two (tagline, CTA labels and hrefs) and nothing else editable. The letters themselves are SVG paths in `NeonSign.tsx` and would stay code.
 
-What it would take: write `NeonSignHero` (about 20 lines, moving the ref inside), register it, convert the page to `content/pages/home.mdx` with `<NeonSignHero … />`, and make `src/app/page.tsx` read that file. The layout (`flex-1 flex flex-col items-center justify-center`) moves into the block. Nothing on the page is impossible as a block; what is lost is the ability to edit the sign's shape or the spark physics in the studio, which were never going to be fields anyway. Not done in this spike.
+That is what was built: `NeonSignHero` moves the ref inside, the layout (`flex-1 flex flex-col items-center justify-center`) moved into the block, and `src/app/page.tsx` reads `content/pages/home.mdx`. What is lost is the ability to edit the sign's shape or the spark physics in the studio, which were never going to be fields anyway.
