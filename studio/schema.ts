@@ -265,12 +265,33 @@ export const blockSchemas: Record<string, BlockSchema> = {
     fields: { heading: text(true, "Heading"), intro: textarea(true, "Introduction"), emptyText: text(), basePath: text(false, "/forged/notes") },
     defaultProps: { heading: "Forged Notes", intro: "Working notes from the workshop.", emptyText: "In the forge — first note coming soon.", basePath: "/forged/notes" },
   },
+  ToolCards: {
+    description: "Stack of bordered tool cards: title, optional status badge, description, tag chips, and Code and Visit buttons (src/components/blocks/ToolCards.tsx).",
+    editing: "side-pane",
+    category: "Site",
+    fields: {
+      items: {
+        type: "array",
+        getItemSummary: (item: { title?: string }) => item.title || "Tool",
+        arrayFields: {
+          title: text(),
+          status: text(false, "optional badge, e.g. early preview"),
+          description: textarea(),
+          tags: text(false, "comma-separated"),
+          github: text(false, "https://github.com/…"),
+          live: text(false, "https://…"),
+        },
+        defaultItemProps: { title: "Tool", status: "", description: "What it does.", tags: "JavaScript, SVG", github: "https://github.com/", live: "https://" },
+      },
+    },
+    defaultProps: { items: [{ title: "Tool", status: "", description: "What it does.", tags: "JavaScript, SVG", github: "https://github.com/", live: "https://" }] },
+  },
   // ---------------------------------------------------------------- Text
   Markdown: {
     description: "A run of Markdown prose. This is what plain text between components becomes on disk.",
-    editing: "side-pane",
+    editing: "in-place",
     category: "Text",
-    fields: { text: textarea(false, "Write Markdown…") },
+    fields: { text: textarea(true, "Write Markdown…") },
     defaultProps: { text: "## Heading\n\nA paragraph of **Markdown**." },
   },
   Hero: {

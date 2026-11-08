@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { Puck, useGetPuck, type Data, type Plugin } from "@puckeditor/core";
 import { puckConfig } from "./blocks";
 import { CanvasZoom } from "./CanvasZoom";
+import { SourceToggleFields } from "./components/SourceToggle";
 import { HeaderContext, StudioHeader, type HeaderInfo } from "./Header";
 
 interface PageInfo {
@@ -282,6 +283,9 @@ const PLUGINS = [pagesPlugin];
 /** Stable identity so Puck does not remount the header on every App render. */
 const HEADER_OVERRIDE = ({ actions }: { actions: ReactNode }) => <StudioHeader actions={actions} />;
 
+/** Stable identity, like the header override: the Markdown "Source" toggle wraps the right-pane fields. */
+const FIELDS_OVERRIDE = ({ children }: { children: ReactNode }) => <SourceToggleFields>{children}</SourceToggleFields>;
+
 /** Data as JSON without generated ids, so Puck adding ids on open does not count as an edit. */
 function normalize(data: Data): string {
   return JSON.stringify(data, (k, v) => (k === "id" ? undefined : v));
@@ -452,6 +456,7 @@ export function App() {
                 overrides={{
                   // One 40 px row replaces the studio bars and Puck's own header; `actions` is the headerActions override below.
                   header: HEADER_OVERRIDE,
+                  fields: FIELDS_OVERRIDE,
                   headerActions: () => (
                     <PublishActions
                       file={file}

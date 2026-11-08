@@ -61,7 +61,7 @@ Editing column: "in-place" means you click the text on the canvas and type; "sid
 | Timeline | The site's `Timeline` (`src/components/Timeline.tsx`). On disk it stays `<Timeline><TimelineItem … /></Timeline>`; in the editor it is an `items` array. | side-pane | existing site code, few fields |
 | NeonCard | `NeonTubeCard` from `src/components/neon` with tag, title, body. | in-place | existing site code, few fields |
 | Sparks | The home page `SparkCanvas` overlay. Fixed full-screen effect; one radio field. | side-pane | existing site code, one field |
-| Markdown | A run of prose. This is what text between components becomes. Textarea in the side pane; rendered with react-markdown in the editor, with MDX on the site. | side-pane | no |
+| Markdown | A run of prose. This is what text between components becomes. On the canvas it is rendered with react-markdown; click it and the raw Markdown is edited in place (see "Prose in place"). The side-pane textarea is behind a Source toggle. | in-place | no |
 | Hero | Title, subtitle, call to action. | mixed (title and subtitle in place) | no |
 | Callout | Tone, title, body. | mixed | no |
 | Quote | Quote and author. | in-place | no |
@@ -162,3 +162,11 @@ That is what was built: `NeonSignHero` moves the ref inside, the layout (`flex-1
 The three bars above Puck and Puck's own header are one 40 px row (`studio/Header.tsx`), installed with `overrides.header`; `overrides.headerActions` still supplies Save to preview and Promote to live, which arrive in the row as `actions`. The status pill shows the short state; clicking it opens the full publish line, Open preview and the Vercel sign-in note. Measured at 1440x900: 185 px (118 px of studio bars plus Puck's 67 px header) before, 40 px after.
 
 Canvas zoom (`studio/CanvasZoom.tsx`): Puck 0.24 keeps the canvas scale in its internal store (`zoomConfig.zoom`), not in `ui.viewports`, and has no public setter. The control finds that store through React's fiber tree and calls its `setZoomConfig`, so Puck scales the canvas and drag-and-drop uses the same number. Steps are 25, 33, 50, 67, 75, 90, 100, 110, 125, 150, 175, 200 %, plus Fit. Ctrl or Cmd with the wheel over the canvas (also inside the canvas iframe) steps the zoom and calls `preventDefault`; Ctrl+0 returns to Fit; Ctrl+plus and Ctrl+minus step over the canvas. When the scaled page is wider than the frame, the frame scrolls sideways with a drawn scrollbar (a native one would shrink the frame, and Puck resets the zoom whenever the frame resizes). Puck resets the zoom to Fit on viewport-width changes and sidebar changes. A Puck upgrade that renames `zoomConfig` makes the control disappear rather than break the editor.
+
+## Prose in place
+
+The Markdown field is `contentEditable`, so Puck hands the block its inline-text element instead of the string. `src/components/blocks/Markdown.tsx` reads the Markdown from that element's `value`, renders it with react-markdown as the site does, and on click swaps in the element: a `contenteditable="plaintext-only"` span styled pre-wrap that shows the raw Markdown. Puck writes the span's text back into the field on each input, so the Markdown is edited as text and never re-serialised. This is approach (a); a Markdown-aware rich editor (marked plus turndown, or Tiptap) rewrites syntax (bullets, emphasis markers, wrapping) and cannot keep a byte-identical file, so it was not used.
+
+Behaviour: click puts the caret near the clicked word; Escape or clicking elsewhere returns to the rendered view; Enter inserts a blank line (`
+
+`) in a paragraph or heading and a single newline inside a list item, a list continuation, a fenced code block, a table row or a quote, and on an empty line; Shift+Enter inserts one newline. Undo and redo use Puck's history (the header buttons). The side pane shows a Source button for a selected Markdown block; it opens the plain textarea.

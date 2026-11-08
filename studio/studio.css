@@ -608,3 +608,54 @@ body {
 .pages-scroll {
   min-height: 0;
 }
+
+/* ===== Markdown block: prose edited in place on the canvas ===== */
+.studio-md-view {
+  cursor: text;
+}
+.studio-md-empty {
+  opacity: 0.55;
+  font-style: italic;
+}
+/* Editing state: Puck's inline text span shows the raw Markdown in a pre-wrap block. */
+.studio-md-editing > span {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-height: 3rem;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: inherit;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  border-radius: 4px;
+  outline: none;
+  cursor: text;
+}
+
+/* Side-pane "Source" toggle for the Markdown block. */
+.studio-source-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--hub-line);
+}
+.studio-source-toggle button {
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 10px;
+  border: 1px solid var(--hub-line);
+  border-radius: 4px;
+  background: var(--hub-raise);
+  color: var(--hub-text);
+  cursor: pointer;
+}
+.studio-source-toggle button[aria-pressed="true"] {
+  border-color: var(--hub-accent);
+  color: var(--hub-accent);
+}
+.studio-source-toggle small {
+  color: var(--hub-mute);
+}
