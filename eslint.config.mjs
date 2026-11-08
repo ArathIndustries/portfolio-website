@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The publishing studio is a separate Vite app; it has its own tsconfig.
+    "studio/**",
+    ".studio-dist/**",
   ]),
 ]);
 

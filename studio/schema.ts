@@ -111,6 +111,13 @@ export const blockSchemas: Record<string, BlockSchema> = {
     },
     defaultProps: { ratio: "1:1", left: "### Left\n\nText.", right: "### Right\n\nText." },
   },
+  Quote: {
+    description: "Pull quote with an author line. Both editable in place.",
+    editing: "in-place",
+    category: "Text",
+    fields: { quote: textarea(true, "Quote"), author: text(true, "Author") },
+    defaultProps: { quote: "Something worth repeating.", author: "Someone" },
+  },
   Divider: {
     description: "Neon hairline with an optional label.",
     editing: "side-pane",

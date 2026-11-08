@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getAllProjects, getProjectBySlug } from "@/lib/mdx";
-import { Timeline, TimelineItem } from "@/components/Timeline";
+import { mdxComponents } from "@/components/blocks";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -136,7 +136,8 @@ export default async function WorkDetailPage({ params }: WorkPageProps) {
 
       {/* MDX Content */}
       <div className="prose max-w-none">
-        <MDXRemote source={content} components={{ Timeline, TimelineItem }} />
+        {/* All studio blocks; blockJS off so prop={expression} survives (see showcase route). */}
+        <MDXRemote source={content} components={mdxComponents} options={{ blockJS: false }} />
       </div>
     </article>
   );

@@ -4,7 +4,7 @@
  * The Next pages hand this map to MDXRemote; the studio builds Puck renderers
  * from the same map, so one file controls what "a block" is.
  */
-import { Timeline } from "../Timeline";
+import { Timeline, TimelineItem } from "../Timeline";
 import { Hero } from "./Hero";
 import { Markdown } from "./Markdown";
 import { Figure } from "./Figure";
@@ -21,6 +21,7 @@ import { Scrolly } from "./Scrolly";
 import { ThreeBlock } from "./ThreeBlock";
 import { DataTable } from "./DataTable";
 import { Embed } from "./Embed";
+import { Quote } from "./Quote";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const blockComponents: Record<string, React.ComponentType<any>> = {
@@ -41,6 +42,14 @@ export const blockComponents: Record<string, React.ComponentType<any>> = {
   ThreeBlock,
   DataTable,
   Embed,
+  Quote,
 };
 
 export type BlockName = keyof typeof blockComponents;
+
+/**
+ * What MDX pages may reference: every block, plus the child elements that
+ * only live inside a block (TimelineItem inside Timeline). Child elements are
+ * not blocks: the studio shows them as array items, never as their own entry.
+ */
+export const mdxComponents = { ...blockComponents, TimelineItem };

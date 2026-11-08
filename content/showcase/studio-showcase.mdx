@@ -1,0 +1,78 @@
+---
+title: "Studio showcase"
+description: "One page that uses every block the publishing studio knows, as a test of the workflow and its limits."
+date: "2026-11-08"
+tags: ["Studio", "Test"]
+---
+
+<Hero title="Build pages out of blocks" subtitle="Every element on this page is a block with a schema. The prose is Markdown on disk; the components are the site's own React code. The studio edits the same file the site renders." ctaLabel="Open the editor" ctaHref="http://127.0.0.1:24044/?file=showcase%2Fstudio-showcase.mdx" />
+
+## How this page is made
+
+This page lives at `content/showcase/studio-showcase.mdx`. Between the components you are reading ordinary Markdown: headings, **bold**, `code`, lists and links. The studio shows each Markdown run as one block whose text is edited in the side pane; everything else below is a JSX component with typed props.
+
+<Stats items={[{"value":"17","label":"blocks"},{"value":"33 / 33","label":"pages round-trip"},{"value":"3","label":"heavy libraries, loaded on demand"}]} />
+
+<Callout tone="note" title="Edit in place" body="Titles and short text (this box, the hero, the neon card) are editable directly on the canvas. Arrays and numbers (timeline items, markers, knot parameters) live in the side pane." />
+
+<Divider label="site blocks" />
+
+## The site's own components
+
+The timeline is the same `Timeline` used on every project page. On disk it keeps the nested `<TimelineItem />` form the content already uses; in the editor it is an array field.
+
+<Timeline>
+  <TimelineItem date="Nov 8, 2026" title="Spike" description="Puck editor, 17 blocks, converters, this page." status="completed" />
+  <TimelineItem date="Next" title="Preview branch publish" description="Save goes to a branch and a Vercel preview, not to master." status="current" />
+  <TimelineItem date="Later" title="Hub integration" description="The studio runs inside the hub in an iframe." status="future" />
+</Timeline>
+
+<NeonCard tag="SITE COMPONENT" title="Neon tube card" body="This is src/components/neon/NeonTubeCard.tsx wrapped with a title and body. The tube is drawn by the real component, segment by segment." />
+
+<Figure src="/images/digital-twin-poster.png" alt="Digital Twin research poster" caption="Figure block: image with caption. The poster already in public/images." maxWidth={720} />
+
+<Divider label="data from python" />
+
+## Charts made in Python, interactive in the browser
+
+The figure below was built with `plotly` in Python (`studio/examples/make_figure.py`), written with `fig.write_json()`, and is drawn here by plotly.js. Hover, zoom and pan work. The Python side can be anything that produces a Plotly figure: pandas, a simulation, a notebook.
+
+<PlotlyChart title="Monte Carlo finish-day distribution (2,000 runs)" src="/studio-examples/figure.json" height={440} />
+
+<DataTable caption="The same runs as percentiles, read from a CSV" src="/studio-examples/table.csv" maxRows={20} />
+
+<CodeBlock language="python" filename="studio/examples/make_figure.py" code="fig = go.Figure(go.Histogram(x=runs, nbinsx=60))
+fig.update_layout(template='plotly_dark')
+fig.write_json('public/studio-examples/figure.json')" />
+
+<Divider label="maps, 3d, scrolling" />
+
+## Maps and 3D
+
+<MapBlock lat={30.1} lng={-97.9} zoom={7} height={420} markers={[{"label":"Texas State University, San Marcos","lat":29.8884,"lng":-97.9384},{"label":"Austin","lat":30.2672,"lng":-97.7431},{"label":"San Antonio","lat":29.4241,"lng":-98.4936}]} />
+
+<TwoColumn ratio="1:1" left="### Map block
+
+MapLibre GL with the free demo tiles (no API key). Markers are an array field: label, latitude, longitude. Click a marker for its label." right="### 3D block
+
+three.js through react-three-fiber. The torus knot's two winding numbers *p* and *q* are number fields; change them in the side pane and the shape changes live." />
+
+<ThreeBlock p={3} q={7} height={420} />
+
+## Walk through a project, step by step
+
+<Scrolly steps={[{"heading":"Capture","text":"Sensor on the machine, 1 MSPS, eleven trial sessions. Scroll on and the panel follows.","image":"","accent":"#1a0e05"},{"heading":"Train","text":"Each step is one entry in an array field: heading, text, optional image, optional accent color.","image":"/images/digital-twin-poster.png","accent":"#0b1a1f"},{"heading":"Deploy","text":"An image step shows the image; a step without one shows its number on the accent color.","image":"","accent":"#1f0b1a"}]} />
+
+<Divider label="embeds" />
+
+## Embeds, with an allowlist
+
+<Embed title="Local site page (allowed host)" url="http://127.0.0.1:24045/work" height={360} />
+
+<Embed title="Refused host" url="https://example.com/anything" height={120} />
+
+<Quote quote="I want to be able to build and construct and import blocks, edit everything that was generated, add my own blocks, remove some blocks or update blocks." author="Arath, scoping the studio" />
+
+<Callout tone="warning" title="What this page does not prove" body="Publishing to a preview branch, the hub iframe, and converting the home page are not part of this spike. See studio/README.md for the measured results." />
+
+<Sparks enabled={false} />

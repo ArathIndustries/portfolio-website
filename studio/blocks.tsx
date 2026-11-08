@@ -5,6 +5,7 @@
  * schema entry (studio/schema.ts). This file only zips the two together, so
  * adding a block never requires touching it.
  */
+import type React from "react";
 import type { Config, ComponentConfig } from "@puckeditor/core";
 import { blockComponents } from "../src/components/blocks";
 import { blockSchemas } from "./schema";
@@ -45,7 +46,7 @@ export const puckConfig: Config = {
     fields: {
       frontmatter: { type: "textarea", label: "Frontmatter (YAML)" },
     },
-    render: ({ children }) => (
+    render: ({ children }: { children?: React.ReactNode }) => (
       <article className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-screen">{children}</article>
     ),
   },

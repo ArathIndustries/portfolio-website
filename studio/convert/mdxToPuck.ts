@@ -59,6 +59,12 @@ function attrsToProps(attrs: JsxAttr[], where: string): Record<string, unknown> 
   return props;
 }
 
+/** Whitespace-only text nodes between child elements carry nothing. */
+function isBlankText(node: unknown): boolean {
+  const n = node as { type?: string; value?: string };
+  return n.type === "text" && (n.value ?? "").trim() === "";
+}
+
 function line(node: { position?: { start: { line: number } } }): string {
   return `line ${node.position?.start.line ?? "?"}`;
 }
@@ -96,7 +102,7 @@ export function mdxToPuck(rawSource: string, fileLabel = "mdx"): PuckPage {
       if (!schema) throw new Error(`${where}: unknown component <${name}>; add it to src/components/blocks and studio/schema.ts first`);
 
       const props = attrsToProps(node.attributes, `${where} <${name}>`);
-      const kids = node.children.filter((c) => !(c.type === "text" && c.value.trim() === ""));
+      const kids = node.children.filter((c) => !isBlankText(c));
       if (kids.length) {
         const adapter = schema.mdx?.childrenAs;
         if (!adapter) throw new Error(`${where}: <${name}> does not accept children`);
@@ -105,7 +111,7 @@ export function mdxToPuck(rawSource: string, fileLabel = "mdx"): PuckPage {
           if (k.type !== "mdxJsxFlowElement" || k.name !== adapter.child) {
             throw new Error(`${where}: <${name}> children must all be <${adapter.child}>, found ${k.type === "mdxJsxFlowElement" ? `<${k.name}>` : k.type}`);
           }
-          if (k.children.filter((c) => !(c.type === "text" && c.value.trim() === "")).length) {
+          if (k.children.filter((c) => !isBlankText(c)).length) {
             throw new Error(`${line(k)}: <${adapter.child}> must be self-closing`);
           }
           items.push(attrsToProps(k.attributes, `${fileLabel} ${line(k)} <${adapter.child}>`));
