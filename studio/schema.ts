@@ -228,6 +228,13 @@ export const blockSchemas: Record<string, BlockSchema> = {
     },
     defaultProps: { heading: "Connect", links: [{ label: "GitHub", href: "https://github.com/", variant: "outline", icon: "none" }] },
   },
+  ResumeViewer: {
+    description: "Full-width PDF viewer: back link and title on the left, download button on the right, the PDF in a frame below (src/components/blocks/ResumeViewer.tsx). The PDF is a file in public/.",
+    editing: "side-pane",
+    category: "Site",
+    fields: { backHref: text(), backLabel: text(), title: text(), pdf: text(false, "/file.pdf"), downloadLabel: text(), frameTitle: text() },
+    defaultProps: { backHref: "/founder", backLabel: "Founder", title: "Resume", pdf: "/Sergio_Arath_Guzman_Resume.pdf", downloadLabel: "Download PDF", frameTitle: "Resume Preview" },
+  },
   // ---------------------------------------------------------------- Text
   Markdown: {
     description: "A run of Markdown prose. This is what plain text between components becomes on disk.",
