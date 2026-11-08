@@ -172,6 +172,8 @@ export interface StatusResult {
   preview: string | null;
   lastCommit: { hash: string; subject: string; date: string } | null;
   dirtyContent: string[];
+  /** `git diff --name-only <remote>/master <remote>/studio/preview`: what a promote would change. */
+  changedFiles: string[];
 }
 
 export function status(cfg: PublishConfig, fetch = true): StatusResult {
@@ -180,10 +182,12 @@ export function status(cfg: PublishConfig, fetch = true): StatusResult {
   const preview = remoteRef(cfg, PREVIEW_BRANCH);
   let ahead = 0;
   let behind = 0;
+  let changedFiles: string[] = [];
   if (master && preview) {
     const [b, a] = git(cfg, ["rev-list", "--left-right", "--count", `${master}...${preview}`]).split(/\s+/).map(Number);
     ahead = a;
     behind = b;
+    changedFiles = git(cfg, ["diff", "--name-only", master, preview]).split("\n").filter(Boolean);
   }
   const ref = preview ?? master;
   const last = ref ? git(cfg, ["log", "-1", "--format=%H%x1f%s%x1f%cI", ref]).split("\x1f") : null;
@@ -198,5 +202,6 @@ export function status(cfg: PublishConfig, fetch = true): StatusResult {
     preview,
     lastCommit: last ? { hash: last[0], subject: last[1], date: last[2] } : null,
     dirtyContent: dirtyContent(cfg),
+    changedFiles,
   };
 }

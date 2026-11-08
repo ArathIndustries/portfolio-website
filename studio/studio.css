@@ -11,79 +11,306 @@
   --font-jetbrains-mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
 }
 
-/* Puck's chrome stays light; only the canvas (iframe) is the dark site. */
-body {
-  background: #111;
-  color: #e0e0e0;
+/* ---------------------------------------------------------------------------
+   Hub tokens. The same names and values as the hub's workspace.css (--black,
+   --panel, --raise, ... prefixed hub- here so they cannot collide with the site's
+   own variables), one block per hub theme. The theme comes from ?theme= in the
+   URL or a postMessage({type:'hub-theme', theme}) from the hub frame; App.tsx
+   writes it to <html data-theme>. Dark is the default. The accent is the site's
+   neon orange, not the hub's white, so the editor's controls match the canvas.
+   --------------------------------------------------------------------------- */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --hub-black: #000000;
+  --hub-panel: #0a0a0a;
+  --hub-raise: #171717;
+  --hub-raise2: #222222;
+  --hub-line: #2a2a2a;
+  --hub-text: #ededed;
+  --hub-mute: #a1a1a1;
+  --hub-faint: rgba(161, 161, 161, 0.5);
+  --hub-white: #ffffff;
+  --hub-late: #ff5a5f;
+  --hub-ok: #2fbf71;
+  --hub-accent: #ff8800;
+  --hub-radius: 3px;
+  --hub-font: "Geist Sans", Geist, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --hub-mono: var(--font-jetbrains-mono);
 }
 
+[data-theme="light"] {
+  color-scheme: light;
+  --hub-black: #ffffff;
+  --hub-panel: #eef0f2;
+  --hub-raise: #f8f9fa;
+  --hub-raise2: #e9ecef;
+  --hub-line: #dee2e6;
+  --hub-text: #212529;
+  --hub-mute: #6c757d;
+  --hub-faint: rgba(108, 117, 125, 0.6);
+  --hub-white: #000000;
+  --hub-late: #c4141c;
+  --hub-ok: #067a42;
+  --hub-accent: #c45f00;
+}
+
+[data-theme="sensitive-light"] {
+  color-scheme: light;
+  --hub-black: #fff5f5;
+  --hub-panel: #ffcdd2;
+  --hub-raise: #ffebee;
+  --hub-raise2: #ffdde1;
+  --hub-line: #ef9a9a;
+  --hub-text: #212529;
+  --hub-mute: #6c757d;
+  --hub-faint: rgba(108, 117, 125, 0.6);
+  --hub-white: #1a1a1a;
+  --hub-late: #c62828;
+  --hub-ok: #2e7d32;
+  --hub-accent: #d32f2f;
+}
+
+[data-theme="sensitive-dark"] {
+  color-scheme: dark;
+  --hub-black: #1a0a0a;
+  --hub-panel: #140808;
+  --hub-raise: #2a1010;
+  --hub-raise2: #3a1818;
+  --hub-line: #4a1c1c;
+  --hub-text: #f5c6c6;
+  --hub-mute: rgba(245, 198, 198, 0.75);
+  --hub-faint: rgba(244, 143, 177, 0.5);
+  --hub-white: #fde8e8;
+  --hub-late: #ef5350;
+  --hub-ok: #a5d6a7;
+  --hub-accent: #ef5350;
+}
+
+/* ---------------------------------------------------------------------------
+   Puck chrome on hub tokens. @puckeditor/core 0.24 defines its colours in
+   @layer puck-tokens on :root: a semantic layer (--puck-color-surface, -text,
+   -border, -interactive, ...) over grey and azure scales. 0.24 has no dark mode
+   of its own. Unlayered rules beat layered ones, so this block wins without
+   !important. The semantic names cover the editor; the grey and azure scales
+   are remapped too because 29 rules in puck.css read them directly.
+   --------------------------------------------------------------------------- */
+:root {
+  --puck-font-family: var(--hub-mono);
+  --puck-color-white: var(--hub-black);
+  --puck-color-black: var(--hub-text);
+
+  --puck-color-surface: var(--hub-panel);
+  --puck-color-surface-muted: var(--hub-raise);
+  --puck-color-surface-subtle: var(--hub-black);
+  --puck-color-surface-inverse: var(--hub-text);
+  --puck-color-border: var(--hub-line);
+  --puck-color-border-hover: var(--hub-mute);
+  --puck-color-border-muted: var(--hub-raise2);
+  --puck-color-border-inverse: var(--hub-mute);
+  --puck-color-text: var(--hub-text);
+  --puck-color-text-secondary: var(--hub-mute);
+  --puck-color-text-muted: var(--hub-mute);
+  --puck-color-text-subtle: var(--hub-faint);
+  --puck-color-text-inverse: var(--hub-black);
+  --puck-color-interactive: var(--hub-accent);
+  --puck-color-interactive-hover: color-mix(in srgb, var(--hub-accent) 85%, var(--hub-text));
+  --puck-color-interactive-active: color-mix(in srgb, var(--hub-accent) 70%, var(--hub-text));
+  --puck-color-interactive-subtle: color-mix(in srgb, var(--hub-accent) 28%, var(--hub-black));
+  --puck-color-interactive-soft: color-mix(in srgb, var(--hub-accent) 14%, var(--hub-black));
+  --puck-color-interactive-soft-hover: color-mix(in srgb, var(--hub-accent) 22%, var(--hub-black));
+  --puck-color-interactive-neutral-hover: var(--hub-raise);
+  --puck-color-interactive-inverse-hover: var(--hub-accent);
+  --puck-color-interactive-inverse-active: color-mix(in srgb, var(--hub-accent) 80%, var(--hub-black));
+  --puck-color-focus-ring: var(--hub-accent);
+  --puck-color-selection-bg: color-mix(in srgb, var(--hub-accent) 22%, transparent);
+  --puck-color-selection-border: var(--hub-accent);
+  --puck-color-line-placeholder: var(--hub-accent);
+  --puck-color-highlight: var(--hub-accent);
+  --puck-color-bg-disabled: var(--hub-raise2);
+  --puck-color-text-disabled: var(--hub-mute);
+  --puck-color-overlay-backdrop: color-mix(in srgb, var(--hub-black) 75%, transparent);
+
+  /* Grey scale, 01 = strongest contrast against the surface, 12 = closest to it. */
+  --puck-color-grey-01: var(--hub-text);
+  --puck-color-grey-02: color-mix(in srgb, var(--hub-text) 90%, var(--hub-black));
+  --puck-color-grey-03: color-mix(in srgb, var(--hub-text) 80%, var(--hub-black));
+  --puck-color-grey-04: var(--hub-mute);
+  --puck-color-grey-05: var(--hub-mute);
+  --puck-color-grey-06: color-mix(in srgb, var(--hub-mute) 70%, var(--hub-black));
+  --puck-color-grey-07: color-mix(in srgb, var(--hub-mute) 50%, var(--hub-black));
+  --puck-color-grey-08: color-mix(in srgb, var(--hub-mute) 35%, var(--hub-black));
+  --puck-color-grey-09: var(--hub-line);
+  --puck-color-grey-10: var(--hub-raise2);
+  --puck-color-grey-11: var(--hub-raise);
+  --puck-color-grey-12: var(--hub-panel);
+
+  /* Azure scale, used for selection and drop lines: the accent and its washes. */
+  --puck-color-azure-01: color-mix(in srgb, var(--hub-accent) 60%, var(--hub-text));
+  --puck-color-azure-02: color-mix(in srgb, var(--hub-accent) 75%, var(--hub-text));
+  --puck-color-azure-03: color-mix(in srgb, var(--hub-accent) 88%, var(--hub-text));
+  --puck-color-azure-04: var(--hub-accent);
+  --puck-color-azure-05: var(--hub-accent);
+  --puck-color-azure-06: color-mix(in srgb, var(--hub-accent) 85%, var(--hub-black));
+  --puck-color-azure-07: color-mix(in srgb, var(--hub-accent) 70%, var(--hub-black));
+  --puck-color-azure-08: color-mix(in srgb, var(--hub-accent) 55%, var(--hub-black));
+  --puck-color-azure-09: color-mix(in srgb, var(--hub-accent) 40%, var(--hub-black));
+  --puck-color-azure-10: color-mix(in srgb, var(--hub-accent) 28%, var(--hub-black));
+  --puck-color-azure-11: color-mix(in srgb, var(--hub-accent) 14%, var(--hub-black));
+  --puck-color-azure-12: color-mix(in srgb, var(--hub-accent) 8%, var(--hub-black));
+}
+
+body {
+  background: var(--hub-black);
+  color: var(--hub-text);
+}
+
+/* ---------------------------------------------------------------------------
+   Studio bars (above Puck's own header).
+   --------------------------------------------------------------------------- */
 .studio-bar {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 6px 12px;
-  background: #0d0b0a;
-  border-bottom: 1px solid rgba(255, 136, 0, 0.3);
-  font-family: var(--font-jetbrains-mono);
+  background: var(--hub-panel);
+  border-bottom: 1px solid var(--hub-line);
+  font-family: var(--hub-mono);
   font-size: 12px;
+  color: var(--hub-text);
+}
+.studio-brand {
+  color: var(--hub-accent);
+  letter-spacing: 0.08em;
 }
 .studio-bar select {
-  background: #1a1512;
-  color: #e0e0e0;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--hub-raise);
+  color: var(--hub-text);
+  border: 1px solid var(--hub-line);
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--hub-radius);
   max-width: 50vw;
+  font: inherit;
 }
-.studio-bar a {
-  color: var(--neon);
+.studio-bar a,
+.studio-publish-status a {
+  color: var(--hub-accent);
 }
 .studio-status {
   margin-left: auto;
-  color: #888;
+  color: var(--hub-mute);
 }
 
 /* Second bar: preview branch versus master. */
 .studio-publish-status {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
   padding: 4px 12px;
-  background: #0a0908;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  font-family: var(--font-jetbrains-mono);
+  background: var(--hub-black);
+  border-bottom: 1px solid var(--hub-line);
+  font-family: var(--hub-mono);
   font-size: 11px;
-  color: #aaa;
+  color: var(--hub-mute);
 }
 .studio-dirty {
-  color: #e0a040;
+  color: var(--hub-late);
+}
+.studio-preview-note {
+  color: var(--hub-faint);
 }
 .studio-link {
   background: none;
   border: none;
-  color: var(--neon);
+  color: var(--hub-accent);
   cursor: pointer;
   font: inherit;
   text-decoration: underline;
+  padding: 0;
+}
+.studio-link:disabled {
+  color: var(--hub-faint);
+  cursor: default;
 }
 
 /* The two publish actions in Puck's header, replacing its Publish button. */
 .studio-action {
-  font-family: var(--font-jetbrains-mono);
+  font-family: var(--hub-mono);
   font-size: 12px;
   padding: 6px 12px;
-  border-radius: 4px;
-  border: 1px solid var(--neon, #ff8800);
+  border-radius: var(--hub-radius);
+  border: 1px solid var(--hub-accent);
   background: transparent;
-  color: var(--neon, #ff8800);
+  color: var(--hub-accent);
   cursor: pointer;
   margin-left: 8px;
 }
 .studio-action-live {
-  background: var(--neon, #ff8800);
-  color: #111;
+  background: var(--hub-accent);
+  color: var(--hub-black);
 }
 .studio-action:disabled {
   opacity: 0.5;
   cursor: wait;
+}
+
+/* Promote confirm dialog: names the pages that will go live. */
+.studio-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--hub-black) 70%, transparent);
+}
+.studio-modal {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  background: var(--hub-panel);
+  color: var(--hub-text);
+  border: 1px solid var(--hub-line);
+  border-radius: var(--hub-radius);
+  padding: 16px 18px;
+  font-family: var(--hub-mono);
+  font-size: 12.5px;
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--hub-black) 60%, transparent);
+}
+.studio-modal h2 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.studio-modal p {
+  margin: 0 0 10px;
+  color: var(--hub-mute);
+}
+.studio-modal ul {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--hub-line);
+  border-radius: var(--hub-radius);
+}
+.studio-modal li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+  border-top: 1px solid var(--hub-line);
+}
+.studio-modal li:first-child {
+  border-top: none;
+}
+.studio-modal li small {
+  color: var(--hub-mute);
+}
+.studio-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.studio-modal-actions .studio-action {
+  margin-left: 0;
 }

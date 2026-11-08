@@ -1,9 +1,14 @@
 /**
  * Vite config for the studio. Also hosts the tiny file API the editor uses:
- *   GET  /api/pages            -> list of content files with their site routes
- *   GET  /api/page?file=...    -> { data } (Puck Data for that file)
- *   PUT  /api/page?file=...    -> body: Puck Data; writes the MDX back to disk
+ *   GET  /studio/api/pages            -> list of content files with their site routes
+ *   GET  /studio/api/page?file=...    -> { data } (Puck Data for that file)
+ *   PUT  /studio/api/page?file=...    -> body: Puck Data; writes the MDX back to disk
  * Only files under content/ with an .mdx extension are reachable.
+ *
+ * Everything is served under the base path /studio/ (editor, API, Vite's own
+ * client and HMR websocket) so the hub can reverse-proxy the whole app at the
+ * same path without rewriting URLs: http://127.0.0.1:24044/studio/ directly,
+ * or <hub>/studio/ through the hub's relay.
  */
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
@@ -16,6 +21,10 @@ import { configFromEnv, promote, publish, status } from "./publish";
 
 const repoRoot = path.resolve(__dirname, "..");
 const contentDir = path.join(repoRoot, "content");
+const publicDir = path.join(repoRoot, "public");
+/** Base path of the whole app; App.tsx reads it back as import.meta.env.BASE_URL. */
+export const STUDIO_BASE = "/studio/";
+const API_PREFIX = `${STUDIO_BASE}api/`;
 // Publishing goes to STUDIO_REMOTE (default origin); see studio/publish.ts.
 const publishCfg = configFromEnv(repoRoot);
 
@@ -66,15 +75,17 @@ function fileApi(): Plugin {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const url = new URL(req.url ?? "/", "http://127.0.0.1");
-        if (!url.pathname.startsWith("/api/")) return next();
+        if (!url.pathname.startsWith(API_PREFIX)) return next();
+        // Route names below are relative to /studio/api/.
+        const route = url.pathname.slice(API_PREFIX.length);
         const json = (status: number, body: unknown) => {
           res.statusCode = status;
           res.setHeader("content-type", "application/json");
           res.end(JSON.stringify(body));
         };
         try {
-          if (url.pathname === "/api/pages" && req.method === "GET") return json(200, listPages());
-          if (url.pathname === "/api/page") {
+          if (route === "pages" && req.method === "GET") return json(200, listPages());
+          if (route === "page") {
             const abs = safeContentPath(url.searchParams.get("file"));
             if (req.method === "GET") {
               const data = mdxToPuck(fs.readFileSync(abs, "utf8"), path.relative(repoRoot, abs));
@@ -88,14 +99,14 @@ function fileApi(): Plugin {
             }
           }
           // Publish flow (studio/publish.ts). Git runs with argument arrays only.
-          if (url.pathname === "/api/publish/status" && req.method === "GET") {
+          if (route === "publish/status" && req.method === "GET") {
             return json(200, status(publishCfg, url.searchParams.get("fetch") !== "0"));
           }
-          if (url.pathname === "/api/publish" && req.method === "POST") {
+          if (route === "publish" && req.method === "POST") {
             const body = JSON.parse((await readBody(req)) || "{}") as { title?: string };
             return json(200, publish(publishCfg, typeof body.title === "string" ? body.title : ""));
           }
-          if (url.pathname === "/api/promote" && req.method === "POST") {
+          if (route === "promote" && req.method === "POST") {
             return json(200, promote(publishCfg));
           }
           return json(404, { error: "not found" });
@@ -107,11 +118,36 @@ function fileApi(): Plugin {
   };
 }
 
+/**
+ * The site's pages reference public files by root path (/images/..., /studio-examples/...).
+ * With base = /studio/ Vite serves public/ at /studio/images/...; this rewrites a root
+ * request for an existing public file onto the base so the canvas still finds it when
+ * the studio is opened directly on 24044. (Through the hub relay a root path reaches
+ * the hub instead; the hub does not have the site's images.)
+ */
+function publicRootFallback(): Plugin {
+  return {
+    name: "studio-public-root-fallback",
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        const pathname = (req.url ?? "/").split("?")[0];
+        if (pathname === "/" || pathname.startsWith(STUDIO_BASE)) return next();
+        const candidate = path.resolve(publicDir, "." + pathname);
+        if (candidate.startsWith(publicDir + path.sep) && fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+          req.url = STUDIO_BASE.slice(0, -1) + req.url;
+        }
+        return next();
+      });
+    },
+  };
+}
+
 export default defineConfig({
   root: __dirname,
+  base: STUDIO_BASE,
   // Serve the site's public/ so /images, /studio-examples resolve in the canvas too.
-  publicDir: path.join(repoRoot, "public"),
-  plugins: [react(), tailwindcss(), fileApi()],
+  publicDir,
+  plugins: [react(), tailwindcss(), fileApi(), publicRootFallback()],
   resolve: {
     alias: {
       "@": path.join(repoRoot, "src"),
