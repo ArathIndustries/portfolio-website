@@ -169,4 +169,4 @@ The Markdown field is `contentEditable`, so Puck hands the block its inline-text
 
 Behaviour: click puts the caret near the clicked word; Escape or clicking elsewhere returns to the rendered view; Enter inserts a blank line (`
 
-`) in a paragraph or heading and a single newline inside a list item, a list continuation, a fenced code block, a table row or a quote, and on an empty line; Shift+Enter inserts one newline. Undo and redo use Puck's history (the header buttons). The side pane shows a Source button for a selected Markdown block; it opens the plain textarea.
+`) in a paragraph or heading and a single newline inside a list item, a list continuation, a fenced code block, a table row or a quote, and on an empty line; Shift+Enter is left to the browser (not tested). Undo through Puck's history was not tested with this block. The side pane shows a Source button for a selected Markdown block; it opens the plain textarea.
