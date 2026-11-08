@@ -165,47 +165,6 @@ body {
   color: var(--hub-text);
 }
 
-/* ---------------------------------------------------------------------------
-   Studio bars (above Puck's own header).
-   --------------------------------------------------------------------------- */
-.studio-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 12px;
-  background: var(--hub-panel);
-  border-bottom: 1px solid var(--hub-line);
-  font-family: var(--hub-mono);
-  font-size: 12px;
-  color: var(--hub-text);
-}
-.studio-brand {
-  color: var(--hub-accent);
-  letter-spacing: 0.08em;
-}
-.studio-bar a,
-.studio-page-header a,
-.studio-publish-status a {
-  color: var(--hub-accent);
-}
-.studio-status {
-  margin-left: auto;
-  color: var(--hub-mute);
-}
-
-/* Second bar: preview branch versus master. */
-.studio-publish-status {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 4px 12px;
-  background: var(--hub-black);
-  border-bottom: 1px solid var(--hub-line);
-  font-family: var(--hub-mono);
-  font-size: 11px;
-  color: var(--hub-mute);
-}
 .studio-dirty {
   color: var(--hub-late);
 }
@@ -230,13 +189,14 @@ body {
 .studio-action {
   font-family: var(--hub-mono);
   font-size: 12px;
-  padding: 6px 12px;
+  padding: 4px 10px;
   border-radius: var(--hub-radius);
   border: 1px solid var(--hub-accent);
   background: transparent;
   color: var(--hub-accent);
   cursor: pointer;
-  margin-left: 8px;
+  margin-left: 0;
+  white-space: nowrap;
 }
 .studio-action-live {
   background: var(--hub-accent);
@@ -305,28 +265,6 @@ body {
 }
 .studio-modal-actions .studio-action {
   margin-left: 0;
-}
-
-/* Page header: title, path (mono), site links. */
-.studio-page-header {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 4px 14px;
-  padding: 6px 12px;
-  background: var(--hub-black);
-  border-bottom: 1px solid var(--hub-line);
-  font-family: var(--hub-font);
-  font-size: 13px;
-  color: var(--hub-text);
-}
-.studio-page-title {
-  font-weight: 600;
-}
-.studio-page-path {
-  font-family: var(--hub-mono);
-  font-size: 12px;
-  color: var(--hub-mute);
 }
 
 /* Pages tree: the left-rail tab beside Blocks and Outline. */
@@ -426,4 +364,247 @@ body {
 .pages-empty {
   padding: 12px;
   color: var(--hub-mute);
+}
+
+/* ---------------------------------------------------------------------------
+   One header row (40 px): replaces the studio bars and Puck's own header.
+   --------------------------------------------------------------------------- */
+.studio-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  height: 40px;
+  min-width: 0;
+  padding: 0 10px;
+  background: var(--hub-panel);
+  border-bottom: 1px solid var(--hub-line);
+  font-family: var(--hub-mono);
+  font-size: 12px;
+  color: var(--hub-text);
+  white-space: nowrap;
+}
+.studio-header > * {
+  flex: 0 0 auto;
+}
+.studio-brand {
+  color: var(--hub-accent);
+  letter-spacing: 0.08em;
+}
+.studio-title-wrap {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  overflow: hidden;
+}
+.studio-page-title {
+  font-family: var(--hub-font);
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.studio-page-path {
+  font-family: var(--hub-mono);
+  font-size: 11px;
+  color: var(--hub-mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.studio-hlink {
+  color: var(--hub-accent);
+  text-decoration: none;
+  font-size: 11px;
+}
+.studio-hlink:hover {
+  text-decoration: underline;
+}
+.studio-spacer {
+  flex: 1 1 0 !important;
+  min-width: 0;
+}
+.studio-status {
+  margin-left: auto;
+  color: var(--hub-mute);
+}
+.studio-pill {
+  font: inherit;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--hub-line);
+  background: var(--hub-raise);
+  color: var(--hub-mute);
+  cursor: pointer;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.studio-pill.is-pending {
+  border-color: var(--hub-late);
+  color: var(--hub-late);
+}
+.studio-pill:hover {
+  border-color: var(--hub-accent);
+}
+.studio-popover {
+  position: fixed;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: min(520px, calc(100vw - 16px));
+  padding: 10px 12px;
+  background: var(--hub-panel);
+  color: var(--hub-text);
+  border: 1px solid var(--hub-line);
+  border-radius: var(--hub-radius);
+  font-family: var(--hub-mono);
+  font-size: 11.5px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--hub-black) 60%, transparent);
+}
+.studio-popover a {
+  color: var(--hub-accent);
+}
+.studio-popover-msg {
+  color: var(--hub-mute);
+}
+.studio-undo {
+  display: inline-flex;
+  gap: 2px;
+}
+.studio-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: transparent;
+  color: var(--hub-text);
+  border: 1px solid transparent;
+  border-radius: var(--hub-radius);
+  cursor: pointer;
+}
+.studio-icon-btn:hover:not(:disabled) {
+  border-color: var(--hub-line);
+  background: var(--hub-raise);
+}
+.studio-icon-btn:disabled {
+  color: var(--hub-faint);
+  cursor: default;
+}
+
+/* Puck's own header wrapper must not clip or add height around our row. */
+[class*="PuckLayout-header"] {
+  overflow: visible !important;
+  position: relative;
+  z-index: 20;
+}
+
+/* ---------------------------------------------------------------------------
+   Canvas zoom (CanvasZoom.tsx): replaces Puck's zoom buttons in the viewport bar.
+   --------------------------------------------------------------------------- */
+[data-studio-hidden] {
+  display: none !important;
+}
+.studio-zoom-host {
+  display: flex;
+  align-items: center;
+}
+.studio-zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 6px;
+  padding-left: 8px;
+  border-left: 1px solid var(--hub-line);
+  font-family: var(--hub-mono);
+  font-size: 12px;
+  color: var(--hub-text);
+}
+.studio-zoom-btn,
+.studio-zoom-fit {
+  font: inherit;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  background: transparent;
+  color: inherit;
+  border: 1px solid transparent;
+  border-radius: var(--hub-radius);
+  cursor: pointer;
+}
+.studio-zoom-btn:hover:not(:disabled),
+.studio-zoom-fit:hover {
+  border-color: var(--hub-line);
+  background: var(--hub-raise);
+}
+.studio-zoom-btn:disabled {
+  color: var(--hub-faint);
+  cursor: default;
+}
+.studio-zoom-fit.is-on {
+  color: var(--hub-accent);
+}
+.studio-zoom-readout {
+  min-width: 44px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Canvas frame: when the scaled page is wider than the frame, scroll sideways from the left edge.
+   The native scrollbar is hidden because it would shrink the frame and make Puck reset the zoom;
+   a drawn bar (.studio-hscroll) replaces it. */
+[class*="_PuckCanvas_"] {
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+}
+[class*="_PuckCanvas-inner_"] {
+  min-height: 0;
+}
+[class*="_PuckCanvas-inner_"][data-studio-pan] {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  justify-content: flex-start;
+}
+[class*="_PuckCanvas-inner_"][data-studio-pan]::-webkit-scrollbar {
+  display: none;
+}
+[class*="_PuckCanvas-inner_"][data-studio-pan] #puck-canvas-root {
+  left: 0;
+  transform-origin: top left;
+}
+.studio-hscroll {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 3px;
+  height: 7px;
+  z-index: 5;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--hub-line) 50%, transparent);
+}
+.studio-hscroll-thumb {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 24px;
+  border-radius: 4px;
+  background: var(--hub-mute);
+  cursor: grab;
+}
+.studio-hscroll-thumb:hover {
+  background: var(--hub-accent);
+}
+
+/* Browser zoom (125 %, 150 %): flex children may shrink and scroll instead of clipping. */
+.pages-tree,
+.pages-scroll {
+  min-height: 0;
 }

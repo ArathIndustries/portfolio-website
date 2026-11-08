@@ -1,6 +1,8 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Puck, useGetPuck, type Data, type Plugin } from "@puckeditor/core";
 import { puckConfig } from "./blocks";
+import { CanvasZoom } from "./CanvasZoom";
+import { HeaderContext, StudioHeader, type HeaderInfo } from "./Header";
 
 interface PageInfo {
   file: string;
@@ -277,6 +279,9 @@ const pagesPlugin: Plugin = {
 };
 const PLUGINS = [pagesPlugin];
 
+/** Stable identity so Puck does not remount the header on every App render. */
+const HEADER_OVERRIDE = ({ actions }: { actions: ReactNode }) => <StudioHeader actions={actions} />;
+
 /** Data as JSON without generated ids, so Puck adding ids on open does not count as an edit. */
 function normalize(data: Data): string {
   return JSON.stringify(data, (k, v) => (k === "id" ? undefined : v));
@@ -400,84 +405,82 @@ export function App() {
   const previewAhead = Boolean(pub && pub.previewExists && pub.aheadOfMaster > 0);
   const previewPageUrl = pub && page ? `${pub.previewUrl}${page.route === "/" ? "" : page.route}` : null;
 
+  const unsaved = dirtyFiles.size;
+  const headerInfo: HeaderInfo = {
+    title,
+    route: page?.route ?? "",
+    siteUrl: page ? `${SITE}${page.route}` : null,
+    previewSiteUrl: pub?.previewUrl ?? null,
+    pill: !pub
+      ? "status…"
+      : `${!pub.previewExists ? "preview not pushed" : previewAhead ? `preview ${pub.aheadOfMaster} ahead` : "preview = master"}${unsaved ? ` · ${unsaved} unsaved` : ""}`,
+    pending: previewAhead || unsaved > 0,
+    fullLine: describe(pub),
+    unsavedOnDisk: pub?.dirtyContent.length ?? 0,
+    openPreviewUrl: previewAhead ? previewPageUrl : null,
+    message: status,
+    busy: Boolean(busy),
+    onRefresh: () => {
+      void refreshStatus(true);
+    },
+  };
+
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-      <div className="studio-bar">
-        <strong className="studio-brand">STUDIO</strong>
-        <span className="studio-status" data-testid="studio-status">{status}</span>
-      </div>
-      <div className="studio-page-header" data-testid="page-header">
-        <strong className="studio-page-title" data-testid="page-title">{title}</strong>
-        <code className="studio-page-path" data-testid="page-path">{page?.route ?? ""}</code>
-        {page ? (
-          <a href={`${SITE}${page.route}`} target="_blank" rel="noreferrer">
-            open on site ↗
-          </a>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", minHeight: 0 }}>
+      <HeaderContext.Provider value={headerInfo}>
+        {!data ? (
+          <div className="studio-header">
+            <strong className="studio-brand">STUDIO</strong>
+            <span className="studio-status" data-testid="studio-status">{status}</span>
+          </div>
         ) : null}
-        {pub ? (
-          <a href={pub.previewUrl} target="_blank" rel="noreferrer" title="Vercel builds every pushed branch at this address">
-            preview site ↗
-          </a>
-        ) : null}
-      </div>
-      <div className="studio-publish-status" title="Preview branch versus master on the remote">
-        <span data-testid="publish-status">{describe(pub) || "publish status: loading…"}</span>
-        {pub && pub.dirtyContent.length ? <span className="studio-dirty">{pub.dirtyContent.length} unsaved content file(s) on disk</span> : null}
-        {previewAhead && previewPageUrl ? (
-          <>
-            <a href={previewPageUrl} target="_blank" rel="noreferrer" data-testid="open-preview" title={previewPageUrl}>
-              Open preview ↗
-            </a>
-            <span className="studio-preview-note">Preview needs a Vercel sign-in</span>
-          </>
-        ) : null}
-        <button type="button" className="studio-link" onClick={() => refreshStatus(true)} disabled={Boolean(busy)}>
-          refresh
-        </button>
-      </div>
-      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
-        {data ? (
-          <PagesContext.Provider value={{ pages, file, query, setQuery, dirtyFiles, openPage }}>
-          <Puck
-            key={file}
-            config={puckConfig}
-            data={data}
-            plugins={PLUGINS}
-            ui={{ plugin: { current: "pages" } }}
-            onChange={(d) => {
-              const changed = normalize(d) !== baseline.current;
-              setEditedFile((cur) => (changed ? file : cur === file ? null : cur));
-            }}
-            headerTitle={title}
-            height="100%"
-            overrides={{
-              headerActions: () => (
-                <PublishActions
-                  file={file}
-                  title={title}
-                  busy={busy}
-                  setBusy={setBusy}
-                  onPromoteRequest={openPromote}
-                  onSaved={(d) => {
-                    baseline.current = normalize(d);
-                    setEditedFile(null);
-                  }}
-                  onStatus={(st, note) => {
-                    if (st) setPub(st);
-                    setStatus(note);
-                  }}
-                />
-              ),
-            }}
-            viewports={[
-              { width: 390, height: "auto", label: "Phone" },
-              { width: 768, height: "auto", label: "Tablet" },
-              { width: 1280, height: "auto", label: "Desktop" },
-            ]}
-          />
-          </PagesContext.Provider>
-        ) : null}
-      </div>
+        <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+          {data ? (
+            <PagesContext.Provider value={{ pages, file, query, setQuery, dirtyFiles, openPage }}>
+              <Puck
+                key={file}
+                config={puckConfig}
+                data={data}
+                plugins={PLUGINS}
+                ui={{ plugin: { current: "pages" } }}
+                onChange={(d) => {
+                  const changed = normalize(d) !== baseline.current;
+                  setEditedFile((cur) => (changed ? file : cur === file ? null : cur));
+                }}
+                headerTitle={title}
+                height="100%"
+                overrides={{
+                  // One 40 px row replaces the studio bars and Puck's own header; `actions` is the headerActions override below.
+                  header: HEADER_OVERRIDE,
+                  headerActions: () => (
+                    <PublishActions
+                      file={file}
+                      title={title}
+                      busy={busy}
+                      setBusy={setBusy}
+                      onPromoteRequest={openPromote}
+                      onSaved={(d) => {
+                        baseline.current = normalize(d);
+                        setEditedFile(null);
+                      }}
+                      onStatus={(st, note) => {
+                        if (st) setPub(st);
+                        setStatus(note);
+                      }}
+                    />
+                  ),
+                }}
+                viewports={[
+                  { width: 390, height: "auto", label: "Phone" },
+                  { width: 768, height: "auto", label: "Tablet" },
+                  { width: 1280, height: "auto", label: "Desktop" },
+                ]}
+              />
+              <CanvasZoom />
+            </PagesContext.Provider>
+          ) : null}
+        </div>
+      </HeaderContext.Provider>
       {promoting !== "closed" ? (
         <PromoteDialog
           status={pub}
