@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { Puck, useGetPuck, type Data } from "@puckeditor/core";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Puck, useGetPuck, type Data, type Plugin } from "@puckeditor/core";
 import { puckConfig } from "./blocks";
 
 interface PageInfo {
@@ -79,13 +79,14 @@ export function routeOfChangedFile(file: string, pages: PageInfo[]): PageInfo | 
  * live" moves master to that branch. Rendered inside Puck so it can read the
  * current editor data.
  */
-function PublishActions({ file, title, onStatus, setBusy, busy, onPromoteRequest }: {
+function PublishActions({ file, title, onStatus, onSaved, setBusy, busy, onPromoteRequest }: {
   file: string;
   title: string;
   busy: string;
   setBusy: (s: string) => void;
   onStatus: (s: PublishStatus | null, note: string) => void;
   onPromoteRequest: () => void;
+  onSaved: (data: Data) => void;
 }) {
   const getPuck = useGetPuck();
 
@@ -98,6 +99,7 @@ function PublishActions({ file, title, onStatus, setBusy, busy, onPromoteRequest
         headers: { "content-type": "application/json" },
         body: JSON.stringify(data),
       });
+      onSaved(data);
       const pub = await api<{ commit: string; changed: boolean; files: string[]; previewUrl: string; remote: string; branch: string }>(
         `${API}/publish`,
         { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ title }) },
@@ -175,6 +177,111 @@ function PromoteDialog({ status, pages, onCancel, onConfirm, loading }: {
   );
 }
 
+// ===== Pages tree (left rail) =====
+/** Sections of the tree, in display order, by the site route. */
+const GROUPS: { id: string; label: string; match: (route: string) => boolean }[] = [
+  { id: "home", label: "Home", match: (r) => r === "/" },
+  { id: "work", label: "Work", match: (r) => r.startsWith("/work/") },
+  { id: "notes", label: "Notes", match: (r) => r.startsWith("/forged/notes/") },
+  { id: "showcase", label: "Showcase", match: (r) => r.startsWith("/showcase/") },
+  { id: "other", label: "Other", match: () => true },
+];
+
+function groupPages(pages: PageInfo[], query: string) {
+  const q = query.trim().toLowerCase();
+  const slug = (p: PageInfo) => (p.file.split("/").pop() ?? "").replace(/\.mdx$/, "");
+  const hit = (p: PageInfo) =>
+    !q || p.title.toLowerCase().includes(q) || p.route.toLowerCase().includes(q) || slug(p).toLowerCase().includes(q);
+  const out = GROUPS.map((g) => ({ id: g.id, label: g.label, pages: [] as PageInfo[] }));
+  for (const p of pages) {
+    if (!hit(p)) continue;
+    out[GROUPS.findIndex((g) => g.match(p.route))].pages.push(p);
+  }
+  for (const g of out) g.pages.sort((a, b) => a.title.localeCompare(b.title));
+  return out.filter((g) => g.pages.length);
+}
+
+interface PagesCtx {
+  pages: PageInfo[];
+  file: string;
+  query: string;
+  setQuery: (q: string) => void;
+  dirtyFiles: Set<string>;
+  openPage: (file: string) => void;
+}
+const PagesContext = createContext<PagesCtx | null>(null);
+
+function PagesPanel() {
+  const ctx = useContext(PagesContext);
+  if (!ctx) return null;
+  const { pages, file, query, setQuery, dirtyFiles, openPage } = ctx;
+  const groups = groupPages(pages, query);
+  return (
+    <div className="pages-tree" data-testid="pages-tree">
+      <div className="pages-search">
+        <input
+          type="search"
+          value={query}
+          placeholder={`Search ${pages.length} pages`}
+          aria-label="Search pages by title, slug or path"
+          data-testid="pages-search"
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      </div>
+      <div className="pages-scroll">
+        {groups.map((g) => (
+          <section key={g.id} className="pages-group">
+            <h3>
+              {g.label} <span>{g.pages.length}</span>
+            </h3>
+            <ul>
+              {g.pages.map((p) => (
+                <li key={p.file}>
+                  <button
+                    type="button"
+                    className={`pages-row${p.file === file ? " is-current" : ""}`}
+                    aria-current={p.file === file ? "page" : undefined}
+                    data-testid="pages-row"
+                    data-file={p.file}
+                    onClick={() => openPage(p.file)}
+                  >
+                    <span className="pages-title">{p.title}</span>
+                    {dirtyFiles.has(p.file) ? (
+                      <span className="pages-dot" role="img" aria-label="unsaved changes" title="Unsaved changes" data-testid="pages-dot" />
+                    ) : null}
+                    <span className="pages-path">{p.route}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+        {groups.length === 0 ? <p className="pages-empty">No page matches "{query}".</p> : null}
+      </div>
+    </div>
+  );
+}
+
+/** Left-rail tab beside Puck's Blocks and Outline. State comes from PagesContext so the plugin object stays stable. */
+const pagesPlugin: Plugin = {
+  name: "pages",
+  label: "Pages",
+  icon: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+      <path d="M3 2.5h6l4 4v7H3z" />
+      <path d="M9 2.5v4h4" />
+    </svg>
+  ),
+  render: () => <PagesPanel />,
+  mobilePanelHeight: "min-content",
+};
+const PLUGINS = [pagesPlugin];
+
+/** Data as JSON without generated ids, so Puck adding ids on open does not count as an edit. */
+function normalize(data: Data): string {
+  return JSON.stringify(data, (k, v) => (k === "id" ? undefined : v));
+}
+
 function describe(st: PublishStatus | null): string {
   if (!st) return "";
   if (!st.previewExists) return `${st.branch}: not on ${st.remote} yet`;
@@ -194,6 +301,9 @@ export function App() {
   const [pub, setPub] = useState<PublishStatus | null>(null);
   const [busy, setBusy] = useState("");
   const [promoting, setPromoting] = useState<"closed" | "loading" | "ready">("closed");
+  const [query, setQuery] = useState("");
+  const [editedFile, setEditedFile] = useState<string | null>(null);
+  const baseline = useRef("");
   useHubTheme();
 
   const refreshStatus = useCallback(async (fetchRemote: boolean) => {
@@ -226,6 +336,8 @@ export function App() {
       .then(async (r) => {
         const body = await r.json();
         if (!r.ok) throw new Error(body.error);
+        baseline.current = normalize(body.data);
+        setEditedFile(null);
         setData(body.data);
         setStatus(`${body.data.content.length} blocks`);
         const url = new URL(location.href);
@@ -234,6 +346,32 @@ export function App() {
       })
       .catch((e) => setStatus(`error: ${e.message}`));
   }, [file]);
+
+  const openPage = useCallback(
+    (next: string) => {
+      if (next === file) return;
+      if (editedFile && !window.confirm("This page has unsaved edits. Leave it and discard them?")) return;
+      setFile(next);
+    },
+    [file, editedFile],
+  );
+
+  useEffect(() => {
+    if (!editedFile) return;
+    const guard = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", guard);
+    return () => window.removeEventListener("beforeunload", guard);
+  }, [editedFile]);
+
+  // A dot marks the page with edits in the editor and any page whose file differs on disk from the preview branch.
+  const dirtyFiles = useMemo(() => {
+    const set = new Set<string>((pub?.dirtyContent ?? []).map((f) => f.replace(/^content\//, "")));
+    if (editedFile) set.add(editedFile);
+    return set;
+  }, [pub, editedFile]);
 
   const openPromote = async () => {
     setPromoting("loading");
@@ -266,13 +404,11 @@ export function App() {
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <div className="studio-bar">
         <strong className="studio-brand">STUDIO</strong>
-        <select value={file} onChange={(e) => setFile(e.target.value)} data-testid="page-select" title="Pages, by their address on the site">
-          {pages.map((p) => (
-            <option key={p.file} value={p.file}>
-              {p.route} — {p.title}
-            </option>
-          ))}
-        </select>
+        <span className="studio-status" data-testid="studio-status">{status}</span>
+      </div>
+      <div className="studio-page-header" data-testid="page-header">
+        <strong className="studio-page-title" data-testid="page-title">{title}</strong>
+        <code className="studio-page-path" data-testid="page-path">{page?.route ?? ""}</code>
         {page ? (
           <a href={`${SITE}${page.route}`} target="_blank" rel="noreferrer">
             open on site ↗
@@ -283,7 +419,6 @@ export function App() {
             preview site ↗
           </a>
         ) : null}
-        <span className="studio-status" data-testid="studio-status">{status}</span>
       </div>
       <div className="studio-publish-status" title="Preview branch versus master on the remote">
         <span data-testid="publish-status">{describe(pub) || "publish status: loading…"}</span>
@@ -300,13 +435,21 @@ export function App() {
           refresh
         </button>
       </div>
-      <div style={{ flex: 1, minHeight: 0 }}>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
         {data ? (
+          <PagesContext.Provider value={{ pages, file, query, setQuery, dirtyFiles, openPage }}>
           <Puck
             key={file}
             config={puckConfig}
             data={data}
-            headerTitle={page?.route ?? file}
+            plugins={PLUGINS}
+            ui={{ plugin: { current: "pages" } }}
+            onChange={(d) => {
+              const changed = normalize(d) !== baseline.current;
+              setEditedFile((cur) => (changed ? file : cur === file ? null : cur));
+            }}
+            headerTitle={title}
+            height="100%"
             overrides={{
               headerActions: () => (
                 <PublishActions
@@ -315,6 +458,10 @@ export function App() {
                   busy={busy}
                   setBusy={setBusy}
                   onPromoteRequest={openPromote}
+                  onSaved={(d) => {
+                    baseline.current = normalize(d);
+                    setEditedFile(null);
+                  }}
                   onStatus={(st, note) => {
                     if (st) setPub(st);
                     setStatus(note);
@@ -328,6 +475,7 @@ export function App() {
               { width: 1280, height: "auto", label: "Desktop" },
             ]}
           />
+          </PagesContext.Provider>
         ) : null}
       </div>
       {promoting !== "closed" ? (
