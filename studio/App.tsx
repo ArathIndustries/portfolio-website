@@ -184,6 +184,7 @@ function PromoteDialog({ status, pages, onCancel, onConfirm, loading }: {
 /** Sections of the tree, in display order, by the site route. */
 const GROUPS: { id: string; label: string; match: (route: string) => boolean }[] = [
   { id: "home", label: "Home", match: (r) => r === "/" },
+  { id: "pages", label: "Pages", match: (r) => /^\/(about|contact|founder|resume|work|forged\/(notes|tools|sheets))$/.test(r) },
   { id: "work", label: "Work", match: (r) => r.startsWith("/work/") },
   { id: "notes", label: "Notes", match: (r) => r.startsWith("/forged/notes/") },
   { id: "showcase", label: "Showcase", match: (r) => r.startsWith("/showcase/") },
