@@ -12,6 +12,8 @@ export const EMBED_ALLOWLIST = [
   "codepen.io",
   "observablehq.com",
   "www.openstreetmap.org",
+  "arathindustries.com",
+  "www.arathindustries.com",
   "127.0.0.1",
   "localhost",
 ];

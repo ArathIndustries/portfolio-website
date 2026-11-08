@@ -158,7 +158,8 @@ export default defineConfig({
   },
   server: {
     host: "127.0.0.1",
-    port: 24044,
+    // The hub passes STUDIO_PORT from its settings; 24044 is the registered default.
+    port: Number(process.env.STUDIO_PORT) || 24044,
     strictPort: true,
     fs: { allow: [repoRoot] },
   },
