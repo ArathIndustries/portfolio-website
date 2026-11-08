@@ -23,6 +23,10 @@ import { DataTable } from "./DataTable";
 import { Embed } from "./Embed";
 import { Quote } from "./Quote";
 import { NeonSignHero } from "./NeonSignHero";
+import { PageHeader } from "./PageHeader";
+import { BulletList } from "./BulletList";
+import { ContactForm } from "./ContactForm";
+import { ContactLinks } from "./ContactLinks";
 import { StudioIntro } from "./StudioIntro";
 import { CardGrid } from "./CardGrid";
 import { CtaPanel } from "./CtaPanel";
@@ -51,6 +55,10 @@ export const blockComponents: Record<string, React.ComponentType<any>> = {
   StudioIntro,
   CardGrid,
   CtaPanel,
+  PageHeader,
+  BulletList,
+  ContactForm,
+  ContactLinks,
 };
 
 export type BlockName = keyof typeof blockComponents;

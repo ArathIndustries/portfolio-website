@@ -123,6 +123,56 @@ export const blockSchemas: Record<string, BlockSchema> = {
     fields: { body: textarea(), label: text(), href: text() },
     defaultProps: { body: "A sentence that leads to the button.", label: "Learn more", href: "/" },
   },
+  PageHeader: {
+    description: "Flickering page title with a grey introduction under it (src/components/blocks/PageHeader.tsx).",
+    editing: "in-place",
+    category: "Site",
+    fields: { title: text(true, "Title"), intro: textarea(true, "Introduction") },
+    defaultProps: { title: "Page title", intro: "One or two sentences that say what the page holds." },
+  },
+  BulletList: {
+    description: "Heading over a list whose bullets are small neon dots.",
+    editing: "side-pane",
+    category: "Site",
+    fields: {
+      heading: text(),
+      items: {
+        type: "array",
+        getItemSummary: (item: { text?: string }) => item.text || "Item",
+        arrayFields: { text: text() },
+        defaultItemProps: { text: "Item" },
+      },
+    },
+    defaultProps: { heading: "What I can help with", items: [{ text: "First item" }, { text: "Second item" }] },
+  },
+  ContactForm: {
+    description: "Name, email and message form posted to a Formspree endpoint; shows a thank-you panel after sending (src/components/blocks/ContactForm.tsx).",
+    editing: "side-pane",
+    category: "Site",
+    fields: { action: text(false, "https://formspree.io/f/…"), messagePlaceholder: text(), buttonLabel: text(), successTitle: text(), successBody: textarea() },
+    defaultProps: {
+      action: "https://formspree.io/f/xkoqlqkz",
+      messagePlaceholder: "Tell me about your project...",
+      buttonLabel: "Send Message",
+      successTitle: "Message sent",
+      successBody: "Thanks for reaching out. I'll get back to you soon.",
+    },
+  },
+  ContactLinks: {
+    description: "Rule, a short line and a row of plain text links; mailto links open in place, others in a new tab.",
+    editing: "side-pane",
+    category: "Site",
+    fields: {
+      intro: text(),
+      links: {
+        type: "array",
+        getItemSummary: (item: { label?: string }) => item.label || "Link",
+        arrayFields: { label: text(), href: text(false, "https://… or mailto:…") },
+        defaultItemProps: { label: "Link", href: "https://" },
+      },
+    },
+    defaultProps: { intro: "Or reach out directly:", links: [{ label: "Email", href: "mailto:me@example.com" }] },
+  },
   // ---------------------------------------------------------------- Text
   Markdown: {
     description: "A run of Markdown prose. This is what plain text between components becomes on disk.",
