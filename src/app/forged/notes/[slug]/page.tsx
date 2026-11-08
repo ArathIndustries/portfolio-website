@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getCollection, getCollectionEntry } from "@/lib/mdx";
 import Link from "next/link";
+import { mdxComponents } from "@/components/blocks";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -58,7 +59,8 @@ export default async function NotePage({ params }: PageProps) {
       </header>
 
       <div className="prose max-w-none">
-        <MDXRemote source={content} />
+        {/* All studio blocks; blockJS off so prop={expression} survives (see showcase route). */}
+        <MDXRemote source={content} components={mdxComponents} options={{ blockJS: false }} />
       </div>
     </article>
   );

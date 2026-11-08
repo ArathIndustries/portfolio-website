@@ -1,0 +1,89 @@
+/* The site's own stylesheet, so the canvas looks like the site. */
+@import "../src/app/globals.css";
+
+/* Tailwind must scan the site components and the studio for class names. */
+@source "../src";
+@source ".";
+
+/* next/font sets these on the site; the studio falls back to system fonts. */
+:root {
+  --font-inter: Inter, system-ui, sans-serif;
+  --font-jetbrains-mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+}
+
+/* Puck's chrome stays light; only the canvas (iframe) is the dark site. */
+body {
+  background: #111;
+  color: #e0e0e0;
+}
+
+.studio-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  background: #0d0b0a;
+  border-bottom: 1px solid rgba(255, 136, 0, 0.3);
+  font-family: var(--font-jetbrains-mono);
+  font-size: 12px;
+}
+.studio-bar select {
+  background: #1a1512;
+  color: #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 4px 8px;
+  border-radius: 4px;
+  max-width: 50vw;
+}
+.studio-bar a {
+  color: var(--neon);
+}
+.studio-status {
+  margin-left: auto;
+  color: #888;
+}
+
+/* Second bar: preview branch versus master. */
+.studio-publish-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 12px;
+  background: #0a0908;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: var(--font-jetbrains-mono);
+  font-size: 11px;
+  color: #aaa;
+}
+.studio-dirty {
+  color: #e0a040;
+}
+.studio-link {
+  background: none;
+  border: none;
+  color: var(--neon);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+
+/* The two publish actions in Puck's header, replacing its Publish button. */
+.studio-action {
+  font-family: var(--font-jetbrains-mono);
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--neon, #ff8800);
+  background: transparent;
+  color: var(--neon, #ff8800);
+  cursor: pointer;
+  margin-left: 8px;
+}
+.studio-action-live {
+  background: var(--neon, #ff8800);
+  color: #111;
+}
+.studio-action:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
