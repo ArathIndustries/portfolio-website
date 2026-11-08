@@ -35,6 +35,26 @@ const number = (min?: number, max?: number) => ({ type: "number", min, max }) as
 
 export const blockSchemas: Record<string, BlockSchema> = {
   // ---------------------------------------------------------------- Site
+  NeonSignHero: {
+    description:
+      "The home page: neon sign, spark overlay, tagline and two call-to-action links (src/components/blocks/NeonSignHero.tsx). The sign and sparks are code; only the text and links are fields. One per page.",
+    editing: "mixed",
+    category: "Site",
+    fields: {
+      tagline: text(true, "Tagline"),
+      primaryLabel: text(),
+      primaryHref: text(),
+      secondaryLabel: text(),
+      secondaryHref: text(),
+    },
+    defaultProps: {
+      tagline: "Forged by Arath. Built for how you work.",
+      primaryLabel: "View Work",
+      primaryHref: "/work",
+      secondaryLabel: "Hire Me",
+      secondaryHref: "/contact",
+    },
+  },
   Timeline: {
     description: "The site's project timeline (src/components/Timeline.tsx). Items edited in the side pane.",
     editing: "side-pane",

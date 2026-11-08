@@ -33,7 +33,9 @@ function listPages() {
       const slug = name.replace(/\.mdx$/, "");
       const src = fs.readFileSync(path.join(dir, name), "utf8");
       const title = src.match(/^title:\s*"?(.*?)"?\s*$/m)?.[1] ?? slug;
-      pages.push({ file, route: `${ROUTE_PREFIX[folder] ?? "/" + folder}/${slug}`, title });
+      // content/pages/<name>.mdx are top-level site pages; home.mdx is "/".
+      const route = folder === "pages" ? (slug === "home" ? "/" : `/${slug}`) : `${ROUTE_PREFIX[folder] ?? "/" + folder}/${slug}`;
+      pages.push({ file, route, title });
     }
   }
   return pages;
@@ -97,7 +99,11 @@ export default defineConfig({
   publicDir: path.join(repoRoot, "public"),
   plugins: [react(), tailwindcss(), fileApi()],
   resolve: {
-    alias: { "@": path.join(repoRoot, "src") },
+    alias: {
+      "@": path.join(repoRoot, "src"),
+      // Blocks may use next/link for client-side navigation on the site; the editor renders a plain anchor.
+      "next/link": path.join(__dirname, "shims", "next-link.tsx"),
+    },
     dedupe: ["react", "react-dom"],
   },
   server: {

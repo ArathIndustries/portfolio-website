@@ -22,9 +22,11 @@ import { ThreeBlock } from "./ThreeBlock";
 import { DataTable } from "./DataTable";
 import { Embed } from "./Embed";
 import { Quote } from "./Quote";
+import { NeonSignHero } from "./NeonSignHero";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const blockComponents: Record<string, React.ComponentType<any>> = {
+  NeonSignHero,
   Timeline,
   Hero,
   Markdown,
