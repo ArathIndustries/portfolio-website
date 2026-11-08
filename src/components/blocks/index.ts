@@ -23,6 +23,9 @@ import { DataTable } from "./DataTable";
 import { Embed } from "./Embed";
 import { Quote } from "./Quote";
 import { NeonSignHero } from "./NeonSignHero";
+import { StudioIntro } from "./StudioIntro";
+import { CardGrid } from "./CardGrid";
+import { CtaPanel } from "./CtaPanel";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const blockComponents: Record<string, React.ComponentType<any>> = {
@@ -45,6 +48,9 @@ export const blockComponents: Record<string, React.ComponentType<any>> = {
   DataTable,
   Embed,
   Quote,
+  StudioIntro,
+  CardGrid,
+  CtaPanel,
 };
 
 export type BlockName = keyof typeof blockComponents;

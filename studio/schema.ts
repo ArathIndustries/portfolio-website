@@ -94,6 +94,35 @@ export const blockSchemas: Record<string, BlockSchema> = {
     fields: { enabled: { type: "radio", options: [{ label: "on", value: true }, { label: "off", value: false }] } },
     defaultProps: { enabled: false },
   },
+  StudioIntro: {
+    description: "About-page opener: flickering title, lead sentence and a bordered statement (src/components/blocks/StudioIntro.tsx).",
+    editing: "mixed",
+    category: "Site",
+    fields: { title: text(true, "Title"), lead: textarea(true, "Lead"), quote: textarea(true, "Statement") },
+    defaultProps: { title: "Studio name", lead: "One sentence about what the studio does.", quote: "A statement the studio stands behind." },
+  },
+  CardGrid: {
+    description: "Heading over a two-column grid of dark cards, each with an orange title and grey text.",
+    editing: "side-pane",
+    category: "Site",
+    fields: {
+      heading: text(),
+      items: {
+        type: "array",
+        getItemSummary: (item: { title?: string }) => item.title || "Card",
+        arrayFields: { title: text(), description: textarea() },
+        defaultItemProps: { title: "Card title", description: "What it covers." },
+      },
+    },
+    defaultProps: { heading: "What We Build", items: [{ title: "Card title", description: "What it covers." }] },
+  },
+  CtaPanel: {
+    description: "Centered panel with a paragraph and one neon button.",
+    editing: "side-pane",
+    category: "Site",
+    fields: { body: textarea(), label: text(), href: text() },
+    defaultProps: { body: "A sentence that leads to the button.", label: "Learn more", href: "/" },
+  },
   // ---------------------------------------------------------------- Text
   Markdown: {
     description: "A run of Markdown prose. This is what plain text between components becomes on disk.",

@@ -34,6 +34,17 @@ const ROUTE_PREFIX: Record<string, string> = {
   showcase: "/showcase",
 };
 
+/**
+ * content/pages/<name>.mdx is a top-level site page. The file name is the
+ * route unless listed here (home is "/", the forged pages live under /forged).
+ */
+const PAGE_ROUTES: Record<string, string> = {
+  home: "/",
+  "forged-notes": "/forged/notes",
+  "forged-tools": "/forged/tools",
+  "forged-sheets": "/forged/sheets",
+};
+
 function listPages() {
   const pages: { file: string; route: string; title: string }[] = [];
   for (const folder of fs.readdirSync(contentDir)) {
@@ -46,7 +57,7 @@ function listPages() {
       const src = fs.readFileSync(path.join(dir, name), "utf8");
       const title = src.match(/^title:\s*"?(.*?)"?\s*$/m)?.[1] ?? slug;
       // content/pages/<name>.mdx are top-level site pages; home.mdx is "/".
-      const route = folder === "pages" ? (slug === "home" ? "/" : `/${slug}`) : `${ROUTE_PREFIX[folder] ?? "/" + folder}/${slug}`;
+      const route = folder === "pages" ? (PAGE_ROUTES[slug] ?? `/${slug}`) : `${ROUTE_PREFIX[folder] ?? "/" + folder}/${slug}`;
       pages.push({ file, route, title });
     }
   }
@@ -153,6 +164,7 @@ export default defineConfig({
       "@": path.join(repoRoot, "src"),
       // Blocks may use next/link for client-side navigation on the site; the editor renders a plain anchor.
       "next/link": path.join(__dirname, "shims", "next-link.tsx"),
+      "next/image": path.join(__dirname, "shims", "next-image.tsx"),
     },
     dedupe: ["react", "react-dom"],
   },
