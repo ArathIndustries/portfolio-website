@@ -235,6 +235,29 @@ export const blockSchemas: Record<string, BlockSchema> = {
     fields: { backHref: text(), backLabel: text(), title: text(), pdf: text(false, "/file.pdf"), downloadLabel: text(), frameTitle: text() },
     defaultProps: { backHref: "/founder", backLabel: "Founder", title: "Resume", pdf: "/Sergio_Arath_Guzman_Resume.pdf", downloadLabel: "Download PDF", frameTitle: "Resume Preview" },
   },
+  WorkIndex: {
+    description: "The /work index (src/components/blocks/WorkIndex.tsx): heading, intro, a list/grid toggle, large cards and compact cards. Card text comes from the projects collection when the page renders (src/lib/workCards.ts); the fields choose the headings and the order of slugs. One per page.",
+    editing: "side-pane",
+    category: "Site",
+    fields: {
+      heading: text(),
+      intro: textarea(),
+      otherHeading: text(),
+      featured: {
+        type: "array",
+        getItemSummary: (item: { slug?: string }) => item.slug || "Project",
+        arrayFields: { slug: text(false, "project slug") },
+        defaultItemProps: { slug: "" },
+      },
+      others: {
+        type: "array",
+        getItemSummary: (item: { slug?: string }) => item.slug || "Project",
+        arrayFields: { slug: text(false, "project slug") },
+        defaultItemProps: { slug: "" },
+      },
+    },
+    defaultProps: { heading: "Projects", intro: "A collection of tools, platforms, and research.", otherHeading: "Other Work", featured: [{ slug: "openchambers" }], others: [{ slug: "modulab" }] },
+  },
   // ---------------------------------------------------------------- Text
   Markdown: {
     description: "A run of Markdown prose. This is what plain text between components becomes on disk.",
