@@ -23,6 +23,7 @@ import { DataTable } from "./DataTable";
 import { Embed } from "./Embed";
 import { Quote } from "./Quote";
 import { NeonSignHero } from "./NeonSignHero";
+import { NotesIndex } from "./NotesIndex";
 import { WorkIndex } from "./WorkIndex";
 import { ResumeViewer } from "./ResumeViewer";
 import { BackLink } from "./BackLink";
@@ -75,6 +76,7 @@ export const blockComponents: Record<string, React.ComponentType<any>> = {
   LinkButtons,
   ResumeViewer,
   WorkIndex,
+  NotesIndex,
 };
 
 export type BlockName = keyof typeof blockComponents;

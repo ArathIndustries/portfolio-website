@@ -258,6 +258,13 @@ export const blockSchemas: Record<string, BlockSchema> = {
     },
     defaultProps: { heading: "Projects", intro: "A collection of tools, platforms, and research.", otherHeading: "Other Work", featured: [{ slug: "openchambers" }], others: [{ slug: "modulab" }] },
   },
+  NotesIndex: {
+    description: "The notes index (src/components/blocks/NotesIndex.tsx): heading, intro and the chronological list of notes, which is computed from the notes collection when the page renders. One per page.",
+    editing: "mixed",
+    category: "Site",
+    fields: { heading: text(true, "Heading"), intro: textarea(true, "Introduction"), emptyText: text(), basePath: text(false, "/forged/notes") },
+    defaultProps: { heading: "Forged Notes", intro: "Working notes from the workshop.", emptyText: "In the forge — first note coming soon.", basePath: "/forged/notes" },
+  },
   // ---------------------------------------------------------------- Text
   Markdown: {
     description: "A run of Markdown prose. This is what plain text between components becomes on disk.",
