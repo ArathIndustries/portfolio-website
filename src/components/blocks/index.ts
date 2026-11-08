@@ -23,6 +23,12 @@ import { DataTable } from "./DataTable";
 import { Embed } from "./Embed";
 import { Quote } from "./Quote";
 import { NeonSignHero } from "./NeonSignHero";
+import { BackLink } from "./BackLink";
+import { PageTitle } from "./PageTitle";
+import { LeadProse } from "./LeadProse";
+import { SkillsJourney } from "./SkillsJourney";
+import { CredentialCard } from "./CredentialCard";
+import { LinkButtons } from "./LinkButtons";
 import { PageHeader } from "./PageHeader";
 import { BulletList } from "./BulletList";
 import { ContactForm } from "./ContactForm";
@@ -59,6 +65,12 @@ export const blockComponents: Record<string, React.ComponentType<any>> = {
   BulletList,
   ContactForm,
   ContactLinks,
+  BackLink,
+  PageTitle,
+  LeadProse,
+  SkillsJourney,
+  CredentialCard,
+  LinkButtons,
 };
 
 export type BlockName = keyof typeof blockComponents;

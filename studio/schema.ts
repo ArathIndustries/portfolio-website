@@ -173,6 +173,61 @@ export const blockSchemas: Record<string, BlockSchema> = {
     },
     defaultProps: { intro: "Or reach out directly:", links: [{ label: "Email", href: "mailto:me@example.com" }] },
   },
+  BackLink: {
+    description: "Small grey link with a left arrow, placed above a page title.",
+    editing: "side-pane",
+    category: "Site",
+    fields: { href: text(), label: text() },
+    defaultProps: { href: "/about", label: "Back" },
+  },
+  PageTitle: {
+    description: "Page title with the neon glow and extra space below it (no flicker).",
+    editing: "in-place",
+    category: "Site",
+    fields: { title: text(true, "Title") },
+    defaultProps: { title: "Page title" },
+  },
+  LeadProse: {
+    description: "Story text: paragraphs separated by a blank line, the first one larger.",
+    editing: "side-pane",
+    category: "Site",
+    fields: { text: textarea(false, "Paragraphs separated by a blank line") },
+    defaultProps: { text: "A larger opening paragraph.\n\nA second paragraph." },
+  },
+  SkillsJourney: {
+    description: "Heading and subtitle over the interactive skills timeline (src/components/SkillsTimeline.tsx). The eras and skills are code.",
+    editing: "side-pane",
+    category: "Site",
+    fields: { title: text(), subtitle: text() },
+    defaultProps: { title: "The Journey", subtitle: "from circuits to shipping products" },
+  },
+  CredentialCard: {
+    description: "Heading over one credential: badge image, name, issuing body and validity dates.",
+    editing: "side-pane",
+    category: "Site",
+    fields: { heading: text(), image: text(false, "/image.png"), alt: text(), title: text(), issuer: text(), dates: text() },
+    defaultProps: { heading: "Credentials", image: "/iise-six-sigma-green-belt.png", alt: "Badge", title: "Credential name", issuer: "Issuing body", dates: "Issued 2026" },
+  },
+  LinkButtons: {
+    description: "Heading over a row of neon buttons; mailto and root-relative links open in place, others in a new tab.",
+    editing: "side-pane",
+    category: "Site",
+    fields: {
+      heading: text(),
+      links: {
+        type: "array",
+        getItemSummary: (item: { label?: string }) => item.label || "Button",
+        arrayFields: {
+          label: text(),
+          href: text(false, "https://… , mailto:… or /path"),
+          variant: { type: "select", options: [{ label: "outline", value: "outline" }, { label: "filled", value: "filled" }] },
+          icon: { type: "select", options: [{ label: "none", value: "none" }, { label: "document", value: "document" }] },
+        },
+        defaultItemProps: { label: "Button", href: "https://", variant: "outline", icon: "none" },
+      },
+    },
+    defaultProps: { heading: "Connect", links: [{ label: "GitHub", href: "https://github.com/", variant: "outline", icon: "none" }] },
+  },
   // ---------------------------------------------------------------- Text
   Markdown: {
     description: "A run of Markdown prose. This is what plain text between components becomes on disk.",
