@@ -33,6 +33,61 @@ const textarea = (contentEditable = false, placeholder?: string) =>
   ({ type: "textarea", contentEditable, placeholder }) as const;
 const number = (min?: number, max?: number) => ({ type: "number", min, max }) as const;
 
+/**
+ * Layout controls every block shares (src/components/blocks/layout.ts).
+ *
+ * Nothing is written into defaultProps: a block that has never been touched
+ * carries no layout attribute in its MDX and renders exactly as it did before
+ * these fields existed. "block default" writes an empty string, which the
+ * component reads as "use your own spacing".
+ */
+const hiddenField = {
+  type: "radio",
+  label: "On the site",
+  options: [
+    { label: "shown", value: false },
+    { label: "hidden", value: true },
+  ],
+} as const;
+
+const spaceField = (label: string) =>
+  ({
+    type: "select",
+    label,
+    options: [
+      { label: "block default", value: "" },
+      { label: "none", value: "none" },
+      { label: "tight", value: "tight" },
+      { label: "normal", value: "normal" },
+      { label: "loose", value: "loose" },
+    ],
+  }) as const;
+
+const alignField = {
+  type: "select",
+  label: "Alignment",
+  options: [
+    { label: "block default", value: "" },
+    { label: "left", value: "left" },
+    { label: "center", value: "center" },
+    { label: "right", value: "right" },
+  ],
+} as const;
+
+/**
+ * Spread at the end of a block's `fields`. `space` and `align` are only passed
+ * for blocks whose component has the CSS hook for them; `hidden` is on every
+ * block that can carry attributes (so not Markdown, which is written to disk as
+ * bare prose and cannot hold props).
+ */
+const layout = (opts: { space?: string; align?: boolean } = {}) => ({
+  ...(opts.space ? { space: spaceField(opts.space) } : {}),
+  ...(opts.align ? { align: alignField } : {}),
+  hidden: hiddenField,
+});
+
+const SPACE_BELOW = "Space below";
+
 export const blockSchemas: Record<string, BlockSchema> = {
   // ---------------------------------------------------------------- Site
   NeonSignHero: {
@@ -46,6 +101,7 @@ export const blockSchemas: Record<string, BlockSchema> = {
       primaryHref: text(),
       secondaryLabel: text(),
       secondaryHref: text(),
+      ...layout(),
     },
     defaultProps: {
       tagline: "Forged by Arath. Built for how you work.",
@@ -72,6 +128,7 @@ export const blockSchemas: Record<string, BlockSchema> = {
         },
         defaultItemProps: { date: "2026", title: "Milestone", description: "", status: "completed" },
       },
+      ...layout({ space: SPACE_BELOW }),
     },
     defaultProps: {
       items: [
@@ -98,7 +155,12 @@ export const blockSchemas: Record<string, BlockSchema> = {
     description: "About-page opener: flickering title, lead sentence and a bordered statement (src/components/blocks/StudioIntro.tsx).",
     editing: "mixed",
     category: "Site",
-    fields: { title: text(true, "Title"), lead: textarea(true, "Lead"), quote: textarea(true, "Statement") },
+    fields: {
+      title: text(true, "Title"),
+      lead: textarea(true, "Lead"),
+      quote: textarea(true, "Statement"),
+      ...layout({ space: SPACE_BELOW, align: true }),
+    },
     defaultProps: { title: "Studio name", lead: "One sentence about what the studio does.", quote: "A statement the studio stands behind." },
   },
   CardGrid: {
@@ -113,6 +175,7 @@ export const blockSchemas: Record<string, BlockSchema> = {
         arrayFields: { title: text(), description: textarea() },
         defaultItemProps: { title: "Card title", description: "What it covers." },
       },
+      ...layout({ space: SPACE_BELOW, align: true }),
     },
     defaultProps: { heading: "What We Build", items: [{ title: "Card title", description: "What it covers." }] },
   },
@@ -120,14 +183,23 @@ export const blockSchemas: Record<string, BlockSchema> = {
     description: "Centered panel with a paragraph and one neon button.",
     editing: "side-pane",
     category: "Site",
-    fields: { body: textarea(), label: text(), href: text() },
+    fields: {
+      body: textarea(),
+      label: text(),
+      href: text(),
+      ...layout({ space: SPACE_BELOW, align: true }),
+    },
     defaultProps: { body: "A sentence that leads to the button.", label: "Learn more", href: "/" },
   },
   PageHeader: {
     description: "Flickering page title with a grey introduction under it (src/components/blocks/PageHeader.tsx).",
     editing: "in-place",
     category: "Site",
-    fields: { title: text(true, "Title"), intro: textarea(true, "Introduction") },
+    fields: {
+      title: text(true, "Title"),
+      intro: textarea(true, "Introduction"),
+      ...layout({ space: SPACE_BELOW, align: true }),
+    },
     defaultProps: { title: "Page title", intro: "One or two sentences that say what the page holds." },
   },
   BulletList: {
@@ -142,6 +214,7 @@ export const blockSchemas: Record<string, BlockSchema> = {
         arrayFields: { text: text() },
         defaultItemProps: { text: "Item" },
       },
+      ...layout({ space: SPACE_BELOW, align: true }),
     },
     defaultProps: { heading: "What I can help with", items: [{ text: "First item" }, { text: "Second item" }] },
   },
@@ -149,9 +222,26 @@ export const blockSchemas: Record<string, BlockSchema> = {
     description: "Name, email and message form posted to a Formspree endpoint; shows a thank-you panel after sending (src/components/blocks/ContactForm.tsx).",
     editing: "side-pane",
     category: "Site",
-    fields: { action: text(false, "https://formspree.io/f/…"), messagePlaceholder: text(), buttonLabel: text(), successTitle: text(), successBody: textarea() },
+    fields: {
+      action: text(false, "https://formspree.io/f/…"),
+      nameLabel: { ...text(), label: "Name field label" },
+      namePlaceholder: { ...text(), label: "Name field placeholder" },
+      emailLabel: { ...text(), label: "Email field label" },
+      emailPlaceholder: { ...text(), label: "Email field placeholder" },
+      messageLabel: { ...text(), label: "Message field label" },
+      messagePlaceholder: { ...text(), label: "Message field placeholder" },
+      buttonLabel: text(),
+      successTitle: text(),
+      successBody: textarea(),
+      ...layout({ space: SPACE_BELOW }),
+    },
     defaultProps: {
       action: "https://formspree.io/f/xkoqlqkz",
+      nameLabel: "Name",
+      namePlaceholder: "Your name",
+      emailLabel: "Email",
+      emailPlaceholder: "your@email.com",
+      messageLabel: "Message",
       messagePlaceholder: "Tell me about your project...",
       buttonLabel: "Send Message",
       successTitle: "Message sent",
@@ -167,9 +257,22 @@ export const blockSchemas: Record<string, BlockSchema> = {
       links: {
         type: "array",
         getItemSummary: (item: { label?: string }) => item.label || "Link",
-        arrayFields: { label: text(), href: text(false, "https://… or mailto:…") },
-        defaultItemProps: { label: "Link", href: "https://" },
+        arrayFields: {
+          label: text(),
+          href: text(false, "https://… or mailto:…"),
+          target: {
+            type: "select",
+            label: "Opens in",
+            options: [
+              { label: "automatic", value: "auto" },
+              { label: "same tab", value: "same" },
+              { label: "new tab", value: "new" },
+            ],
+          },
+        },
+        defaultItemProps: { label: "Link", href: "https://", target: "auto" },
       },
+      ...layout({ space: "Space above", align: true }),
     },
     defaultProps: { intro: "Or reach out directly:", links: [{ label: "Email", href: "mailto:me@example.com" }] },
   },
@@ -177,35 +280,60 @@ export const blockSchemas: Record<string, BlockSchema> = {
     description: "Small grey link with a left arrow, placed above a page title.",
     editing: "side-pane",
     category: "Site",
-    fields: { href: text(), label: text() },
+    fields: { href: text(), label: text(), ...layout({ space: SPACE_BELOW }) },
     defaultProps: { href: "/about", label: "Back" },
   },
   PageTitle: {
     description: "Page title with the neon glow and extra space below it (no flicker).",
     editing: "in-place",
     category: "Site",
-    fields: { title: text(true, "Title") },
+    fields: { title: text(true, "Title"), ...layout({ space: SPACE_BELOW, align: true }) },
     defaultProps: { title: "Page title" },
   },
   LeadProse: {
     description: "Story text: paragraphs separated by a blank line, the first one larger.",
     editing: "side-pane",
     category: "Site",
-    fields: { text: textarea(false, "Paragraphs separated by a blank line") },
+    fields: {
+      text: textarea(false, "Paragraphs separated by a blank line"),
+      ...layout({ space: SPACE_BELOW, align: true }),
+    },
     defaultProps: { text: "A larger opening paragraph.\n\nA second paragraph." },
   },
   SkillsJourney: {
     description: "Heading and subtitle over the interactive skills timeline (src/components/SkillsTimeline.tsx). The eras and skills are code.",
     editing: "side-pane",
     category: "Site",
-    fields: { title: text(), subtitle: text() },
+    fields: { title: text(), subtitle: text(), ...layout({ space: SPACE_BELOW, align: true }) },
     defaultProps: { title: "The Journey", subtitle: "from circuits to shipping products" },
   },
   CredentialCard: {
-    description: "Heading over one credential: badge image, name, issuing body and validity dates.",
+    description:
+      "Heading over one or more credentials: badge image, name, issuing body and validity dates. The first credential is the fields below; further ones go in the list.",
     editing: "side-pane",
     category: "Site",
-    fields: { heading: text(), image: text(false, "/image.png"), alt: text(), title: text(), issuer: text(), dates: text() },
+    fields: {
+      heading: text(),
+      image: { ...text(false, "/image.png"), label: "Badge image" },
+      alt: { ...text(), label: "Badge image description" },
+      title: { ...text(), label: "Credential name" },
+      issuer: text(),
+      dates: text(),
+      more: {
+        type: "array",
+        label: "More credentials",
+        getItemSummary: (item: { title?: string }) => item.title || "Credential",
+        arrayFields: {
+          image: { ...text(false, "/image.png"), label: "Badge image" },
+          alt: { ...text(), label: "Badge image description" },
+          title: { ...text(), label: "Credential name" },
+          issuer: text(),
+          dates: text(),
+        },
+        defaultItemProps: { image: "", alt: "", title: "Credential name", issuer: "Issuing body", dates: "Issued 2026" },
+      },
+      ...layout({ space: SPACE_BELOW, align: true }),
+    },
     defaultProps: { heading: "Credentials", image: "/iise-six-sigma-green-belt.png", alt: "Badge", title: "Credential name", issuer: "Issuing body", dates: "Issued 2026" },
   },
   LinkButtons: {
@@ -222,9 +350,19 @@ export const blockSchemas: Record<string, BlockSchema> = {
           href: text(false, "https://… , mailto:… or /path"),
           variant: { type: "select", options: [{ label: "outline", value: "outline" }, { label: "filled", value: "filled" }] },
           icon: { type: "select", options: [{ label: "none", value: "none" }, { label: "document", value: "document" }] },
+          target: {
+            type: "select",
+            label: "Opens in",
+            options: [
+              { label: "automatic", value: "auto" },
+              { label: "same tab", value: "same" },
+              { label: "new tab", value: "new" },
+            ],
+          },
         },
-        defaultItemProps: { label: "Button", href: "https://", variant: "outline", icon: "none" },
+        defaultItemProps: { label: "Button", href: "https://", variant: "outline", icon: "none", target: "auto" },
       },
+      ...layout({ space: SPACE_BELOW, align: true }),
     },
     defaultProps: { heading: "Connect", links: [{ label: "GitHub", href: "https://github.com/", variant: "outline", icon: "none" }] },
   },
@@ -232,8 +370,17 @@ export const blockSchemas: Record<string, BlockSchema> = {
     description: "Full-width PDF viewer: back link and title on the left, download button on the right, the PDF in a frame below (src/components/blocks/ResumeViewer.tsx). The PDF is a file in public/.",
     editing: "side-pane",
     category: "Site",
-    fields: { backHref: text(), backLabel: text(), title: text(), pdf: text(false, "/file.pdf"), downloadLabel: text(), frameTitle: text() },
-    defaultProps: { backHref: "/founder", backLabel: "Founder", title: "Resume", pdf: "/Sergio_Arath_Guzman_Resume.pdf", downloadLabel: "Download PDF", frameTitle: "Resume Preview" },
+    fields: {
+      backHref: text(),
+      backLabel: text(),
+      title: text(),
+      pdf: text(false, "/file.pdf"),
+      downloadLabel: text(),
+      frameTitle: { ...text(), label: "Frame title (screen readers)" },
+      frameVh: { ...number(20, 100), label: "Frame height (% of the window)" },
+      ...layout({ space: SPACE_BELOW }),
+    },
+    defaultProps: { backHref: "/founder", backLabel: "Founder", title: "Resume", pdf: "/Sergio_Arath_Guzman_Resume.pdf", downloadLabel: "Download PDF", frameTitle: "Resume Preview", frameVh: 85 },
   },
   WorkIndex: {
     description: "The /work index (src/components/blocks/WorkIndex.tsx): heading, intro, a list/grid toggle, large cards and compact cards. Card text comes from the projects collection when the page renders (src/lib/workCards.ts); the fields choose the headings and the order of slugs. One per page.",
@@ -255,14 +402,42 @@ export const blockSchemas: Record<string, BlockSchema> = {
         arrayFields: { slug: text(false, "project slug") },
         defaultItemProps: { slug: "" },
       },
+      codeLabel: { ...text(), label: "Card button: code" },
+      visitLabel: { ...text(), label: "Card button: visit" },
+      placeholderLabel: { ...text(), label: "Card with no preview says" },
+      defaultView: {
+        type: "radio",
+        label: "Opens as",
+        options: [
+          { label: "list", value: "list" },
+          { label: "grid", value: "grid" },
+        ],
+      },
+      ...layout({ space: SPACE_BELOW }),
     },
-    defaultProps: { heading: "Projects", intro: "A collection of tools, platforms, and research.", otherHeading: "Other Work", featured: [{ slug: "openchambers" }], others: [{ slug: "modulab" }] },
+    defaultProps: {
+      heading: "Projects",
+      intro: "A collection of tools, platforms, and research.",
+      otherHeading: "Other Work",
+      featured: [{ slug: "openchambers" }],
+      others: [{ slug: "modulab" }],
+      codeLabel: "Code",
+      visitLabel: "Visit",
+      placeholderLabel: "In Development",
+      defaultView: "list",
+    },
   },
   NotesIndex: {
     description: "The notes index (src/components/blocks/NotesIndex.tsx): heading, intro and the chronological list of notes, which is computed from the notes collection when the page renders. One per page.",
     editing: "mixed",
     category: "Site",
-    fields: { heading: text(true, "Heading"), intro: textarea(true, "Introduction"), emptyText: text(), basePath: text(false, "/forged/notes") },
+    fields: {
+      heading: text(true, "Heading"),
+      intro: textarea(true, "Introduction"),
+      emptyText: { ...text(), label: "Text when there are no notes" },
+      basePath: text(false, "/forged/notes"),
+      ...layout({ space: "Space under the heading", align: true }),
+    },
     defaultProps: { heading: "Forged Notes", intro: "Working notes from the workshop.", emptyText: "In the forge — first note coming soon.", basePath: "/forged/notes" },
   },
   ToolCards: {
@@ -283,14 +458,26 @@ export const blockSchemas: Record<string, BlockSchema> = {
         },
         defaultItemProps: { title: "Tool", status: "", description: "What it does.", tags: "JavaScript, SVG", github: "https://github.com/", live: "https://" },
       },
+      codeLabel: { ...text(), label: "Button: code" },
+      visitLabel: { ...text(), label: "Button: visit" },
+      ...layout({ space: SPACE_BELOW }),
     },
-    defaultProps: { items: [{ title: "Tool", status: "", description: "What it does.", tags: "JavaScript, SVG", github: "https://github.com/", live: "https://" }] },
+    defaultProps: {
+      items: [{ title: "Tool", status: "", description: "What it does.", tags: "JavaScript, SVG", github: "https://github.com/", live: "https://" }],
+      codeLabel: "Code",
+      visitLabel: "Visit",
+    },
   },
   ComingSoon: {
     description: "Centered placeholder for a section that has not launched: title, glowing intro and a small status note.",
     editing: "in-place",
     category: "Site",
-    fields: { title: text(true, "Title"), intro: textarea(true, "Introduction"), note: text(true, "Status note") },
+    fields: {
+      title: text(true, "Title"),
+      intro: textarea(true, "Introduction"),
+      note: text(true, "Status note"),
+      ...layout({ space: SPACE_BELOW, align: true }),
+    },
     defaultProps: { title: "Section title", intro: "What this section will hold.", note: "In the forge — first release coming soon." },
   },
   // ---------------------------------------------------------------- Text
@@ -341,7 +528,7 @@ export const blockSchemas: Record<string, BlockSchema> = {
     description: "Neon hairline with an optional label.",
     editing: "side-pane",
     category: "Text",
-    fields: { label: text() },
+    fields: { label: text(), ...layout({ space: "Space above and below" }) },
     defaultProps: { label: "" },
   },
   CodeBlock: {

@@ -1,7 +1,8 @@
 import { WritingList } from "../WritingList";
 import type { BlogPost } from "@/lib/mdx";
+import { cx, spaceBottomClass, textAlignClass, type BlockLayoutProps } from "./layout";
 
-export interface NotesIndexProps {
+export interface NotesIndexProps extends BlockLayoutProps {
   heading: string;
   intro: string;
   emptyText: string;
@@ -14,10 +15,11 @@ export interface NotesIndexProps {
 }
 
 /** The notes index: heading, intro, then the chronological list computed from the collection. */
-export function NotesIndex({ heading, intro, emptyText, basePath, posts }: NotesIndexProps) {
+export function NotesIndex({ heading, intro, emptyText, basePath, posts, hidden, space, align }: NotesIndexProps) {
+  if (hidden) return null;
   return (
     <>
-      <header className="mb-12">
+      <header className={cx(spaceBottomClass(space, "mb-12"), textAlignClass(align))}>
         <h1 className="text-3xl sm:text-4xl font-bold font-mono mb-4 neon-text neon-flicker">{heading}</h1>
         <p className="text-gray-400">{intro}</p>
       </header>

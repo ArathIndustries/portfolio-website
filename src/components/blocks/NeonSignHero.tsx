@@ -5,8 +5,9 @@ import Link from "next/link";
 import { NeonSign } from "../neon/NeonSign";
 import { SparkCanvas } from "../neon/SparkCanvas";
 import type { NeonBridge } from "../neon/types";
+import type { BlockLayoutProps } from "./layout";
 
-export interface NeonSignHeroProps {
+export interface NeonSignHeroProps extends BlockLayoutProps {
   tagline: string;
   primaryLabel: string;
   primaryHref: string;
@@ -24,8 +25,10 @@ export interface NeonSignHeroProps {
  * render inside this one block. The markup is the pre-studio src/app/page.tsx
  * unchanged, so the rendered page is pixel-identical.
  */
-export function NeonSignHero({ tagline, primaryLabel, primaryHref, secondaryLabel, secondaryHref }: NeonSignHeroProps) {
+export function NeonSignHero({ tagline, primaryLabel, primaryHref, secondaryLabel, secondaryHref, hidden }: NeonSignHeroProps) {
   const bridgeRef = useRef<NeonBridge>({ letterZones: [], brightnessDips: [], avgBrightness: 1, signCenter: null });
+
+  if (hidden) return null;
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-2 relative overflow-hidden">

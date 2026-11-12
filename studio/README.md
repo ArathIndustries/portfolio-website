@@ -41,7 +41,7 @@ Puck is installed as `@puckeditor/core@0.24.0`. The `@measured/puck` package nam
 
 1. Write the component in `src/components/blocks/MyBlock.tsx`. Plain props, no `next/*` imports (the studio runs under Vite). Add `"use client"` if it uses effects or browser APIs; load heavy libraries with `import()` inside an effect or `React.lazy`.
 2. Export it from `src/components/blocks/index.ts` (one line in `blockComponents`).
-3. Add an entry to `studio/schema.ts` with `fields`, `defaultProps`, `description`, `editing`, `category`.
+3. Add an entry to `studio/schema.ts` with `fields`, `defaultProps`, `description`, `editing`, `category`. Spread `layout({ space, align })` at the end of `fields` and take `BlockLayoutProps` in the component if the block should also get the show/hide, spacing and alignment fields (see "Layout fields").
 
 Done: the editor lists it, the converters accept `<MyBlock … />` in MDX, and every page route renders it. Measured on the last block (`Quote`): 18.6 s wall clock from first edit to the block rendering on the site and loading in the editor (12:57:04.6 to 12:57:23.2).
 
@@ -78,6 +78,23 @@ Editing column: "in-place" means you click the text on the canvas and type; "sid
 | Embed | Iframe URL checked against the allowlist in `Embed.tsx`; refused hosts render a notice. | side-pane | no |
 
 "Code-rich inside, few fields outside" is the pattern for the showcase blocks: the component owns the behaviour, the schema exposes three to five values. Everything with short text is editable in place; arrays and numbers are side-pane because Puck has no in-place widget for them.
+
+## Layout fields (every block on a live page)
+
+The blocks the site's own pages use carry three extra side-pane fields on top of their own:
+
+| Field | Prop | What it does |
+|---|---|---|
+| On the site | `hidden` | `hidden` leaves the block out of the rendered page. The editor keeps showing it, dimmed, with a "hidden on the site" badge, so it stays selectable (`[data-studio-block-hidden]` in `studio.css` — not `data-studio-hidden`, which means `display:none` for the zoom control). |
+| Space below (or above / above and below) | `space` | `none`, `tight`, `normal`, `loose` → `mb-0/6/12/24`, mapped per block onto the margin class it already had. |
+| Alignment | `align` | `left`, `center`, `right` → `text-*` on the block, plus `justify-*` on its button or bullet rows. |
+
+`src/components/blocks/layout.ts` holds the maps and the helpers (`spaceBottomClass`, `spaceTopClass`, `spaceBothClass`, `textAlignClass`, `rowAlignClass`, `cx`). Two rules keep this from touching pages that do not use it:
+
+- **Unset means unchanged.** Each helper takes the block's existing class string as its fallback, and "block default" in the select writes `""`. A page that never opens these fields renders the same markup as before and its MDX gains no attribute. The round-trip count did not move when the fields were added (42 of 43 byte-identical, same one documented difference).
+- **Nothing is in `defaultProps`.** Puck merges `defaultProps` only when it renders and when a block is inserted, never into the stored data, so an untouched block stays attribute-free on disk. The side-pane box for such a field is empty until it is used, while the canvas already shows the component's own default.
+
+`Markdown` is the exception: it is written to disk as bare prose, so it cannot carry props and has no layout fields. The showcase-only blocks (Hero, Callout, Quote, Figure, Stats, TwoColumn, CodeBlock, NeonCard, Sparks and the four heavy ones) do not have them yet either.
 
 ## Converters
 

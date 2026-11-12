@@ -1,32 +1,37 @@
 import Link from "next/link";
+import { cx, rowAlignClass, spaceBottomClass, textAlignClass, type BlockLayoutProps } from "./layout";
 
 export interface LinkButton {
   label: string;
   href: string;
   variant?: "outline" | "filled";
   icon?: "none" | "document";
+  /** Where the link opens. "auto" keeps mailto and site paths in place and sends the rest to a new tab. */
+  target?: "auto" | "same" | "new";
 }
 
-export interface LinkButtonsProps {
+export interface LinkButtonsProps extends BlockLayoutProps {
   heading: string;
   links: LinkButton[];
 }
 
 /** Heading over a row of neon buttons; mailto links open in place, others in a new tab. */
-export function LinkButtons({ heading, links }: LinkButtonsProps) {
+export function LinkButtons({ heading, links, hidden, space, align }: LinkButtonsProps) {
+  if (hidden) return null;
   return (
-    <section>
+    <section className={cx(textAlignClass(align), spaceBottomClass(space)) || undefined}>
       <h2 className="text-xl font-bold font-mono mb-4 text-gray-200">{heading}</h2>
-      <div className="flex flex-wrap gap-4">
+      <div className={cx("flex flex-wrap gap-4", rowAlignClass(align))}>
         {(links || []).map((link, i) => {
-          const mail = link.href.startsWith("mailto");
+          const inPlace = link.href.startsWith("mailto") || link.href.startsWith("/");
+          const newTab = link.target === "new" || (link.target !== "same" && !inPlace);
           const filled = link.variant === "filled";
           return (
             <Link
               key={i}
               href={link.href}
-              target={mail || link.href.startsWith("/") ? undefined : "_blank"}
-              rel={mail || link.href.startsWith("/") ? undefined : "noopener noreferrer"}
+              target={newTab ? "_blank" : undefined}
+              rel={newTab ? "noopener noreferrer" : undefined}
               className={filled ? "neon-btn-filled text-sm font-mono inline-flex items-center gap-2" : "neon-btn text-sm font-mono"}
             >
               {link.icon === "document" ? (

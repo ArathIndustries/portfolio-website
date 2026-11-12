@@ -1,17 +1,20 @@
+import { cx, spaceBottomClass, textAlignClass, type BlockLayoutProps } from "./layout";
+
 export interface CardGridItem {
   title: string;
   description: string;
 }
 
-export interface CardGridProps {
+export interface CardGridProps extends BlockLayoutProps {
   heading: string;
   items: CardGridItem[];
 }
 
 /** Heading over a two-column grid of dark cards with an orange title and grey text. */
-export function CardGrid({ heading, items }: CardGridProps) {
+export function CardGrid({ heading, items, hidden, space, align }: CardGridProps) {
+  if (hidden) return null;
   return (
-    <section className="mb-16">
+    <section className={cx(spaceBottomClass(space, "mb-16"), textAlignClass(align))}>
       <h2 className="text-2xl font-bold font-mono mb-8 text-gray-200">{heading}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {(items || []).map((item, i) => (

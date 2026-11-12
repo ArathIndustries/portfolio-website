@@ -1,4 +1,5 @@
 import React from "react";
+import { cx, spaceBottomClass, type BlockLayoutProps } from "./blocks/layout";
 
 export interface TimelineItemProps {
   date: string;
@@ -59,18 +60,19 @@ export function TimelineItem({ date, title, description, status = 'completed' }:
   );
 }
 
-export interface TimelineProps {
+export interface TimelineProps extends BlockLayoutProps {
   children?: React.ReactNode;
   /** Studio-style usage: pass the items as data instead of child elements. */
   items?: TimelineItemProps[];
 }
 
-export function Timeline({ children, items }: TimelineProps) {
+export function Timeline({ children, items, hidden, space }: TimelineProps) {
+  if (hidden) return null;
   const body = items
     ? items.map((item, i) => <TimelineItem key={i} {...item} />)
     : children;
   return (
-    <div className="relative py-8 not-prose">
+    <div className={cx("relative py-8 not-prose", spaceBottomClass(space))}>
       {/* Vertical line */}
       <div
         className="absolute left-[7px] top-0 bottom-0 w-[2px]"

@@ -1,24 +1,29 @@
 import Link from "next/link";
+import { cx, spaceBottomClass, type BlockLayoutProps } from "./layout";
 
-export interface ResumeViewerProps {
+export interface ResumeViewerProps extends BlockLayoutProps {
   backHref: string;
   backLabel: string;
   title: string;
   pdf: string;
   downloadLabel: string;
   frameTitle: string;
+  /** Height of the PDF frame as a percentage of the window height. */
+  frameVh?: number;
 }
 
 /** Full-width PDF viewer: back link and title on the left, download button on the right, the PDF in a frame below. */
-export function ResumeViewer({ backHref, backLabel, title, pdf, downloadLabel, frameTitle }: ResumeViewerProps) {
+export function ResumeViewer({ backHref, backLabel, title, pdf, downloadLabel, frameTitle, frameVh, hidden, space }: ResumeViewerProps) {
+  if (hidden) return null;
+  const height = `${typeof frameVh === "number" && frameVh > 0 ? frameVh : 85}vh`;
   return (
     <>
       <style>{`
         .resume-wrapper { width: 100%; padding: 1rem 2rem; }
         .resume-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-        .resume-frame { width: 100%; height: 85vh; border: none; display: block; border-radius: 0.5rem; }
+        .resume-frame { width: 100%; border: none; display: block; border-radius: 0.5rem; }
       `}</style>
-      <div className="resume-wrapper">
+      <div className={cx("resume-wrapper", spaceBottomClass(space))}>
         <div className="resume-header">
           <div className="flex items-center gap-4">
             <Link
@@ -39,7 +44,7 @@ export function ResumeViewer({ backHref, backLabel, title, pdf, downloadLabel, f
             {downloadLabel}
           </a>
         </div>
-        <iframe src={pdf} title={frameTitle} className="resume-frame" />
+        <iframe src={pdf} title={frameTitle} className="resume-frame" style={{ height }} />
       </div>
     </>
   );

@@ -2,9 +2,16 @@
 
 import { useState } from "react";
 import type { FormEvent } from "react";
+import { cx, spaceBottomClass, type BlockLayoutProps } from "./layout";
 
-export interface ContactFormProps {
+export interface ContactFormProps extends BlockLayoutProps {
   action: string;
+  /** Field labels and placeholders. Unset falls back to the wording below. */
+  nameLabel?: string;
+  namePlaceholder?: string;
+  emailLabel?: string;
+  emailPlaceholder?: string;
+  messageLabel?: string;
   messagePlaceholder: string;
   buttonLabel: string;
   successTitle: string;
@@ -16,7 +23,20 @@ const inputClass =
 const labelClass = "block text-sm font-mono text-gray-400 mb-2";
 
 /** Name, email and message form posted to a Formspree endpoint; swaps to a thank-you panel after sending. */
-export function ContactForm({ action, messagePlaceholder, buttonLabel, successTitle, successBody }: ContactFormProps) {
+export function ContactForm({
+  action,
+  nameLabel = "Name",
+  namePlaceholder = "Your name",
+  emailLabel = "Email",
+  emailPlaceholder = "your@email.com",
+  messageLabel = "Message",
+  messagePlaceholder,
+  buttonLabel,
+  successTitle,
+  successBody,
+  hidden,
+  space,
+}: ContactFormProps) {
   const [submitted, setSubmitted] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -37,9 +57,11 @@ export function ContactForm({ action, messagePlaceholder, buttonLabel, successTi
     }
   }
 
+  if (hidden) return null;
+
   if (submitted) {
     return (
-      <div className="p-8 rounded-lg text-center" style={{ border: "1px solid rgba(255,136,0,0.2)", background: "rgba(255,136,0,0.03)" }}>
+      <div className={cx("p-8 rounded-lg text-center", spaceBottomClass(space))} style={{ border: "1px solid rgba(255,136,0,0.2)", background: "rgba(255,136,0,0.03)" }}>
         <h3 className="text-xl font-mono font-semibold neon-text mb-2">{successTitle}</h3>
         <p className="text-gray-400">{successBody}</p>
       </div>
@@ -47,17 +69,17 @@ export function ContactForm({ action, messagePlaceholder, buttonLabel, successTi
   }
 
   return (
-    <form action={action} method="POST" onSubmit={handleSubmit} className="space-y-6">
+    <form action={action} method="POST" onSubmit={handleSubmit} className={cx("space-y-6", spaceBottomClass(space))}>
       <div>
-        <label htmlFor="name" className={labelClass}>Name</label>
-        <input type="text" id="name" name="name" required className={inputClass} placeholder="Your name" />
+        <label htmlFor="name" className={labelClass}>{nameLabel}</label>
+        <input type="text" id="name" name="name" required className={inputClass} placeholder={namePlaceholder} />
       </div>
       <div>
-        <label htmlFor="email" className={labelClass}>Email</label>
-        <input type="email" id="email" name="email" required className={inputClass} placeholder="your@email.com" />
+        <label htmlFor="email" className={labelClass}>{emailLabel}</label>
+        <input type="email" id="email" name="email" required className={inputClass} placeholder={emailPlaceholder} />
       </div>
       <div>
-        <label htmlFor="message" className={labelClass}>Message</label>
+        <label htmlFor="message" className={labelClass}>{messageLabel}</label>
         <textarea id="message" name="message" required rows={5} className={`${inputClass} resize-none`} placeholder={messagePlaceholder} />
       </div>
       <button type="submit" className="neon-btn-filled font-mono text-sm px-8 py-3">

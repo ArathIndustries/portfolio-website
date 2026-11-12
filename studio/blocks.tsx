@@ -26,6 +26,16 @@ for (const [name, schema] of Object.entries(blockSchemas)) {
       // Puck passes `id` and `puck` alongside the field values; the component only wants the fields.
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, puck, editMode, ...fieldProps } = props as Record<string, unknown>;
+      // A block with "On the site: hidden" renders nothing on the site. In the
+      // editor that would leave an empty, unclickable strip, so the canvas keeps
+      // showing it, dimmed and labelled, and the toggle stays reachable.
+      if (fieldProps.hidden === true) {
+        return (
+          <div data-studio-block-hidden="" title="Hidden: this block is left out of the page on the site">
+            <Component {...fieldProps} hidden={false} />
+          </div>
+        );
+      }
       return <Component {...fieldProps} />;
     },
   };

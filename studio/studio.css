@@ -659,3 +659,29 @@ body {
 .studio-source-toggle small {
   color: var(--hub-mute);
 }
+
+/* A block whose "On the site" field is hidden: the site leaves it out, the canvas
+   keeps it visible so it stays selectable and the toggle can be found again.
+   (The name is not data-studio-hidden: that one means "display: none" above.) */
+[data-studio-block-hidden] {
+  position: relative;
+  opacity: 0.35;
+  outline: 1px dashed var(--hub-accent);
+  outline-offset: 2px;
+}
+[data-studio-block-hidden]::after {
+  content: "hidden on the site";
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  padding: 1px 6px;
+  font-family: var(--font-mono, ui-monospace, Consolas, monospace);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--hub-black);
+  background: var(--hub-accent);
+  border-radius: 0 0 3px 3px;
+  pointer-events: none;
+}

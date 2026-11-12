@@ -1,16 +1,18 @@
 import Link from "next/link";
+import { cx, spaceBottomClass, type BlockLayoutProps } from "./layout";
 
-export interface BackLinkProps {
+export interface BackLinkProps extends BlockLayoutProps {
   href: string;
   label: string;
 }
 
 /** Small grey link with a left arrow, placed above a page title. */
-export function BackLink({ href, label }: BackLinkProps) {
+export function BackLink({ href, label, hidden, space }: BackLinkProps) {
+  if (hidden) return null;
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-2 text-gray-500 hover:text-[var(--neon)] mb-8 transition-colors font-mono text-sm"
+      className={cx("inline-flex items-center gap-2 text-gray-500 hover:text-[var(--neon)]", spaceBottomClass(space, "mb-8"), "transition-colors font-mono text-sm")}
     >
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
         <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
