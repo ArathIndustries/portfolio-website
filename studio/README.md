@@ -28,7 +28,7 @@ Puck is installed as `@puckeditor/core@0.24.0`. The `@measured/puck` package nam
 | `src/components/blocks/*.tsx` | One file per block: the real component the site renders. |
 | `src/components/blocks/index.ts` | `blockComponents` (name to component) and `mdxComponents` (plus child elements such as `TimelineItem`). The Next routes hand `mdxComponents` to MDXRemote. |
 | `studio/schema.ts` | Fields, defaultProps, description and editing mode per block. No React, so the converters can load it under Node. |
-| `studio/blocks.tsx` | The Puck config. Zips `blockComponents` and `blockSchemas`; throws at startup if a block exists on one side only. |
+| `studio/blocks.tsx` | The Puck config. Zips `blockComponents` and `blockSchemas`; throws at startup if a block exists on one side only. Editor-only blocks come from `studioOnlyComponents` in `studio/RemotionPlayerBlock.tsx` instead of `blockComponents`. |
 | `studio/convert/mdxToPuck.ts`, `puckToMdx.ts` | The converters. `roundtrip.ts` is the test. |
 | `studio/vite.config.ts` | Vite app plus the file API (`/api/pages`, `/api/page`) and the publish API (`/api/publish`, `/api/promote`, `/api/publish/status`). Serves the site's `public/`. Aliases `next/link` to `studio/shims/next-link.tsx` so blocks keep client-side navigation on the site. |
 | `studio/publish.ts` | The git side of publishing: preview branch, promote, status. Plain Node, no Vite; see "Publish flow". |
@@ -48,7 +48,7 @@ Done: the editor lists it, the converters accept `<MyBlock … />` in MDX, and e
 Rules the code enforces:
 
 - A JSX tag in a page that has no schema entry makes `mdxToPuck` throw with the file and line. So does an `import`/`export`, a spread attribute, or children on a block that does not declare `childrenAs`.
-- A schema entry without a component, or a component without a schema, makes `studio/blocks.tsx` throw at startup.
+- A schema entry without a component, or a component without a schema, makes `studio/blocks.tsx` throw at startup. The one exception is an editor-only block listed in `studioOnlyComponents` (see "Remotion player block"); the site cannot render those.
 
 Field types used: `text` and `textarea` (with `contentEditable: true` for in-place editing), `number`, `select`, `radio`, `array` (with `arrayFields`, `defaultItemProps`, `getItemSummary`). Puck's field reference: https://puckeditor.com/docs/api-reference/fields.
 
@@ -76,8 +76,62 @@ Editing column: "in-place" means you click the text on the canvas and type; "sid
 | ThreeBlock | three.js torus knot via react-three-fiber; `p`, `q`, height. | side-pane | yes: ~0.4 MB library, 3 fields |
 | DataTable | CSV path, caption, max rows. | side-pane | some: CSV parser, 3 fields |
 | Embed | Iframe URL checked against the allowlist in `Embed.tsx`; refused hosts render a notice. | side-pane | no |
+| RemotionPlayer | A Remotion composition from the `remotion-lab` checkout, played in the page. Editor only; see below. | side-pane | yes: ~320 KB chunk, 5 fields |
 
 "Code-rich inside, few fields outside" is the pattern for the showcase blocks: the component owns the behaviour, the schema exposes three to five values. Everything with short text is editable in place; arrays and numbers are side-pane because Puck has no in-place widget for them.
+
+## Remotion player block
+
+`RemotionPlayer` puts a Remotion composition on the page and plays it: a play button, a volume button, a time readout, a scrub bar and fullscreen. It uses `<Player>` from `@remotion/player`, which renders the composition's React component frame by frame in the page. It is not Remotion Studio (the separate dev tool with the timeline and props editor), and it renders nothing to a video file.
+
+The scenes stay in the `remotion-lab` checkout next to this repo and are imported, never copied:
+
+| Path | What |
+|---|---|
+| `studio/remotionCompositions.ts` | The list of compositions the block offers: id, label, duration, fps, size. Import-free on purpose, because `studio/schema.ts` reads it to build the dropdown and the MDX converters load `schema.ts` under plain Node. |
+| `studio/remotionStage.tsx` | The `<Player>` itself and the map from composition id to the scene component and its input props. Behind `React.lazy`, so the editor only fetches remotion (a 320 KB chunk) once a block of this type is on the page. |
+| `studio/RemotionPlayerBlock.tsx` | The block component: the frame, the lazy boundary, and the Puck pointer-events opt-out below. Also exports `studioOnlyComponents`, which `studio/blocks.tsx` falls back to for blocks with no component in `src/components/blocks`. |
+| `studio/vite.config.ts` | The `@remotion-lab` alias, the `server.fs.allow` entry that lets Vite read files outside this repo, and the `dedupe` list. |
+
+`REMOTION_LAB_DIR` overrides the checkout location; the default is `../../remotion-lab` relative to this repo. A missing checkout prints a warning at startup and only breaks this block.
+
+**Versions must match the checkout exactly.** `remotion`, `@remotion/player` and every `@remotion/*` package a scene imports are pinned here to the version `remotion-lab/package.json` uses (4.0.487 as of 2026-11-21), and `resolve.dedupe` in the Vite config forces all of them to this repo's copy. Without that, a scene imported from `remotion-lab` resolves `remotion` in *its* `node_modules`, and the second copy carries its own React context: `useCurrentFrame()` inside the scene then cannot see the `<Player>` above it.
+
+### Add another composition
+
+Two edits, both in `studio/`:
+
+1. **The metadata.** Add an entry to `REMOTION_COMPOSITIONS` in `studio/remotionCompositions.ts` with the `id`, `durationInFrames`, `fps`, `width` and `height` from that `<Composition>` in `remotion-lab/src/Root.tsx`, plus a label for the dropdown. When the composition computes its length in `calculateMetadata` rather than declaring it, write down what that computation yields.
+2. **The component.** Add an entry under the same id to `stageEntries` in `studio/remotionStage.tsx`: the scene component, imported through `@remotion-lab/src/...`, and the `inputProps` the composition's `calculateMetadata` would have produced. Set `derived` to the same numbers computed from the scene's own data file, and `remotionStage.tsx` throws at load if the two disagree. An entry on one side only also throws.
+
+Then install any `@remotion/*` package the new scene imports, at the same version. `MatrixScene` needed `@remotion/google-fonts` and `zod`; `Showcase`, for instance, would also need `@remotion/transitions`, `@remotion/noise` and `@remotion/paths`.
+
+Scenes that read files with `staticFile()` need more than this. `staticFile` resolves against the studio's own `public/` (this repo's), not `remotion-lab/public/`, so a scene that plays an MP4 from there has nothing to load. `MatrixScene` avoids it: its data file is imported directly and parsed with the scene's own zod schema, which fails loudly rather than drawing a blank frame.
+
+### Editor only, for now
+
+Every other block is a component in `src/components/blocks` with a schema in `studio/schema.ts`. This one has the schema and no site component, so:
+
+- It appears in the editor, and a page carrying it round-trips through MDX unchanged.
+- **The site cannot render it.** MDX hands unknown tags to `MDXRemote`, which throws. Do not publish a page that contains this block until a `RemotionPlayer` exists in `src/components/blocks/index.ts`.
+
+Wiring the site side means a component there that mounts the same `<Player>` (Next needs its own alias for `@remotion-lab`, and the block must be a client component), leaving the `registerOverlayPortal` call below in the studio copy, since it is Puck-specific.
+
+### Why the block takes its own pointer events
+
+Puck's canvas sets `pointer-events: none` on everything inside a block (`[data-puck-component] *` in its stylesheet), so none of the player's controls can be clicked. `registerOverlayPortal` from `@puckeditor/core` is Puck's own opt-out and is called on the player's frame.
+
+Both of its options for keeping Puck's drag-and-drop out of the way (`disableDrag`, `disableDragOnFocus`) stop `pointerdown` before it reaches the content. React delivers pointer events from a single listener at the tree root, so stopping the press below that root also takes it away from Remotion's scrub bar. Measured with either option on: the play button still worked, since that is a `click`, and seeking did nothing at all. Both are therefore off.
+
+What this costs, measured 2026-11-21: clicking anywhere on the scrub bar seeks, and the frame redraws; press-and-drag seeks to the press point and follows the pointer for one step, then stops (Puck never enters its own drag state, so the block does not move). Repeated clicks give full control of the playhead. Clicking the player does not select the block, because the overlay portal also stops the `mouseover` Puck uses to track what is under the pointer: select it from the Outline rail instead, which is also where the side pane fields come from.
+
+### Measured
+
+`studio/screenshots/remotion_player_1440.png`: the block selected at 1440x900, the playhead at 0:06 of 0:10, the Outline on the left and the five fields on the right.
+
+Checked on 2026-11-21 against a studio on port 24049 with Playwright (Chromium 1217), 19 of 19 automated checks: the player mounts inside Puck's canvas iframe; the play, mute and fullscreen buttons exist; the time readout reads 0:10, which is the 300 frames at 30 fps that `Root.tsx` computes from `matrix_transform.json`; `width` 960 gives a 958 px player; autoplay off leaves it on frame 0; a click on the bar moves both the readout and the scene SVG; play advances the frame and pause holds it; the five fields appear in the side pane. No console or page errors. `npx tsc -p studio --noEmit` and `npx vite build --config studio/vite.config.ts` both exit 0. Round-trip with a one-block test page added: 44 files, 43 byte-identical, the one documented difference unchanged.
+
+Not checked: the block on a built site (there is no site component yet); loop; fullscreen; the player at phone width; any composition other than `MathViz-Remotion`.
 
 ## Layout fields (every block on a live page)
 

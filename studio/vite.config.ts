@@ -22,6 +22,18 @@ import { configFromEnv, promote, publish, status } from "./publish";
 const repoRoot = path.resolve(__dirname, "..");
 const contentDir = path.join(repoRoot, "content");
 const publicDir = path.join(repoRoot, "public");
+/**
+ * The remotion-lab checkout, read by the RemotionPlayer block through the
+ * "@remotion-lab" alias below. It sits beside arath-industries, outside this
+ * repo, so it needs both the alias and an fs.allow entry; scenes are never
+ * copied in. REMOTION_LAB_DIR overrides the location.
+ */
+const remotionLabDir = process.env.REMOTION_LAB_DIR
+  ? path.resolve(process.env.REMOTION_LAB_DIR)
+  : path.resolve(repoRoot, "..", "..", "remotion-lab");
+if (!fs.existsSync(path.join(remotionLabDir, "src", "Root.tsx"))) {
+  console.warn(`studio: no remotion-lab checkout at ${remotionLabDir}; the RemotionPlayer block will fail to load. Set REMOTION_LAB_DIR.`);
+}
 /** Base path of the whole app; App.tsx reads it back as import.meta.env.BASE_URL. */
 export const STUDIO_BASE = "/studio/";
 const API_PREFIX = `${STUDIO_BASE}api/`;
@@ -162,18 +174,26 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.join(repoRoot, "src"),
+      // Scenes and their data files in the remotion-lab checkout (RemotionPlayer block).
+      "@remotion-lab": remotionLabDir,
       // Blocks may use next/link for client-side navigation on the site; the editor renders a plain anchor.
       "next/link": path.join(__dirname, "shims", "next-link.tsx"),
       "next/image": path.join(__dirname, "shims", "next-image.tsx"),
     },
-    dedupe: ["react", "react-dom"],
+    /**
+     * remotion-lab has its own node_modules, so a scene imported from there
+     * would otherwise bring a second copy of remotion with its own React
+     * context: useCurrentFrame() inside the scene would not see the <Player>
+     * above it. Deduping resolves every one of these to this repo's copy.
+     */
+    dedupe: ["react", "react-dom", "remotion", "@remotion/player", "@remotion/google-fonts", "zod"],
   },
   server: {
     host: "127.0.0.1",
     // The hub passes STUDIO_PORT from its settings; 24044 is the registered default.
     port: Number(process.env.STUDIO_PORT) || 24044,
     strictPort: true,
-    fs: { allow: [repoRoot] },
+    fs: { allow: [repoRoot, remotionLabDir] },
   },
   build: { outDir: path.join(repoRoot, ".studio-dist"), emptyOutDir: true },
 });

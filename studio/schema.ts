@@ -7,6 +7,7 @@
  * converter fails loudly on any JSX tag not listed below.
  */
 import type { Fields } from "@puckeditor/core";
+import { DEFAULT_REMOTION_COMPOSITION_ID, remotionCompositionOptions } from "./remotionCompositions";
 
 export type Editing = "in-place" | "side-pane" | "mixed";
 
@@ -32,6 +33,16 @@ const text = (contentEditable = false, placeholder?: string) =>
 const textarea = (contentEditable = false, placeholder?: string) =>
   ({ type: "textarea", contentEditable, placeholder }) as const;
 const number = (min?: number, max?: number) => ({ type: "number", min, max }) as const;
+/** On/off pair; Puck has no checkbox field, so a two-option radio stands in. */
+const toggle = (label: string) =>
+  ({
+    type: "radio",
+    label,
+    options: [
+      { label: "on", value: true },
+      { label: "off", value: false },
+    ],
+  }) as const;
 
 /**
  * Layout controls every block shares (src/components/blocks/layout.ts).
@@ -611,6 +622,26 @@ export const blockSchemas: Record<string, BlockSchema> = {
     category: "Showcase",
     fields: { p: number(1, 12), q: number(1, 12), height: number(200, 1200) },
     defaultProps: { p: 2, q: 3, height: 420 },
+  },
+  RemotionPlayer: {
+    description:
+      "A Remotion composition from the remotion-lab checkout, played in the page with @remotion/player: play, loop and a scrub bar. Editor only for now — there is no component in src/components/blocks, so a page carrying this block must not be published (see studio/README.md).",
+    editing: "side-pane",
+    category: "Showcase",
+    fields: {
+      composition: { type: "select", label: "Composition", options: remotionCompositionOptions },
+      width: { ...number(240, 1920), label: "Max width (px)" },
+      controls: toggle("Controls"),
+      loop: toggle("Loop"),
+      autoPlay: toggle("Autoplay"),
+    },
+    defaultProps: {
+      composition: DEFAULT_REMOTION_COMPOSITION_ID,
+      width: 960,
+      controls: true,
+      loop: false,
+      autoPlay: false,
+    },
   },
   DataTable: {
     description: "Table from a CSV path.",

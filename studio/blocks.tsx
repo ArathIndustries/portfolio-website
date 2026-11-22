@@ -8,15 +8,16 @@
 import type React from "react";
 import type { Config, ComponentConfig } from "@puckeditor/core";
 import { blockComponents } from "../src/components/blocks";
+import { studioOnlyComponents } from "./RemotionPlayerBlock";
 import { blockSchemas } from "./schema";
 
 const components: Record<string, ComponentConfig> = {};
 const categories: NonNullable<Config["categories"]> = {};
 
 for (const [name, schema] of Object.entries(blockSchemas)) {
-  const Component = blockComponents[name];
+  const Component = blockComponents[name] ?? studioOnlyComponents[name];
   if (!Component) {
-    throw new Error(`Block "${name}" has a schema in studio/schema.ts but no component in src/components/blocks/index.ts`);
+    throw new Error(`Block "${name}" has a schema in studio/schema.ts but no component in src/components/blocks/index.ts (or studio/RemotionPlayerBlock.tsx for editor-only blocks)`);
   }
   components[name] = {
     label: name,
@@ -46,6 +47,12 @@ for (const [name, schema] of Object.entries(blockSchemas)) {
 for (const name of Object.keys(blockComponents)) {
   if (!blockSchemas[name]) {
     throw new Error(`Component "${name}" is exported from src/components/blocks but has no schema in studio/schema.ts`);
+  }
+}
+
+for (const name of Object.keys(studioOnlyComponents)) {
+  if (!blockSchemas[name]) {
+    throw new Error(`Editor-only component "${name}" has no schema in studio/schema.ts`);
   }
 }
 
