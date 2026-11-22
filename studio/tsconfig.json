@@ -5,8 +5,7 @@
     "plugins": [],
     "incremental": false,
     "paths": {
-      "@/*": ["../src/*"],
-      "@remotion-lab/*": ["../../../remotion-lab/*"]
+      "@/*": ["../src/*"]
     }
   },
   "include": ["./**/*.ts", "./**/*.tsx", "../src/components/**/*.ts", "../src/components/**/*.tsx", "../src/types/**/*.d.ts"],

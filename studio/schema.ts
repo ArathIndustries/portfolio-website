@@ -7,7 +7,10 @@
  * converter fails loudly on any JSX tag not listed below.
  */
 import type { Fields } from "@puckeditor/core";
-import { DEFAULT_REMOTION_COMPOSITION_ID, remotionCompositionOptions } from "./remotionCompositions";
+import {
+  DEFAULT_REMOTION_COMPOSITION_ID,
+  remotionCompositionOptions,
+} from "../src/components/blocks/remotionCompositions";
 
 export type Editing = "in-place" | "side-pane" | "mixed";
 
@@ -625,7 +628,7 @@ export const blockSchemas: Record<string, BlockSchema> = {
   },
   RemotionPlayer: {
     description:
-      "A Remotion composition from the remotion-lab checkout, played in the page with @remotion/player: play, loop and a scrub bar. Editor only for now — there is no component in src/components/blocks, so a page carrying this block must not be published (see studio/README.md).",
+      "A Remotion composition, vendored from remotion-lab into src/remotion/mathviz/, played in the page with @remotion/player: play, loop and a scrub bar. The site renders it too (src/components/blocks/RemotionPlayer.tsx); the editor swaps in its own copy for Puck's canvas (see studio/README.md).",
     editing: "side-pane",
     category: "Showcase",
     fields: {

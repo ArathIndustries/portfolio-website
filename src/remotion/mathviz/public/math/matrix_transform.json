@@ -1,0 +1,240 @@
+{
+  "concept": "matrix_transformation",
+  "generated_by": "manim/compute_matrix_spine.py",
+  "matrix": [
+    [
+      2.0,
+      1.0
+    ],
+    [
+      1.0,
+      2.0
+    ]
+  ],
+  "determinant": 2.9999999999999996,
+  "trace": 4.0,
+  "eigenvalues": [
+    3.0,
+    1.0
+  ],
+  "eigenvectors_columns": [
+    [
+      0.7071067811865475,
+      -0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ]
+  ],
+  "basis_images": {
+    "i_hat": [
+      2.0,
+      1.0
+    ],
+    "j_hat": [
+      1.0,
+      2.0
+    ]
+  },
+  "sample_points": [
+    [
+      -2,
+      -2
+    ],
+    [
+      -2,
+      -1
+    ],
+    [
+      -2,
+      1
+    ],
+    [
+      -2,
+      2
+    ],
+    [
+      -1,
+      -2
+    ],
+    [
+      -1,
+      -1
+    ],
+    [
+      -1,
+      1
+    ],
+    [
+      -1,
+      2
+    ],
+    [
+      1,
+      -2
+    ],
+    [
+      1,
+      -1
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      -2
+    ],
+    [
+      2,
+      -1
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "transformed_points": [
+    [
+      -6.0,
+      -6.0
+    ],
+    [
+      -5.0,
+      -4.0
+    ],
+    [
+      -3.0,
+      0.0
+    ],
+    [
+      -2.0,
+      2.0
+    ],
+    [
+      -4.0,
+      -5.0
+    ],
+    [
+      -3.0,
+      -3.0
+    ],
+    [
+      -1.0,
+      1.0
+    ],
+    [
+      0.0,
+      3.0
+    ],
+    [
+      0.0,
+      -3.0
+    ],
+    [
+      1.0,
+      -1.0
+    ],
+    [
+      3.0,
+      3.0
+    ],
+    [
+      4.0,
+      5.0
+    ],
+    [
+      2.0,
+      -2.0
+    ],
+    [
+      3.0,
+      0.0
+    ],
+    [
+      5.0,
+      4.0
+    ],
+    [
+      6.0,
+      6.0
+    ]
+  ],
+  "verification": [
+    {
+      "eigenvalue": 3.0,
+      "eigenvector": [
+        0.7071067811865475,
+        0.7071067811865475
+      ],
+      "A_times_v": [
+        2.1213203435596424,
+        2.1213203435596424
+      ],
+      "lambda_times_v": [
+        2.1213203435596424,
+        2.1213203435596424
+      ],
+      "max_abs_error": 0.0,
+      "ok": true
+    },
+    {
+      "eigenvalue": 1.0,
+      "eigenvector": [
+        -0.7071067811865475,
+        0.7071067811865475
+      ],
+      "A_times_v": [
+        -0.7071067811865475,
+        0.7071067811865475
+      ],
+      "lambda_times_v": [
+        -0.7071067811865475,
+        0.7071067811865475
+      ],
+      "max_abs_error": 0.0,
+      "ok": true
+    }
+  ],
+  "timing": {
+    "fps": 30,
+    "grid_in": 1.5,
+    "vectors_in": 1.5,
+    "hold_before": 0.5,
+    "transform": 3.0,
+    "eigen_reveal": 2.5,
+    "hold_after": 1.0
+  },
+  "total_seconds": 10.0,
+  "caption_beats": [
+    {
+      "start": 0.0,
+      "text": "The plane before the transformation: the standard grid."
+    },
+    {
+      "start": 1.5,
+      "text": "Basis vectors i-hat and j-hat, and the matrix A."
+    },
+    {
+      "start": 3.5,
+      "text": "A moves i-hat to (2, 1) and j-hat to (1, 2); the whole grid follows."
+    },
+    {
+      "start": 6.5,
+      "text": "Eigenvectors keep their direction: A v = lambda v, with lambda = 3 and 1."
+    },
+    {
+      "start": 9.0,
+      "text": "det(A) = 3: every area is scaled by 3."
+    }
+  ]
+}

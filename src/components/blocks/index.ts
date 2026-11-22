@@ -19,6 +19,7 @@ import { PlotlyChart } from "./PlotlyChart";
 import { MapBlock } from "./MapBlock";
 import { Scrolly } from "./Scrolly";
 import { ThreeBlock } from "./ThreeBlock";
+import { RemotionPlayer } from "./RemotionPlayer";
 import { DataTable } from "./DataTable";
 import { Embed } from "./Embed";
 import { Quote } from "./Quote";
@@ -60,6 +61,7 @@ export const blockComponents: Record<string, React.ComponentType<any>> = {
   MapBlock,
   Scrolly,
   ThreeBlock,
+  RemotionPlayer,
   DataTable,
   Embed,
   Quote,

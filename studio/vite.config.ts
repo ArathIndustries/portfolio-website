@@ -22,18 +22,6 @@ import { configFromEnv, promote, publish, status } from "./publish";
 const repoRoot = path.resolve(__dirname, "..");
 const contentDir = path.join(repoRoot, "content");
 const publicDir = path.join(repoRoot, "public");
-/**
- * The remotion-lab checkout, read by the RemotionPlayer block through the
- * "@remotion-lab" alias below. It sits beside arath-industries, outside this
- * repo, so it needs both the alias and an fs.allow entry; scenes are never
- * copied in. REMOTION_LAB_DIR overrides the location.
- */
-const remotionLabDir = process.env.REMOTION_LAB_DIR
-  ? path.resolve(process.env.REMOTION_LAB_DIR)
-  : path.resolve(repoRoot, "..", "..", "remotion-lab");
-if (!fs.existsSync(path.join(remotionLabDir, "src", "Root.tsx"))) {
-  console.warn(`studio: no remotion-lab checkout at ${remotionLabDir}; the RemotionPlayer block will fail to load. Set REMOTION_LAB_DIR.`);
-}
 /** Base path of the whole app; App.tsx reads it back as import.meta.env.BASE_URL. */
 export const STUDIO_BASE = "/studio/";
 const API_PREFIX = `${STUDIO_BASE}api/`;
@@ -174,17 +162,18 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.join(repoRoot, "src"),
-      // Scenes and their data files in the remotion-lab checkout (RemotionPlayer block).
-      "@remotion-lab": remotionLabDir,
       // Blocks may use next/link for client-side navigation on the site; the editor renders a plain anchor.
       "next/link": path.join(__dirname, "shims", "next-link.tsx"),
       "next/image": path.join(__dirname, "shims", "next-image.tsx"),
     },
     /**
-     * remotion-lab has its own node_modules, so a scene imported from there
-     * would otherwise bring a second copy of remotion with its own React
-     * context: useCurrentFrame() inside the scene would not see the <Player>
-     * above it. Deduping resolves every one of these to this repo's copy.
+     * Belt and braces. The RemotionPlayer block's scene used to be imported
+     * from the remotion-lab checkout, which has its own node_modules, and the
+     * second copy of remotion it dragged in carried its own React context:
+     * useCurrentFrame() inside the scene could not see the <Player> above it.
+     * The scene is vendored into src/remotion/mathviz/ now, so every import
+     * resolves in this repo and nothing here is reachable twice; this list only
+     * still guards against a future dependency that bundles its own copy.
      */
     dedupe: ["react", "react-dom", "remotion", "@remotion/player", "@remotion/google-fonts", "zod"],
   },
@@ -193,7 +182,7 @@ export default defineConfig({
     // The hub passes STUDIO_PORT from its settings; 24044 is the registered default.
     port: Number(process.env.STUDIO_PORT) || 24044,
     strictPort: true,
-    fs: { allow: [repoRoot, remotionLabDir] },
+    fs: { allow: [repoRoot] },
   },
   build: { outDir: path.join(repoRoot, ".studio-dist"), emptyOutDir: true },
 });

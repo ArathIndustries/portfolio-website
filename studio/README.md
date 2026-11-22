@@ -28,7 +28,7 @@ Puck is installed as `@puckeditor/core@0.24.0`. The `@measured/puck` package nam
 | `src/components/blocks/*.tsx` | One file per block: the real component the site renders. |
 | `src/components/blocks/index.ts` | `blockComponents` (name to component) and `mdxComponents` (plus child elements such as `TimelineItem`). The Next routes hand `mdxComponents` to MDXRemote. |
 | `studio/schema.ts` | Fields, defaultProps, description and editing mode per block. No React, so the converters can load it under Node. |
-| `studio/blocks.tsx` | The Puck config. Zips `blockComponents` and `blockSchemas`; throws at startup if a block exists on one side only. Editor-only blocks come from `studioOnlyComponents` in `studio/RemotionPlayerBlock.tsx` instead of `blockComponents`. |
+| `studio/blocks.tsx` | The Puck config. Zips `blockComponents` and `blockSchemas`; throws at startup if a block exists on one side only. A block named in `studioComponentOverrides` (`studio/RemotionPlayerBlock.tsx`) is drawn on the canvas with the editor's own copy instead of the site's. |
 | `studio/convert/mdxToPuck.ts`, `puckToMdx.ts` | The converters. `roundtrip.ts` is the test. |
 | `studio/vite.config.ts` | Vite app plus the file API (`/api/pages`, `/api/page`) and the publish API (`/api/publish`, `/api/promote`, `/api/publish/status`). Serves the site's `public/`. Aliases `next/link` to `studio/shims/next-link.tsx` so blocks keep client-side navigation on the site. |
 | `studio/publish.ts` | The git side of publishing: preview branch, promote, status. Plain Node, no Vite; see "Publish flow". |
@@ -48,7 +48,7 @@ Done: the editor lists it, the converters accept `<MyBlock … />` in MDX, and e
 Rules the code enforces:
 
 - A JSX tag in a page that has no schema entry makes `mdxToPuck` throw with the file and line. So does an `import`/`export`, a spread attribute, or children on a block that does not declare `childrenAs`.
-- A schema entry without a component, or a component without a schema, makes `studio/blocks.tsx` throw at startup. The one exception is an editor-only block listed in `studioOnlyComponents` (see "Remotion player block"); the site cannot render those.
+- A schema entry without a component, or a component without a schema, makes `studio/blocks.tsx` throw at startup. A block may also register an editor-only copy of itself in `studioComponentOverrides` (see "Remotion player block"); that copy wins on the canvas, and a name there with no schema throws too.
 
 Field types used: `text` and `textarea` (with `contentEditable: true` for in-place editing), `number`, `select`, `radio`, `array` (with `arrayFields`, `defaultItemProps`, `getItemSummary`). Puck's field reference: https://puckeditor.com/docs/api-reference/fields.
 
@@ -76,7 +76,7 @@ Editing column: "in-place" means you click the text on the canvas and type; "sid
 | ThreeBlock | three.js torus knot via react-three-fiber; `p`, `q`, height. | side-pane | yes: ~0.4 MB library, 3 fields |
 | DataTable | CSV path, caption, max rows. | side-pane | some: CSV parser, 3 fields |
 | Embed | Iframe URL checked against the allowlist in `Embed.tsx`; refused hosts render a notice. | side-pane | no |
-| RemotionPlayer | A Remotion composition from the `remotion-lab` checkout, played in the page. Editor only; see below. | side-pane | yes: ~320 KB chunk, 5 fields |
+| RemotionPlayer | A Remotion composition, vendored from `remotion-lab` into `src/remotion/mathviz/`, played in the page. The editor draws its own copy of the block; the stage inside is shared. See below. | side-pane | yes: ~320 KB chunk, 5 fields |
 
 "Code-rich inside, few fields outside" is the pattern for the showcase blocks: the component owns the behaviour, the schema exposes three to five values. Everything with short text is editable in place; arrays and numbers are side-pane because Puck has no in-place widget for them.
 
@@ -84,38 +84,46 @@ Editing column: "in-place" means you click the text on the canvas and type; "sid
 
 `RemotionPlayer` puts a Remotion composition on the page and plays it: a play button, a volume button, a time readout, a scrub bar and fullscreen. It uses `<Player>` from `@remotion/player`, which renders the composition's React component frame by frame in the page. It is not Remotion Studio (the separate dev tool with the timeline and props editor), and it renders nothing to a video file.
 
-The scenes stay in the `remotion-lab` checkout next to this repo and are imported, never copied:
+The scene is **vendored into this repository**, not imported from the `remotion-lab` checkout next door:
 
 | Path | What |
 |---|---|
-| `studio/remotionCompositions.ts` | The list of compositions the block offers: id, label, duration, fps, size. Import-free on purpose, because `studio/schema.ts` reads it to build the dropdown and the MDX converters load `schema.ts` under plain Node. |
-| `studio/remotionStage.tsx` | The `<Player>` itself and the map from composition id to the scene component and its input props. Behind `React.lazy`, so the editor only fetches remotion (a 320 KB chunk) once a block of this type is on the page. |
-| `studio/RemotionPlayerBlock.tsx` | The block component: the frame, the lazy boundary, and the Puck pointer-events opt-out below. Also exports `studioOnlyComponents`, which `studio/blocks.tsx` falls back to for blocks with no component in `src/components/blocks`. |
-| `studio/vite.config.ts` | The `@remotion-lab` alias, the `server.fs.allow` entry that lets Vite read files outside this repo, and the `dedupe` list. |
+| `src/remotion/mathviz/` | The four files `MathViz-Remotion` needs, copied byte for byte from remotion-lab: `MathViz/MatrixScene.tsx`, `MathViz/spine.ts`, `Showcase/palette.ts`, `public/math/matrix_transform.json`. Its `README.md` names the commit the copy was taken from. |
+| `scripts/sync-remotion-lab.mjs` | Re-copies exactly those files and re-stamps that commit line. `--check` compares only and exits 1 on drift. The only thing in this repo that reads the checkout. |
+| `src/components/blocks/remotionCompositions.ts` | The list of compositions the block offers: id, label, duration, fps, size. Import-free on purpose, because `studio/schema.ts` reads it to build the dropdown and the MDX converters load `schema.ts` under plain Node. |
+| `src/components/blocks/RemotionStage.tsx` | The `<Player>` itself and the map from composition id to the scene component and its input props. Loaded lazily by both copies of the block, so remotion (a 320 KB chunk) is fetched only once a block of this type is on the page. |
+| `src/components/blocks/RemotionPlayer.tsx` | The site's block: the frame, and `next/dynamic` with `ssr: false` around the stage. Registered in `src/components/blocks/index.ts` like every other block. |
+| `studio/RemotionPlayerBlock.tsx` | The editor's copy: the same frame, `React.lazy` around the same stage, and the Puck pointer-events opt-out below. Exports `studioComponentOverrides`, which `studio/blocks.tsx` reads before `blockComponents`. |
 
-`REMOTION_LAB_DIR` overrides the checkout location; the default is `../../remotion-lab` relative to this repo. A missing checkout prints a warning at startup and only breaks this block.
+**Why vendored, when importing was working.** This site deploys to Vercel from GitHub on every push, and Vercel checks out this repository alone. An alias into a sibling folder built on this desktop and would have failed on every deploy. Importing across the two checkouts also needed `turbopack.root` raised above the repo and a set of aliases forcing one copy of `remotion`; all of that is deleted. `next.config.ts` now has no bundler configuration at all, and neither config mentions `REMOTION_LAB_DIR`.
 
-**Versions must match the checkout exactly.** `remotion`, `@remotion/player` and every `@remotion/*` package a scene imports are pinned here to the version `remotion-lab/package.json` uses (4.0.487 as of 2026-11-21), and `resolve.dedupe` in the Vite config forces all of them to this repo's copy. Without that, a scene imported from `remotion-lab` resolves `remotion` in *its* `node_modules`, and the second copy carries its own React context: `useCurrentFrame()` inside the scene then cannot see the `<Player>` above it.
+The cost is that the copy can go stale. What keeps that honest: the files are copied unedited, so `node scripts/sync-remotion-lab.mjs --check` is a byte comparison that names the commit; and `src/remotion/mathviz/README.md` carries the commit and date in its first line, rewritten by the script itself.
+
+**Versions must still match the checkout.** `remotion`, `@remotion/player` and every `@remotion/*` package a scene imports are pinned here to the version `remotion-lab/package.json` uses (4.0.487 as of 2026-11-21), because the vendored scene is written against that API. The *second copy* problem is gone with the alias: every import now resolves inside this repo's `node_modules`. Measured 2026-11-22 by counting a string that appears only in `remotion/dist/esm/index.mjs` across `.next/static/chunks`: **1 occurrence, with no aliases at all.** (With the old cross-repo import it was 2 without aliases, 1 with.) `resolve.dedupe` stays in `studio/vite.config.ts` as belt and braces against a future dependency that bundles its own copy; nothing reachable today needs it.
 
 ### Add another composition
 
-Two edits, both in `studio/`:
+Three edits, and both sides pick them up:
 
-1. **The metadata.** Add an entry to `REMOTION_COMPOSITIONS` in `studio/remotionCompositions.ts` with the `id`, `durationInFrames`, `fps`, `width` and `height` from that `<Composition>` in `remotion-lab/src/Root.tsx`, plus a label for the dropdown. When the composition computes its length in `calculateMetadata` rather than declaring it, write down what that computation yields.
-2. **The component.** Add an entry under the same id to `stageEntries` in `studio/remotionStage.tsx`: the scene component, imported through `@remotion-lab/src/...`, and the `inputProps` the composition's `calculateMetadata` would have produced. Set `derived` to the same numbers computed from the scene's own data file, and `remotionStage.tsx` throws at load if the two disagree. An entry on one side only also throws.
+0. **The files.** Add the scene's files to `FILES` in `scripts/sync-remotion-lab.mjs` — the component, anything it imports from inside remotion-lab, and its data file — then run the script. Paths in the list are relative to the checkout; a leading `src/` is dropped on the way in, so `MathViz/` and `Showcase/` stay siblings and the scene's own relative imports keep resolving without editing a copy.
+1. **The metadata.** Add an entry to `REMOTION_COMPOSITIONS` in `src/components/blocks/remotionCompositions.ts` with the `id`, `durationInFrames`, `fps`, `width` and `height` from that `<Composition>` in `remotion-lab/src/Root.tsx`, plus a label for the dropdown. When the composition computes its length in `calculateMetadata` rather than declaring it, write down what that computation yields.
+2. **The component.** Add an entry under the same id to `stageEntries` in `src/components/blocks/RemotionStage.tsx`: the scene component, imported through `@/remotion/mathviz/...`, and the `inputProps` the composition's `calculateMetadata` would have produced. Set `derived` to the same numbers computed from the scene's own data file, and `RemotionStage.tsx` throws at load if the two disagree. An entry on one side only also throws.
 
 Then install any `@remotion/*` package the new scene imports, at the same version. `MatrixScene` needed `@remotion/google-fonts` and `zod`; `Showcase`, for instance, would also need `@remotion/transitions`, `@remotion/noise` and `@remotion/paths`.
 
-Scenes that read files with `staticFile()` need more than this. `staticFile` resolves against the studio's own `public/` (this repo's), not `remotion-lab/public/`, so a scene that plays an MP4 from there has nothing to load. `MatrixScene` avoids it: its data file is imported directly and parsed with the scene's own zod schema, which fails loudly rather than drawing a blank frame.
+Scenes that read files with `staticFile()` need more than this. `staticFile` resolves against the site's and the studio's own `public/` folder, not against `src/remotion/mathviz/public/`, which is bundled rather than served, so a scene that plays an MP4 from there has nothing to load. `MatrixScene` avoids it: its data file is imported directly and parsed with the scene's own zod schema, which fails loudly rather than drawing a blank frame. A scene that genuinely needs a served file means copying that file into this repo's `public/` as well, and adding it to the script's `FILES` list with a destination that lands there.
 
-### Editor only, for now
+### Two copies of the block, one stage
 
-Every other block is a component in `src/components/blocks` with a schema in `studio/schema.ts`. This one has the schema and no site component, so:
+Every other block is a single component in `src/components/blocks` that the editor also renders. This one is two components around one shared stage, because three things about the editor's version are Puck-only or Vite-only:
 
-- It appears in the editor, and a page carrying it round-trips through MDX unchanged.
-- **The site cannot render it.** MDX hands unknown tags to `MDXRemote`, which throws. Do not publish a page that contains this block until a `RemotionPlayer` exists in `src/components/blocks/index.ts`.
+- the `registerOverlayPortal` call below, which exists to undo a Puck stylesheet rule;
+- `clickToPlay={false}`, because on the canvas a click on a block means "select this block";
+- `next/dynamic`, which the site uses to keep the player out of the server render and which does not exist under Vite.
 
-Wiring the site side means a component there that mounts the same `<Player>` (Next needs its own alias for `@remotion-lab`, and the block must be a client component), leaving the `registerOverlayPortal` call below in the studio copy, since it is Puck-specific.
+So `src/components/blocks/RemotionPlayer.tsx` is the site's block and is registered in `blockComponents` like any other, and `studio/RemotionPlayerBlock.tsx` lists itself in `studioComponentOverrides`, which `studio/blocks.tsx` reads first. Both import the same `RemotionStage` and the same composition list, so a scene or a timing number is only ever written down once. The site block never imports anything from `studio/`.
+
+A page carrying the block now round-trips through MDX *and* renders on the site, so it is safe to publish. `content/showcase/remotion-player-demo.mdx` is the demo page that exercises both.
 
 ### Why the block takes its own pointer events
 
@@ -129,9 +137,21 @@ What this costs, measured 2026-11-21: clicking anywhere on the scrub bar seeks, 
 
 `studio/screenshots/remotion_player_1440.png`: the block selected at 1440x900, the playhead at 0:06 of 0:10, the Outline on the left and the five fields on the right.
 
-Checked on 2026-11-21 against a studio on port 24049 with Playwright (Chromium 1217), 19 of 19 automated checks: the player mounts inside Puck's canvas iframe; the play, mute and fullscreen buttons exist; the time readout reads 0:10, which is the 300 frames at 30 fps that `Root.tsx` computes from `matrix_transform.json`; `width` 960 gives a 958 px player; autoplay off leaves it on frame 0; a click on the bar moves both the readout and the scene SVG; play advances the frame and pause holds it; the five fields appear in the side pane. No console or page errors. `npx tsc -p studio --noEmit` and `npx vite build --config studio/vite.config.ts` both exit 0. Round-trip with a one-block test page added: 44 files, 43 byte-identical, the one documented difference unchanged.
+**Editor, 2026-11-21.** Checked against a studio on port 24049 with Playwright (Chromium 1217), 19 of 19 automated checks: the player mounts inside Puck's canvas iframe; the play, mute and fullscreen buttons exist; the time readout reads 0:10, which is the 300 frames at 30 fps that `Root.tsx` computes from `matrix_transform.json`; `width` 960 gives a 958 px player; autoplay off leaves it on frame 0; a click on the bar moves both the readout and the scene SVG; play advances the frame and pause holds it; the five fields appear in the side pane. No console or page errors.
 
-Not checked: the block on a built site (there is no site component yet); loop; fullscreen; the player at phone width; any composition other than `MathViz-Remotion`.
+**Site, 2026-11-22.** `npm run build` exits 0 with Turbopack, 48 static pages including `/showcase/remotion-player-demo`. `npx tsc --noEmit` (site) and `npx tsc -p studio --noEmit` both exit 0; `npx vite build --config studio/vite.config.ts` exits 0; `npm run lint` reports the same 4 pre-existing problems in `src/components/neon/NeonGrid.tsx` and nothing new. Round-trip with the demo page added: 44 files, 43 byte-identical, the one documented difference unchanged.
+
+**The Vercel question, settled by experiment, 2026-11-22.** The whole point of vendoring is that the build must not need a folder GitHub does not have. So the folder was taken away: `remotion-lab` renamed to `remotion-lab-TEMPORARILY-RENAMED`, `.next` deleted, then everything re-run. With no checkout on disk and `REMOTION_LAB_DIR` unset — `next build` exit 0 (21.9 s compile, 34.4 s wall clock at BelowNormal priority, 48 pages), both `tsc` runs exit 0, `vite build` exits 0, round-trip unchanged, `npm run lint` unchanged, and `node scripts/sync-remotion-lab.mjs --check` exits 1 with "no remotion-lab checkout at …", which is the one thing that is *supposed* to fail. The folder was then renamed back and confirmed present with `ls`; its HEAD is still `2bd5da4` and its working tree is as it was.
+
+Still with the checkout absent, `next start` on 127.0.0.1:24713 and `/showcase/remotion-player-demo` in Chrome through Playwright 1.65, **19 of 19 automated checks**: the frame box is 960x540 at DOMContentLoaded and still 960x540 once the player mounts, so the page does not jump; the aspect ratio is 1.7778; the readout reads `0:00 / 0:10`; the mute and fullscreen controls exist; the scene draws 4 SVG elements and prints `A = [[2,1],[1,2]]`, `λ₁ = 3, λ₂ = 1`, `det(A) = 3` — the numbers out of the vendored JSON; play moves the readout to 0:01 and pause holds it at 0:02; a click at 85 % of the scrub bar seeks to 0:08; at a 390 px viewport the frame is 358 px wide. No console or page errors other than the browser's own `/favicon.ico`.
+
+And the editor, same conditions, studio on 127.0.0.1:24714: **7 of 7** — Puck's canvas iframe is found, the player mounts in it, `data-puck-overlay-portal` is present (only the editor's copy sets it, so the override in `studio/blocks.tsx` is what is being drawn), the play button computes `pointer-events: auto`, the readout reads `0:00 / 0:10`, play moves it to 0:01, no errors beyond `/favicon.ico`. That 404 is the browser asking for a file the studio has never served; `studio/index.html` declares no favicon.
+
+The remotion chunk is fetched on demand, not with the page: the file holding it appears in none of the prerendered HTML files under `.next/server/app`, the demo page's own included.
+
+Screenshots in `C:\Users\Arath\AppData\Local\Temp\site-remotion-shots\`.
+
+Not checked: `loop`; fullscreen itself (only that the button exists); autoplay on; any composition other than `MathViz-Remotion`; a real Vercel deployment (only the local equivalent above); dragging the block on the canvas since the split; `next dev` (only `next build` and `next start`); and whether anything warns when the vendored copy drifts from remotion-lab — `--check` has to be run on purpose, nothing runs it.
 
 ## Layout fields (every block on a live page)
 

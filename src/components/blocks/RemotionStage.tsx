@@ -1,22 +1,28 @@
+"use client";
+
 /**
  * The <Player> itself, plus the map from composition id to the scene component
- * in the remotion-lab checkout.
+ * vendored from remotion-lab into src/remotion/mathviz/.
  *
  * This is @remotion/player, not Remotion Studio: no dev server of its own and
  * no timeline, just the scene component driven frame by frame with a scrub bar.
  *
- * Loaded through React.lazy from RemotionPlayerBlock.tsx, so remotion and the
- * scenes are a separate chunk that the editor only fetches once a RemotionPlayer
- * block is on the page.
+ * Loaded lazily on both sides, so remotion and the scenes are a separate chunk
+ * that is only fetched once a RemotionPlayer block is on the page: next/dynamic
+ * with ssr: false from src/components/blocks/RemotionPlayer.tsx on the site,
+ * React.lazy from studio/RemotionPlayerBlock.tsx in the editor.
  *
- * Scenes are imported from remotion-lab through the "@remotion-lab" alias in
- * studio/vite.config.ts. Nothing is copied: edit the scene in remotion-lab and
- * the editor picks it up on the next reload.
+ * Scenes are vendored into src/remotion/mathviz/ rather than imported from the
+ * remotion-lab checkout next door, because Vercel builds this repository from
+ * GitHub and has no such checkout: an alias into a sibling folder builds here
+ * and fails there. Edit the scene in remotion-lab, then run
+ * `node scripts/sync-remotion-lab.mjs` to refresh the copy. See
+ * src/remotion/mathviz/README.md.
  */
 import { Player } from "@remotion/player";
-import matrixSpineJson from "@remotion-lab/public/math/matrix_transform.json";
-import { MatrixScene } from "@remotion-lab/src/MathViz/MatrixScene";
-import { spineSchema } from "@remotion-lab/src/MathViz/spine";
+import matrixSpineJson from "@/remotion/mathviz/public/math/matrix_transform.json";
+import { MatrixScene } from "@/remotion/mathviz/MathViz/MatrixScene";
+import { spineSchema } from "@/remotion/mathviz/MathViz/spine";
 import { REMOTION_COMPOSITIONS } from "./remotionCompositions";
 
 /**
@@ -24,6 +30,8 @@ import { REMOTION_COMPOSITIONS } from "./remotionCompositions";
  * the spine arrives through calculateMetadata (a fetch of staticFile()). Here
  * the same file is imported directly and parsed with the scene's own zod
  * schema, so a change in the JSON fails loudly instead of rendering blank.
+ * staticFile() would not work anyway: the vendored public/math/ folder is not
+ * served by this site, it is bundled.
  */
 const matrixSpine = spineSchema.parse(matrixSpineJson);
 
@@ -54,20 +62,20 @@ for (const meta of REMOTION_COMPOSITIONS) {
   const entry = stageEntries[meta.id];
   if (!entry) {
     throw new Error(
-      `RemotionPlayer: composition "${meta.id}" is listed in studio/remotionCompositions.ts but has no entry in studio/remotionStage.tsx`,
+      `RemotionPlayer: composition "${meta.id}" is listed in src/components/blocks/remotionCompositions.ts but has no entry in src/components/blocks/RemotionStage.tsx`,
     );
   }
   const d = entry.derived;
   if (d && (d.durationInFrames !== meta.durationInFrames || d.fps !== meta.fps)) {
     throw new Error(
-      `RemotionPlayer: "${meta.id}" is listed as ${meta.durationInFrames} frames at ${meta.fps} fps, but its data file gives ${d.durationInFrames} frames at ${d.fps} fps. Update studio/remotionCompositions.ts.`,
+      `RemotionPlayer: "${meta.id}" is listed as ${meta.durationInFrames} frames at ${meta.fps} fps, but its data file gives ${d.durationInFrames} frames at ${d.fps} fps. Update src/components/blocks/remotionCompositions.ts.`,
     );
   }
 }
 for (const id of Object.keys(stageEntries)) {
   if (!REMOTION_COMPOSITIONS.some((c) => c.id === id)) {
     throw new Error(
-      `RemotionPlayer: composition "${id}" has an entry in studio/remotionStage.tsx but is not listed in studio/remotionCompositions.ts`,
+      `RemotionPlayer: composition "${id}" has an entry in src/components/blocks/RemotionStage.tsx but is not listed in src/components/blocks/remotionCompositions.ts`,
     );
   }
 }
@@ -77,9 +85,21 @@ export interface RemotionStageProps {
   controls: boolean;
   loop: boolean;
   autoPlay: boolean;
+  /**
+   * Whether a click on the frame toggles playback. True on the site. The studio
+   * passes false: there a click on a block means "select this block", so only
+   * the control row drives the player.
+   */
+  clickToPlay?: boolean;
 }
 
-export default function RemotionStage({ compositionId, controls, loop, autoPlay }: RemotionStageProps) {
+export default function RemotionStage({
+  compositionId,
+  controls,
+  loop,
+  autoPlay,
+  clickToPlay = true,
+}: RemotionStageProps) {
   const meta = REMOTION_COMPOSITIONS.find((c) => c.id === compositionId);
   const entry = meta ? stageEntries[meta.id] : undefined;
 
@@ -103,9 +123,7 @@ export default function RemotionStage({ compositionId, controls, loop, autoPlay 
       controls={controls}
       loop={loop}
       autoPlay={autoPlay}
-      // In the editor a click on a block means "select this block", so the
-      // frame itself does not toggle playback; the control row does.
-      clickToPlay={false}
+      clickToPlay={clickToPlay}
       // remotion-lab already acknowledges the same licence for parseMedia;
       // without this the player logs the notice on every mount.
       acknowledgeRemotionLicense

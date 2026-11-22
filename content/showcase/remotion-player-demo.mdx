@@ -1,0 +1,20 @@
+---
+title: "Remotion player demo"
+description: "Demo page: one Remotion composition from the remotion-lab checkout, played in the page by the RemotionPlayer block."
+date: "2026-11-22"
+tags: ["Studio", "Test", "Remotion"]
+---
+
+# Remotion player demo
+
+This is a demo page, not a finished piece of writing. It exists so the `RemotionPlayer` block is exercised by the same three things every other block is: the publishing studio's round-trip through MDX, `next build`, and the site itself in a browser.
+
+The clip below is a Remotion composition. Remotion draws video in React: the scene is a component, and the frame number is an input, so the same code can be played in a page or rendered to an MP4. Nothing is rendered here — the player steps the component through its frames in the browser.
+
+<RemotionPlayer composition="MathViz-Remotion" width={960} controls loop={false} autoPlay={false} />
+
+## What you are looking at
+
+`MatrixScene` shows a 2x2 matrix acting on the plane: the grid bends, the two basis vectors move to the matrix's columns, and the eigenvectors are picked out at the end. Every number it prints comes from `public/math/matrix_transform.json` in the remotion-lab checkout, which a Python script writes; the scene has no numbers of its own. The clip runs 10 seconds at 30 frames per second, which is the 300 frames the time readout counts down from.
+
+The scene file is not copied into this repository. Both the site and the studio import it from the remotion-lab checkout next door through an alias, so editing the scene there changes both.

@@ -8,16 +8,18 @@
 import type React from "react";
 import type { Config, ComponentConfig } from "@puckeditor/core";
 import { blockComponents } from "../src/components/blocks";
-import { studioOnlyComponents } from "./RemotionPlayerBlock";
+import { studioComponentOverrides } from "./RemotionPlayerBlock";
 import { blockSchemas } from "./schema";
 
 const components: Record<string, ComponentConfig> = {};
 const categories: NonNullable<Config["categories"]> = {};
 
 for (const [name, schema] of Object.entries(blockSchemas)) {
-  const Component = blockComponents[name] ?? studioOnlyComponents[name];
+  // The editor wins where it has its own copy of a block (studio/RemotionPlayerBlock.tsx);
+  // everything else is the site component itself.
+  const Component = studioComponentOverrides[name] ?? blockComponents[name];
   if (!Component) {
-    throw new Error(`Block "${name}" has a schema in studio/schema.ts but no component in src/components/blocks/index.ts (or studio/RemotionPlayerBlock.tsx for editor-only blocks)`);
+    throw new Error(`Block "${name}" has a schema in studio/schema.ts but no component in src/components/blocks/index.ts (nor an editor override in studio/RemotionPlayerBlock.tsx)`);
   }
   components[name] = {
     label: name,
@@ -50,9 +52,9 @@ for (const name of Object.keys(blockComponents)) {
   }
 }
 
-for (const name of Object.keys(studioOnlyComponents)) {
+for (const name of Object.keys(studioComponentOverrides)) {
   if (!blockSchemas[name]) {
-    throw new Error(`Editor-only component "${name}" has no schema in studio/schema.ts`);
+    throw new Error(`Editor override component "${name}" has no schema in studio/schema.ts`);
   }
 }
 
