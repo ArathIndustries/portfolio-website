@@ -21,6 +21,18 @@ The editor's chrome uses the hub's tokens with the hub's own names and values (`
 
 Puck is installed as `@puckeditor/core@0.24.0`. The `@measured/puck` package name stopped at 0.20.2; 0.21 and later ship under `@puckeditor/core` (same project, MIT).
 
+### Hub messages (2026-11-27, B319)
+
+The hub frames the studio with `?theme=<theme>&hubOrigin=<the hub's origin>` (hub `StudioPanel.vue`, `composables/useStudioBridge.js`). `studio/hubBridge.ts` reads `hubOrigin`; without it, or when the studio is not in a frame, nothing is posted and inbound `hub-*` messages are ignored. Inbound messages count only when `event.origin` equals that origin and `event.source` is the parent window; outbound messages go to `window.parent` with that origin as the target, never `*`.
+
+| Direction | Message | Meaning |
+|---|---|---|
+| hub -> studio | `{ type: "hub-theme", theme }` | Use this hub theme (`light`, `dark`, `sensitive-light`, `sensitive-dark`); unknown values are ignored. |
+| hub -> studio | `{ type: "hub-open-page", path }` | Open the page whose content path is `path`, e.g. `pages/about.mdx` (relative to `content/`, forward slashes, the `file` value of `GET /studio/api/pages`). Goes through the same `openPage` as the Pages pane, so unsaved edits ask first. |
+| hub -> studio | `{ type: "hub-show-pane", pane }` | Show one pane: `blocks`, `outline`, `pages` (the left sidebar, that tab), `fields` (the right sidebar on the desktop; the Fields sheet on the phone); `null` hides the sidebars (desktop) or closes the sheet (phone). Handled by `components/HubPanes.tsx` inside Puck, so it needs a page loaded. |
+| studio -> hub | `{ type: "studio-ready" }` | Once on mount, after the listeners are installed, so the hub can send a queued `hub-open-page`. |
+| studio -> hub | `{ type: "studio-state", page: { path, title } \| null, dirty, saving }` | Once on load and on every change: the open page's content path and title, whether the editor holds unsaved edits, and whether "Save to preview" is running. |
+
 ### Header, phone layout, controls (2026-11-27, B320)
 
 * `Header.tsx` is one row: brand, title and path, then `components/PriorityToolbar.tsx` (a port of the hub's `PriorityToolbar.vue` + `usePriorityOverflow.js`, same item contract) with undo, redo, Save to preview, Promote to live, the status pill, the site and preview links and the canvas zoom. The row never wraps; what does not fit goes into a "…" menu (`components/StudioMenu.tsx`). Under 620 px of toolbar width the items drop their labels.

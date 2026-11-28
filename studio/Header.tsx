@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import { createPortal } from "react-dom";
 import { createUsePuck, useGetPuck, type Data } from "@puckeditor/core";
 import { ZoomContext } from "./CanvasZoom";
+import { HubPanes } from "./components/HubPanes";
 import { PhoneSheet } from "./components/PhoneSheet";
 import { PriorityToolbar, type PriorityItem } from "./components/PriorityToolbar";
 
@@ -166,6 +167,7 @@ export function StudioHeader() {
       <PriorityToolbar items={items} label="Page actions" className="studio-header-tools" />
       {statusOpen ? <StatusPopover info={info} anchor={statusAnchor} onClose={() => setStatusOpen(false)} /> : null}
       <PhoneSheet />
+      <HubPanes />
     </header>
   );
 }

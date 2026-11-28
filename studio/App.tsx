@@ -4,6 +4,7 @@ import { puckConfig } from "./blocks";
 import { CanvasZoom, ZoomContext, type ZoomApi } from "./CanvasZoom";
 import { SourceToggleFields } from "./components/SourceToggle";
 import { HeaderContext, StudioHeader, type HeaderInfo } from "./Header";
+import { asPagePath, onHubMessage, postToHub } from "./hubBridge";
 
 interface PageInfo {
   file: string;
@@ -50,16 +51,15 @@ function useHubTheme(): HubTheme {
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
-  useEffect(() => {
-    const onMessage = (event: MessageEvent) => {
-      const data = event.data as { type?: string; theme?: unknown } | null;
-      if (!data || data.type !== "hub-theme") return;
-      const next = asHubTheme(data.theme);
-      if (next) setTheme(next);
-    };
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, []);
+  useEffect(
+    () =>
+      onHubMessage((message) => {
+        if (message.type !== "hub-theme") return;
+        const next = asHubTheme(message.theme);
+        if (next) setTheme(next);
+      }),
+    [],
+  );
   return theme;
 }
 
@@ -315,6 +315,22 @@ export function App() {
     [file, editedFile],
   );
 
+  // ===== Hub bridge (hubBridge.ts) =====
+  // The hub's hub-open-page goes through the same openPage as the Pages pane (unsaved
+  // edits ask first); the ref keeps the handler on the latest closure.
+  const openPageRef = useRef(openPage);
+  openPageRef.current = openPage;
+  useEffect(() => {
+    const off = onHubMessage((message) => {
+      if (message.type !== "hub-open-page") return;
+      const next = asPagePath(message.path);
+      if (next) openPageRef.current(next);
+    });
+    // After the listener is installed, so a queued open-page the hub sends on this lands.
+    postToHub({ type: "studio-ready" });
+    return off;
+  }, []);
+
   useEffect(() => {
     if (!editedFile) return;
     const guard = (e: BeforeUnloadEvent) => {
@@ -386,6 +402,13 @@ export function App() {
 
   const page = pages.find((p) => p.file === file);
   const title = (data?.root?.props as { title?: string } | undefined)?.title ?? page?.title ?? file;
+
+  // studio-state to the hub: once on load and whenever the page, its title, the edits or a save change.
+  const dirty = editedFile !== null;
+  const saving = busy === "preview";
+  useEffect(() => {
+    postToHub({ type: "studio-state", page: file ? { path: file, title } : null, dirty, saving });
+  }, [file, title, dirty, saving]);
   // The Vercel branch deployment of studio/preview, for this page, while the preview is ahead of master.
   const previewAhead = Boolean(pub && pub.previewExists && pub.aheadOfMaster > 0);
   const previewPageUrl = pub && page ? `${pub.previewUrl}${page.route === "/" ? "" : page.route}` : null;
