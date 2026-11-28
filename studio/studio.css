@@ -1,90 +1,44 @@
 /* The site's own stylesheet, so the canvas looks like the site. */
 @import "../src/app/globals.css";
+/* Hub tokens (same names and values as the hub's workspace.css); the hub is the source. */
+@import "./tokens.css";
 
 /* Tailwind must scan the site components and the studio for class names. */
 @source "../src";
 @source ".";
 
-/* next/font sets these on the site; the studio falls back to system fonts. */
-:root {
-  --font-inter: Inter, system-ui, sans-serif;
-  --font-jetbrains-mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
-}
-
 /* ---------------------------------------------------------------------------
-   Hub tokens. The same names and values as the hub's workspace.css (--black,
-   --panel, --raise, ... prefixed hub- here so they cannot collide with the site's
-   own variables), one block per hub theme. The theme comes from ?theme= in the
-   URL or a postMessage({type:'hub-theme', theme}) from the hub frame; App.tsx
-   writes it to <html data-theme>. Dark is the default. The accent is the site's
-   neon orange, not the hub's white, so the editor's controls match the canvas.
+   Hub tokens in the Tailwind theme, so studio components can write bg-panel,
+   text-mute, border-line, text-fs-b, rounded-radius, font-hub. --black and
+   --white are deliberately not mapped over Tailwind's own `black`/`white`:
+   the site's components (rendered on the canvas from the same stylesheet)
+   use bg-black and text-white as fixed colours, and the hub's --white flips
+   to #000 in the light theme. They are reachable as hub-black and hub-white.
    --------------------------------------------------------------------------- */
-:root,
-[data-theme="dark"] {
-  color-scheme: dark;
-  --hub-black: #000000;
-  --hub-panel: #0a0a0a;
-  --hub-raise: #171717;
-  --hub-raise2: #222222;
-  --hub-line: #2a2a2a;
-  --hub-text: #ededed;
-  --hub-mute: #a1a1a1;
-  --hub-faint: rgba(161, 161, 161, 0.5);
-  --hub-white: #ffffff;
-  --hub-late: #ff5a5f;
-  --hub-ok: #2fbf71;
-  --hub-accent: #ff8800;
-  --hub-radius: 3px;
-  --hub-font: "Geist Sans", Geist, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-  --hub-mono: var(--font-jetbrains-mono);
-}
-
-[data-theme="light"] {
-  color-scheme: light;
-  --hub-black: #ffffff;
-  --hub-panel: #eef0f2;
-  --hub-raise: #f8f9fa;
-  --hub-raise2: #e9ecef;
-  --hub-line: #dee2e6;
-  --hub-text: #212529;
-  --hub-mute: #6c757d;
-  --hub-faint: rgba(108, 117, 125, 0.6);
-  --hub-white: #000000;
-  --hub-late: #c4141c;
-  --hub-ok: #067a42;
-  --hub-accent: #c45f00;
-}
-
-[data-theme="sensitive-light"] {
-  color-scheme: light;
-  --hub-black: #fff5f5;
-  --hub-panel: #ffcdd2;
-  --hub-raise: #ffebee;
-  --hub-raise2: #ffdde1;
-  --hub-line: #ef9a9a;
-  --hub-text: #212529;
-  --hub-mute: #6c757d;
-  --hub-faint: rgba(108, 117, 125, 0.6);
-  --hub-white: #1a1a1a;
-  --hub-late: #c62828;
-  --hub-ok: #2e7d32;
-  --hub-accent: #d32f2f;
-}
-
-[data-theme="sensitive-dark"] {
-  color-scheme: dark;
-  --hub-black: #1a0a0a;
-  --hub-panel: #140808;
-  --hub-raise: #2a1010;
-  --hub-raise2: #3a1818;
-  --hub-line: #4a1c1c;
-  --hub-text: #f5c6c6;
-  --hub-mute: rgba(245, 198, 198, 0.75);
-  --hub-faint: rgba(244, 143, 177, 0.5);
-  --hub-white: #fde8e8;
-  --hub-late: #ef5350;
-  --hub-ok: #a5d6a7;
-  --hub-accent: #ef5350;
+@theme inline {
+  --color-hub-black: var(--black);
+  --color-hub-white: var(--white);
+  --color-panel: var(--panel);
+  --color-raise: var(--raise);
+  --color-raise2: var(--raise2);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-mute: var(--mute);
+  --color-faint: var(--faint);
+  --color-late: var(--late);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-info: var(--info);
+  --color-accent: var(--accent);
+  --text-fs-xs: var(--fs-xs);
+  --text-fs-s: var(--fs-s);
+  --text-fs-m: var(--fs-m);
+  --text-fs-b: var(--fs-b);
+  --text-fs-l: var(--fs-l);
+  --radius-radius: var(--radius);
+  --radius-radius-lg: var(--radius-lg);
+  --font-hub: var(--font);
+  --font-hub-mono: var(--mono);
 }
 
 /* ---------------------------------------------------------------------------
@@ -93,118 +47,416 @@
    -border, -interactive, ...) over grey and azure scales. 0.24 has no dark mode
    of its own. Unlayered rules beat layered ones, so this block wins without
    !important. The semantic names cover the editor; the grey and azure scales
-   are remapped too because 29 rules in puck.css read them directly.
+   are remapped too because 29 rules in puck.css read them directly. The size
+   names at the end put Puck's fields, buttons and radii on the hub's scale.
    --------------------------------------------------------------------------- */
 :root {
-  --puck-font-family: var(--hub-mono);
-  --puck-color-white: var(--hub-black);
-  --puck-color-black: var(--hub-text);
+  /* next/font sets these on the site; the studio falls back to system fonts. */
+  --font-inter: Inter, system-ui, sans-serif;
+  --font-jetbrains-mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
 
-  --puck-color-surface: var(--hub-panel);
-  --puck-color-surface-muted: var(--hub-raise);
-  --puck-color-surface-subtle: var(--hub-black);
-  --puck-color-surface-inverse: var(--hub-text);
-  --puck-color-border: var(--hub-line);
-  --puck-color-border-hover: var(--hub-mute);
-  --puck-color-border-muted: var(--hub-raise2);
-  --puck-color-border-inverse: var(--hub-mute);
-  --puck-color-text: var(--hub-text);
-  --puck-color-text-secondary: var(--hub-mute);
-  --puck-color-text-muted: var(--hub-mute);
-  --puck-color-text-subtle: var(--hub-faint);
-  --puck-color-text-inverse: var(--hub-black);
-  --puck-color-interactive: var(--hub-accent);
-  --puck-color-interactive-hover: color-mix(in srgb, var(--hub-accent) 85%, var(--hub-text));
-  --puck-color-interactive-active: color-mix(in srgb, var(--hub-accent) 70%, var(--hub-text));
-  --puck-color-interactive-subtle: color-mix(in srgb, var(--hub-accent) 28%, var(--hub-black));
-  --puck-color-interactive-soft: color-mix(in srgb, var(--hub-accent) 14%, var(--hub-black));
-  --puck-color-interactive-soft-hover: color-mix(in srgb, var(--hub-accent) 22%, var(--hub-black));
-  --puck-color-interactive-neutral-hover: var(--hub-raise);
-  --puck-color-interactive-inverse-hover: var(--hub-accent);
-  --puck-color-interactive-inverse-active: color-mix(in srgb, var(--hub-accent) 80%, var(--hub-black));
-  --puck-color-focus-ring: var(--hub-accent);
-  --puck-color-selection-bg: color-mix(in srgb, var(--hub-accent) 22%, transparent);
-  --puck-color-selection-border: var(--hub-accent);
-  --puck-color-line-placeholder: var(--hub-accent);
-  --puck-color-highlight: var(--hub-accent);
-  --puck-color-bg-disabled: var(--hub-raise2);
-  --puck-color-text-disabled: var(--hub-mute);
-  --puck-color-overlay-backdrop: color-mix(in srgb, var(--hub-black) 75%, transparent);
+  --puck-font-family: var(--font);
+  --puck-color-white: var(--black);
+  --puck-color-black: var(--text);
+
+  --puck-color-surface: var(--panel);
+  --puck-color-surface-muted: var(--raise);
+  --puck-color-surface-subtle: var(--black);
+  --puck-color-surface-inverse: var(--text);
+  --puck-color-border: var(--line);
+  --puck-color-border-hover: var(--mute);
+  --puck-color-border-muted: var(--raise2);
+  --puck-color-border-inverse: var(--mute);
+  --puck-color-text: var(--text);
+  --puck-color-text-secondary: var(--mute);
+  --puck-color-text-muted: var(--mute);
+  --puck-color-text-subtle: var(--faint);
+  --puck-color-text-inverse: var(--black);
+  --puck-color-interactive: var(--accent);
+  --puck-color-interactive-hover: color-mix(in srgb, var(--accent) 85%, var(--text));
+  --puck-color-interactive-active: color-mix(in srgb, var(--accent) 70%, var(--text));
+  --puck-color-interactive-subtle: color-mix(in srgb, var(--accent) 28%, var(--black));
+  --puck-color-interactive-soft: color-mix(in srgb, var(--accent) 14%, var(--black));
+  --puck-color-interactive-soft-hover: color-mix(in srgb, var(--accent) 22%, var(--black));
+  --puck-color-interactive-neutral-hover: var(--raise);
+  --puck-color-interactive-inverse-hover: var(--accent);
+  --puck-color-interactive-inverse-active: color-mix(in srgb, var(--accent) 80%, var(--black));
+  --puck-color-focus-ring: var(--white);
+  --puck-color-selection-bg: color-mix(in srgb, var(--accent) 22%, transparent);
+  --puck-color-selection-border: var(--accent);
+  --puck-color-line-placeholder: var(--accent);
+  --puck-color-highlight: var(--accent);
+  --puck-color-bg-disabled: var(--raise2);
+  --puck-color-text-disabled: var(--faint);
+  --puck-color-overlay-backdrop: color-mix(in srgb, var(--black) 75%, transparent);
 
   /* Grey scale, 01 = strongest contrast against the surface, 12 = closest to it. */
-  --puck-color-grey-01: var(--hub-text);
-  --puck-color-grey-02: color-mix(in srgb, var(--hub-text) 90%, var(--hub-black));
-  --puck-color-grey-03: color-mix(in srgb, var(--hub-text) 80%, var(--hub-black));
-  --puck-color-grey-04: var(--hub-mute);
-  --puck-color-grey-05: var(--hub-mute);
-  --puck-color-grey-06: color-mix(in srgb, var(--hub-mute) 70%, var(--hub-black));
-  --puck-color-grey-07: color-mix(in srgb, var(--hub-mute) 50%, var(--hub-black));
-  --puck-color-grey-08: color-mix(in srgb, var(--hub-mute) 35%, var(--hub-black));
-  --puck-color-grey-09: var(--hub-line);
-  --puck-color-grey-10: var(--hub-raise2);
-  --puck-color-grey-11: var(--hub-raise);
-  --puck-color-grey-12: var(--hub-panel);
+  --puck-color-grey-01: var(--text);
+  --puck-color-grey-02: color-mix(in srgb, var(--text) 90%, var(--black));
+  --puck-color-grey-03: color-mix(in srgb, var(--text) 80%, var(--black));
+  --puck-color-grey-04: var(--mute);
+  --puck-color-grey-05: var(--mute);
+  --puck-color-grey-06: color-mix(in srgb, var(--mute) 70%, var(--black));
+  --puck-color-grey-07: color-mix(in srgb, var(--mute) 50%, var(--black));
+  --puck-color-grey-08: color-mix(in srgb, var(--mute) 35%, var(--black));
+  --puck-color-grey-09: var(--line);
+  --puck-color-grey-10: var(--raise2);
+  --puck-color-grey-11: var(--raise);
+  --puck-color-grey-12: var(--panel);
 
   /* Azure scale, used for selection and drop lines: the accent and its washes. */
-  --puck-color-azure-01: color-mix(in srgb, var(--hub-accent) 60%, var(--hub-text));
-  --puck-color-azure-02: color-mix(in srgb, var(--hub-accent) 75%, var(--hub-text));
-  --puck-color-azure-03: color-mix(in srgb, var(--hub-accent) 88%, var(--hub-text));
-  --puck-color-azure-04: var(--hub-accent);
-  --puck-color-azure-05: var(--hub-accent);
-  --puck-color-azure-06: color-mix(in srgb, var(--hub-accent) 85%, var(--hub-black));
-  --puck-color-azure-07: color-mix(in srgb, var(--hub-accent) 70%, var(--hub-black));
-  --puck-color-azure-08: color-mix(in srgb, var(--hub-accent) 55%, var(--hub-black));
-  --puck-color-azure-09: color-mix(in srgb, var(--hub-accent) 40%, var(--hub-black));
-  --puck-color-azure-10: color-mix(in srgb, var(--hub-accent) 28%, var(--hub-black));
-  --puck-color-azure-11: color-mix(in srgb, var(--hub-accent) 14%, var(--hub-black));
-  --puck-color-azure-12: color-mix(in srgb, var(--hub-accent) 8%, var(--hub-black));
+  --puck-color-azure-01: color-mix(in srgb, var(--accent) 60%, var(--text));
+  --puck-color-azure-02: color-mix(in srgb, var(--accent) 75%, var(--text));
+  --puck-color-azure-03: color-mix(in srgb, var(--accent) 88%, var(--text));
+  --puck-color-azure-04: var(--accent);
+  --puck-color-azure-05: var(--accent);
+  --puck-color-azure-06: color-mix(in srgb, var(--accent) 85%, var(--black));
+  --puck-color-azure-07: color-mix(in srgb, var(--accent) 70%, var(--black));
+  --puck-color-azure-08: color-mix(in srgb, var(--accent) 55%, var(--black));
+  --puck-color-azure-09: color-mix(in srgb, var(--accent) 40%, var(--black));
+  --puck-color-azure-10: color-mix(in srgb, var(--accent) 28%, var(--black));
+  --puck-color-azure-11: color-mix(in srgb, var(--accent) 14%, var(--black));
+  --puck-color-azure-12: color-mix(in srgb, var(--accent) 8%, var(--black));
+
+  /* Sizes: Puck's text scale on the hub's five sizes (xxxs 11, xxs 12.5, xs 13.5, s 15), its
+     radii on the two hub radii, and its fields at 32 px: 13.5 px text + 2 x 7 px + 2 x 1 px. */
+  --puck-font-size-xxxs-unitless: 11;
+  --puck-font-size-xxs-unitless: 12.5;
+  --puck-font-size-xs-unitless: 13.5;
+  --puck-font-size-s-unitless: 15;
+  --puck-radius-xs: var(--radius);
+  --puck-radius-s: var(--radius);
+  --puck-radius-m: var(--radius);
+  --puck-radius-l: var(--radius-lg);
+  --puck-field-radius: var(--radius);
+  --puck-field-font-size: var(--fs-b);
+  --puck-field-space-y: 7px;
+  --puck-field-space-x: 9px;
+  --puck-field-color-bg: var(--raise);
+  --puck-field-color-bg-hover: var(--raise);
+  --puck-field-color-border: var(--line);
+  --puck-field-color-border-hover: var(--mute);
+  --puck-field-color-border-focus: var(--mute);
+  --puck-field-color-text: var(--text);
+  --puck-field-color-text-disabled: var(--faint);
+  --puck-field-color-bg-disabled: var(--panel);
+  --puck-field-color-border-disabled: var(--line);
+  --puck-field-label-font-size: var(--fs-m);
+  --puck-field-label-space-y: 4px;
+  --puck-field-label-color-text: var(--mute);
+  --puck-button-radius: var(--radius);
+  --puck-iconbutton-radius: var(--radius);
+  --puck-drawer-item-radius: var(--radius);
+  --puck-drawer-item-font-size: var(--fs-m);
+  --puck-drawer-category-font-size: var(--fs-xs);
+  --puck-pluginbar-font-size: var(--fs-xs);
+}
+
+/* Puck's select keeps the native control on touch (the hub rule); its arrow glyph is Puck's own svg. */
+@media (pointer: coarse) {
+  [class*="_Input-select"] select {
+    appearance: auto;
+  }
 }
 
 body {
-  background: var(--hub-black);
-  color: var(--hub-text);
+  background: var(--black);
+  color: var(--text);
 }
 
-.studio-dirty {
-  color: var(--hub-late);
+/* ---------------------------------------------------------------------------
+   Controls (hub design/ui-standard.md section 2). One focus ring for every
+   control in the editor chrome; the canvas iframe does not have #root.
+   --------------------------------------------------------------------------- */
+#root :where(:focus-visible) {
+  outline: 1px solid var(--white);
+  outline-offset: 2px;
 }
-.studio-preview-note {
-  color: var(--hub-faint);
+
+.studio-btn,
+.studio-ib {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: var(--h-m);
+  padding: 0 10px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--fs-m);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  flex: none;
+}
+.studio-btn:hover:not(:disabled),
+.studio-ib:hover:not(:disabled) {
+  border-color: var(--mute);
+}
+.studio-ghost {
+  border-color: transparent;
+  padding: 0 8px;
+}
+.studio-ghost:hover:not(:disabled) {
+  border-color: transparent;
+  background: var(--raise);
+}
+.studio-primary {
+  background: var(--white);
+  border-color: var(--white);
+  color: var(--black);
+  font-weight: 600;
+  padding: 0 12px;
+}
+.studio-primary:hover:not(:disabled) {
+  background: var(--text);
+  border-color: var(--text);
+}
+.studio-btn.is-on,
+.studio-btn[aria-pressed="true"],
+.studio-ib.is-on,
+.studio-ib[aria-pressed="true"] {
+  background: var(--white);
+  border-color: var(--white);
+  color: var(--black);
+}
+.studio-btn:disabled,
+.studio-ib:disabled {
+  color: var(--faint);
+  cursor: not-allowed;
+}
+.studio-primary:disabled {
+  background: var(--raise);
+  border-color: var(--raise);
+  color: var(--mute);
+}
+.studio-ib {
+  width: var(--h-m);
+  padding: 0;
+  border-color: transparent;
+}
+.studio-ib:hover:not(:disabled) {
+  border-color: transparent;
+  background: var(--raise);
+  color: var(--white);
+}
+.studio-small {
+  height: var(--h-s);
+  padding: 0 8px;
+  font-size: var(--fs-s);
+}
+.studio-ib.studio-small {
+  width: var(--h-s);
+  padding: 0;
+}
+.studio-late {
+  color: var(--late);
+}
+.studio-late:not(.is-on):not([aria-pressed="true"]) {
+  border-color: var(--late);
+}
+.studio-ok {
+  color: var(--ok);
+}
+
+.studio-input,
+.studio-select {
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--h-m);
+  padding: 4px 9px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--raise);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--fs-b);
+  font-weight: 400;
+}
+.studio-input:hover,
+.studio-input:focus,
+.studio-select:hover,
+.studio-select:focus {
+  border-color: var(--mute);
+  outline: none;
+}
+.studio-input:read-only,
+.studio-input:disabled,
+.studio-select:disabled {
+  background: var(--panel);
+  color: var(--mute);
+}
+.studio-input[aria-invalid="true"],
+.studio-select[aria-invalid="true"] {
+  border-color: var(--late);
+}
+.studio-select {
+  padding-right: 26px;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--mute) 50%), linear-gradient(135deg, var(--mute) 50%, transparent 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+@media (pointer: coarse) {
+  .studio-select {
+    appearance: auto;
+    background-image: none;
+    padding-right: 9px;
+  }
+}
+.studio-help,
+.studio-err {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font);
+  font-size: var(--fs-s);
+  color: var(--mute);
+}
+.studio-err {
+  color: var(--late);
 }
 .studio-link {
   background: none;
   border: none;
-  color: var(--hub-accent);
+  color: var(--text);
   cursor: pointer;
   font: inherit;
+  font-size: var(--fs-m);
+  font-weight: 500;
   text-decoration: underline;
   padding: 0;
 }
+.studio-link:hover:not(:disabled) {
+  color: var(--white);
+}
 .studio-link:disabled {
-  color: var(--hub-faint);
-  cursor: default;
+  color: var(--faint);
+  text-decoration: none;
+  cursor: not-allowed;
+}
+.studio-dirty {
+  color: var(--late);
+}
+.studio-preview-note {
+  color: var(--faint);
 }
 
-/* The two publish actions in Puck's header, replacing its Publish button. */
-.studio-action {
-  font-family: var(--hub-mono);
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: var(--hub-radius);
-  border: 1px solid var(--hub-accent);
-  background: transparent;
-  color: var(--hub-accent);
-  cursor: pointer;
-  margin-left: 0;
+/* Phone touch targets (44 px) for the upload controls and the sheet's close button. */
+@media (max-width: 767px) {
+  .studio-touch {
+    min-height: 44px;
+  }
+  .studio-ib.studio-touch {
+    min-width: 44px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Priority-plus toolbar (components/PriorityToolbar.tsx): one row, never wraps.
+   --------------------------------------------------------------------------- */
+.studio-ptb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex-wrap: nowrap;
+  overflow: hidden;
   white-space: nowrap;
 }
-.studio-action-live {
-  background: var(--hub-accent);
-  color: var(--hub-black);
+.studio-ptb-measuring {
+  visibility: hidden;
 }
-.studio-action:disabled {
-  opacity: 0.5;
-  cursor: wait;
+.studio-ptb-measuring > * {
+  flex: none;
+}
+.studio-ptb-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+.studio-ptb-s {
+  gap: 2px;
+}
+
+/* The "…" menu (components/StudioMenu.tsx). */
+.studio-menu {
+  position: fixed;
+  z-index: 1200;
+  min-width: 200px;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 4px;
+  background: var(--raise);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--black) 60%, transparent);
+  font-family: var(--font);
+  font-size: var(--fs-b);
+}
+.studio-menu-title {
+  padding: 6px 10px 4px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.studio-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--h-m);
+  padding: 4px 10px;
+  border: none;
+  border-radius: var(--radius);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.studio-menu-item:hover:not(:disabled),
+.studio-menu-item:focus-visible {
+  background: var(--raise2);
+}
+.studio-menu-item:disabled {
+  color: var(--faint);
+  cursor: not-allowed;
+}
+.studio-menu-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  color: var(--mute);
+}
+.studio-menu-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.studio-menu-item small {
+  flex: none;
+  font-size: var(--fs-s);
+  color: var(--mute);
+}
+@media (max-width: 767px) {
+  .studio-menu-item {
+    min-height: var(--h-l);
+  }
 }
 
 /* Promote confirm dialog: names the pages that will go live. */
@@ -214,57 +466,70 @@ body {
   z-index: 1000;
   display: grid;
   place-items: center;
-  background: color-mix(in srgb, var(--hub-black) 70%, transparent);
+  padding: 8px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--black) 70%, transparent);
 }
 .studio-modal {
-  width: min(560px, calc(100vw - 32px));
-  max-height: calc(100vh - 32px);
+  width: min(560px, 100%);
+  max-height: 80dvh;
   overflow: auto;
-  background: var(--hub-panel);
-  color: var(--hub-text);
-  border: 1px solid var(--hub-line);
-  border-radius: var(--hub-radius);
-  padding: 16px 18px;
-  font-family: var(--hub-mono);
-  font-size: 12.5px;
-  box-shadow: 0 12px 40px color-mix(in srgb, var(--hub-black) 60%, transparent);
+  box-sizing: border-box;
+  background: var(--raise);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  font-family: var(--font);
+  font-size: var(--fs-b);
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--black) 60%, transparent);
 }
 .studio-modal h2 {
   margin: 0 0 8px;
-  font-size: 14px;
+  font-size: var(--fs-l);
   font-weight: 600;
 }
 .studio-modal p {
   margin: 0 0 10px;
-  color: var(--hub-mute);
+  color: var(--mute);
 }
 .studio-modal ul {
-  margin: 0 0 14px;
+  margin: 0 0 12px;
   padding: 0;
   list-style: none;
-  border: 1px solid var(--hub-line);
-  border-radius: var(--hub-radius);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
 }
 .studio-modal li {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 6px 10px;
-  border-top: 1px solid var(--hub-line);
+  min-height: var(--h-m);
+  align-items: center;
+  padding: 4px 12px;
+  border-top: 1px solid var(--line);
+}
+.studio-modal li > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mono);
 }
 .studio-modal li:first-child {
   border-top: none;
 }
 .studio-modal li small {
-  color: var(--hub-mute);
+  flex: none;
+  color: var(--mute);
+  font-size: var(--fs-s);
 }
 .studio-modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-}
-.studio-modal-actions .studio-action {
-  margin-left: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
 }
 
 /* Pages tree: the left-rail tab beside Blocks and Outline. */
@@ -273,27 +538,13 @@ body {
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  font-family: var(--hub-font);
-  font-size: 13px;
-  color: var(--hub-text);
+  font-family: var(--font);
+  font-size: var(--fs-b);
+  color: var(--text);
 }
 .pages-search {
   padding: 8px;
-  border-bottom: 1px solid var(--hub-line);
-}
-.pages-search input {
-  width: 100%;
-  box-sizing: border-box;
-  background: var(--hub-raise);
-  color: var(--hub-text);
-  border: 1px solid var(--hub-line);
-  border-radius: var(--hub-radius);
-  padding: 6px 8px;
-  font: inherit;
-}
-.pages-search input:focus {
-  outline: 1px solid var(--hub-accent);
-  border-color: var(--hub-accent);
+  border-bottom: 1px solid var(--line);
 }
 .pages-scroll {
   flex: 1;
@@ -305,11 +556,11 @@ body {
   justify-content: space-between;
   margin: 0;
   padding: 10px 12px 4px;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--hub-mute);
+  color: var(--mute);
 }
 .pages-group ul {
   list-style: none;
@@ -320,21 +571,22 @@ body {
   position: relative;
   display: block;
   width: 100%;
+  min-height: var(--h-m);
   text-align: left;
   background: none;
   border: none;
   border-left: 2px solid transparent;
-  padding: 6px 12px 6px 10px;
-  color: var(--hub-text);
+  padding: 4px 12px 4px 10px;
+  color: var(--text);
   font: inherit;
   cursor: pointer;
 }
 .pages-row:hover {
-  background: var(--hub-raise);
+  background: var(--raise);
 }
 .pages-row.is-current {
-  background: var(--hub-raise2);
-  border-left-color: var(--hub-accent);
+  background: var(--raise2);
+  border-left-color: var(--accent);
 }
 .pages-title {
   display: block;
@@ -345,9 +597,9 @@ body {
 }
 .pages-path {
   display: block;
-  font-family: var(--hub-mono);
-  font-size: 11px;
-  color: var(--hub-mute);
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--mute);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -359,36 +611,44 @@ body {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--hub-accent);
+  background: var(--late);
 }
 .pages-empty {
   padding: 12px;
-  color: var(--hub-mute);
+  color: var(--mute);
+}
+@media (max-width: 767px) {
+  .pages-row {
+    min-height: var(--h-l);
+  }
 }
 
 /* ---------------------------------------------------------------------------
    One header row (40 px): replaces the studio bars and Puck's own header.
+   [brand] [title + path, ellipsis] [toolbar: grows, never wraps]
    --------------------------------------------------------------------------- */
 .studio-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   box-sizing: border-box;
-  height: 40px;
+  width: 100%;
+  height: var(--h-l);
   min-width: 0;
-  padding: 0 10px;
-  background: var(--hub-panel);
-  border-bottom: 1px solid var(--hub-line);
-  font-family: var(--hub-mono);
-  font-size: 12px;
-  color: var(--hub-text);
+  padding: 0 8px 0 12px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font);
+  font-size: var(--fs-m);
+  color: var(--text);
   white-space: nowrap;
 }
-.studio-header > * {
-  flex: 0 0 auto;
-}
 .studio-brand {
-  color: var(--hub-accent);
+  flex: none;
+  color: var(--neon);
+  font-family: var(--mono);
+  font-size: var(--fs-s);
+  font-weight: 600;
   letter-spacing: 0.08em;
 }
 .studio-title-wrap {
@@ -400,54 +660,26 @@ body {
   overflow: hidden;
 }
 .studio-page-title {
-  font-family: var(--hub-font);
-  font-size: 13px;
+  font-size: var(--fs-b);
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .studio-page-path {
-  font-family: var(--hub-mono);
-  font-size: 11px;
-  color: var(--hub-mute);
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--mute);
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.studio-hlink {
-  color: var(--hub-accent);
-  text-decoration: none;
-  font-size: 11px;
-}
-.studio-hlink:hover {
-  text-decoration: underline;
-}
-.studio-spacer {
-  flex: 1 1 0 !important;
-  min-width: 0;
+.studio-header-tools {
+  flex: 1 1 0;
+  justify-content: flex-end;
+  margin-left: auto;
 }
 .studio-status {
   margin-left: auto;
-  color: var(--hub-mute);
-}
-.studio-pill {
-  font: inherit;
-  font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--hub-line);
-  background: var(--hub-raise);
-  color: var(--hub-mute);
-  cursor: pointer;
-  max-width: 260px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.studio-pill.is-pending {
-  border-color: var(--hub-late);
-  color: var(--hub-late);
-}
-.studio-pill:hover {
-  border-color: var(--hub-accent);
+  color: var(--mute);
 }
 .studio-popover {
   position: fixed;
@@ -457,103 +689,49 @@ body {
   gap: 6px;
   max-width: min(520px, calc(100vw - 16px));
   padding: 10px 12px;
-  background: var(--hub-panel);
-  color: var(--hub-text);
-  border: 1px solid var(--hub-line);
-  border-radius: var(--hub-radius);
-  font-family: var(--hub-mono);
-  font-size: 11.5px;
+  background: var(--raise);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  font-family: var(--font);
+  font-size: var(--fs-s);
   white-space: normal;
   overflow-wrap: anywhere;
-  box-shadow: 0 8px 28px color-mix(in srgb, var(--hub-black) 60%, transparent);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--black) 60%, transparent);
 }
 .studio-popover a {
-  color: var(--hub-accent);
+  color: var(--text);
 }
 .studio-popover-msg {
-  color: var(--hub-mute);
+  color: var(--mute);
 }
-.studio-undo {
-  display: inline-flex;
-  gap: 2px;
-}
-.studio-icon-btn {
-  display: inline-grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  background: transparent;
-  color: var(--hub-text);
-  border: 1px solid transparent;
-  border-radius: var(--hub-radius);
-  cursor: pointer;
-}
-.studio-icon-btn:hover:not(:disabled) {
-  border-color: var(--hub-line);
-  background: var(--hub-raise);
-}
-.studio-icon-btn:disabled {
-  color: var(--hub-faint);
-  cursor: default;
+@media (max-width: 767px) {
+  /* On the phone the brand goes and the title keeps at most a third of the row for the tools. */
+  .studio-brand {
+    display: none;
+  }
+  .studio-title-wrap {
+    max-width: 38%;
+  }
+  .studio-page-path {
+    display: none;
+  }
 }
 
-/* Puck's own header wrapper must not clip or add height around our row. */
-[class*="PuckLayout-header"] {
+/* Puck's own header wrapper must not clip or add height around our row, and must never be
+   wider than the window: its min-content width is what used to push the canvas off the phone. */
+[class*="_PuckLayout-header"] {
+  min-width: 0;
   overflow: visible !important;
   position: relative;
   z-index: 20;
 }
 
 /* ---------------------------------------------------------------------------
-   Canvas zoom (CanvasZoom.tsx): replaces Puck's zoom buttons in the viewport bar.
+   Canvas (CanvasZoom.tsx keeps the zoom in the header; Puck's own zoom buttons are hidden).
    --------------------------------------------------------------------------- */
 [data-studio-hidden] {
   display: none !important;
-}
-.studio-zoom-host {
-  display: flex;
-  align-items: center;
-}
-.studio-zoom {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  margin-left: 6px;
-  padding-left: 8px;
-  border-left: 1px solid var(--hub-line);
-  font-family: var(--hub-mono);
-  font-size: 12px;
-  color: var(--hub-text);
-}
-.studio-zoom-btn,
-.studio-zoom-fit {
-  font: inherit;
-  min-width: 26px;
-  height: 26px;
-  padding: 0 6px;
-  background: transparent;
-  color: inherit;
-  border: 1px solid transparent;
-  border-radius: var(--hub-radius);
-  cursor: pointer;
-}
-.studio-zoom-btn:hover:not(:disabled),
-.studio-zoom-fit:hover {
-  border-color: var(--hub-line);
-  background: var(--hub-raise);
-}
-.studio-zoom-btn:disabled {
-  color: var(--hub-faint);
-  cursor: default;
-}
-.studio-zoom-fit.is-on {
-  color: var(--hub-accent);
-}
-.studio-zoom-readout {
-  min-width: 44px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
 }
 
 /* Canvas frame: when the scaled page is wider than the frame, scroll sideways from the left edge.
@@ -588,7 +766,7 @@ body {
   height: 7px;
   z-index: 5;
   border-radius: 4px;
-  background: color-mix(in srgb, var(--hub-line) 50%, transparent);
+  background: color-mix(in srgb, var(--line) 50%, transparent);
 }
 .studio-hscroll-thumb {
   position: absolute;
@@ -596,11 +774,143 @@ body {
   bottom: 0;
   min-width: 24px;
   border-radius: 4px;
-  background: var(--hub-mute);
+  background: var(--mute);
   cursor: grab;
 }
 .studio-hscroll-thumb:hover {
-  background: var(--hub-accent);
+  background: var(--white);
+}
+
+/* ---------------------------------------------------------------------------
+   Phone (Puck's own phone layout starts under 638 px; the hub's phone rules
+   under 768). The grid column follows the window, not the header's content;
+   the canvas fills the width with 8 px gutters; the pane Puck shows in its
+   left slot becomes a bottom sheet over the canvas, above the bottom bar.
+   --------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  [class*="_PuckLayout-inner"] {
+    --puck-frame-width: minmax(0, 1fr);
+    --puck-space-chrome-gutter: 8px;
+  }
+  [class*="_PuckLayout-nav"] {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+@media (max-width: 637px) {
+  /* The canvas keeps the whole editor row; the sheet floats over it. */
+  [class*="_PuckLayout-inner"] {
+    grid-template-rows: min-content minmax(0, 1fr) 0 0 min-content !important;
+  }
+  [class*="_Sidebar--left"] {
+    /* Out of its (now 0 px) grid row: an absolute grid child is placed in its grid area unless
+       the area is auto, in which case the whole grid box is its containing block. */
+    grid-area: auto;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: var(--studio-nav-h, 64px);
+    z-index: 3;
+    height: 46dvh;
+    max-height: calc(100% - var(--h-l) - var(--studio-nav-h, 64px) - 8px);
+    box-sizing: border-box;
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: 0 -8px 28px color-mix(in srgb, var(--black) 60%, transparent);
+    padding-bottom: env(safe-area-inset-bottom);
+    transition: height 160ms ease-out;
+  }
+  [class*="_PuckLayout--isExpanded"] [class*="_Sidebar--left"] {
+    height: 82dvh;
+  }
+  /* The sheet's own grip replaces Puck's maximize button in the bar. */
+  [class*="_Nav-mobileActions"] {
+    display: none;
+  }
+  /* The four tabs share the bar at 44 px tall. */
+  [class*="_Nav-list"] {
+    width: 100%;
+  }
+  [class*="_NavItem_"] {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 !important;
+  }
+  [class*="_NavItem-link"] {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+    gap: 2px;
+    padding: 4px 2px;
+  }
+}
+
+/* Sheet chrome (components/PhoneSheet.tsx): grip, pane name, close. */
+.studio-sheet-slot {
+  flex: none;
+  position: relative;
+}
+.studio-sheet-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  box-sizing: border-box;
+  min-height: var(--h-l);
+  padding: 0 4px 0 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  font-family: var(--font);
+  font-size: var(--fs-b);
+  font-weight: 600;
+  color: var(--text);
+}
+.studio-sheet-grip {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 96px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+}
+.studio-sheet-grip span {
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin: 6px auto 0;
+  border-radius: 2px;
+  background: var(--mute);
+}
+.studio-sheet-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-studio-sheet] [class*="_SidebarSection-title"] {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+/* ===== Side-pane upload field (components/FileField.tsx) ===== */
+.studio-file {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.studio-file .studio-input {
+  flex: 1 1 150px;
+  min-width: 0;
+  font-family: var(--mono);
+}
+.studio-file .studio-btn {
+  flex: none;
 }
 
 /* Browser zoom (125 %, 150 %): flex children may shrink and scroll instead of clipping. */
@@ -640,24 +950,11 @@ body {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  border-bottom: 1px solid var(--hub-line);
-}
-.studio-source-toggle button {
-  font: inherit;
-  font-size: 12px;
-  padding: 3px 10px;
-  border: 1px solid var(--hub-line);
-  border-radius: 4px;
-  background: var(--hub-raise);
-  color: var(--hub-text);
-  cursor: pointer;
-}
-.studio-source-toggle button[aria-pressed="true"] {
-  border-color: var(--hub-accent);
-  color: var(--hub-accent);
+  border-bottom: 1px solid var(--line);
 }
 .studio-source-toggle small {
-  color: var(--hub-mute);
+  font-size: var(--fs-s);
+  color: var(--mute);
 }
 
 /* A block whose "On the site" field is hidden: the site leaves it out, the canvas
@@ -666,7 +963,7 @@ body {
 [data-studio-block-hidden] {
   position: relative;
   opacity: 0.35;
-  outline: 1px dashed var(--hub-accent);
+  outline: 1px dashed var(--accent);
   outline-offset: 2px;
 }
 [data-studio-block-hidden]::after {
@@ -680,8 +977,19 @@ body {
   font-size: 10px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--hub-black);
-  background: var(--hub-accent);
+  color: var(--black);
+  background: var(--accent);
   border-radius: 0 0 3px 3px;
   pointer-events: none;
+}
+
+/* Text fields go to 16 px under the phone width so iOS does not zoom the page on focus. Last in
+   the file so it wins over the control rules above. 16 is not a hub size; it is the iOS floor
+   (the hub's workspace.css does the same for its inputs). */
+@media (max-width: 767px) {
+  [class*="_Input-input"],
+  .studio-input,
+  .studio-select {
+    font-size: 16px;
+  }
 }

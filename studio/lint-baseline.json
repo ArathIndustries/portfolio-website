@@ -1,0 +1,21 @@
+[
+ {
+  "source": "studio/studio.css",
+  "warnings": [
+   {
+    "line": 940,
+    "column": 3,
+    "rule": "scale-unlimited/declaration-strict-value",
+    "severity": "error",
+    "text": "Expected variable, function or keyword for \"0.9rem\" of \"font-size\" (scale-unlimited/declaration-strict-value)"
+   },
+   {
+    "line": 979,
+    "column": 3,
+    "rule": "scale-unlimited/declaration-strict-value",
+    "severity": "error",
+    "text": "Expected variable, function or keyword for \"10px\" of \"font-size\" (scale-unlimited/declaration-strict-value)"
+   }
+  ]
+ }
+]

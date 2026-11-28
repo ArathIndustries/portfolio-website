@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "studio": "vite --config studio/vite.config.ts",
-    "studio:roundtrip": "tsx studio/convert/roundtrip.ts"
+    "studio:build": "vite build --config studio/vite.config.ts",
+    "studio:roundtrip": "tsx studio/convert/roundtrip.ts",
+    "lint:studio:css": "stylelint \"studio/**/*.css\"",
+    "lint:studio:css:delta": "node scripts/lint-studio-css-delta.mjs",
+    "lint:studio:css:baseline": "node scripts/lint-studio-css-delta.mjs --update"
   },
   "dependencies": {
     "@react-three/fiber": "^9.4.0",
@@ -41,6 +45,9 @@
     "eslint-config-next": "16.1.2",
     "remark": "^15.0.1",
     "remark-mdx": "^3.1.1",
+    "stylelint": "^16.26.1",
+    "stylelint-config-recommended": "^15.0.0",
+    "stylelint-declaration-strict-value": "^1.13.0",
     "tailwindcss": "^4",
     "tsx": "^4.20.0",
     "typescript": "^5",

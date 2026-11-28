@@ -9,6 +9,7 @@ import type React from "react";
 import type { Config, ComponentConfig } from "@puckeditor/core";
 import { blockComponents } from "../src/components/blocks";
 import { studioComponentOverrides } from "./RemotionPlayerBlock";
+import { withFileFields } from "./components/FileField";
 import { blockSchemas } from "./schema";
 
 const components: Record<string, ComponentConfig> = {};
@@ -23,7 +24,8 @@ for (const [name, schema] of Object.entries(blockSchemas)) {
   }
   components[name] = {
     label: name,
-    fields: schema.fields,
+    // A schema field marked studioFile gets the upload control here; the schema stays React-free.
+    fields: withFileFields(schema.fields),
     defaultProps: schema.defaultProps,
     render: (props) => {
       // Puck passes `id` and `puck` alongside the field values; the component only wants the fields.

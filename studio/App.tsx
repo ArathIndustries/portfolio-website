@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Puck, useGetPuck, type Data, type Plugin } from "@puckeditor/core";
+import { Puck, type Data, type Plugin } from "@puckeditor/core";
 import { puckConfig } from "./blocks";
-import { CanvasZoom } from "./CanvasZoom";
+import { CanvasZoom, ZoomContext, type ZoomApi } from "./CanvasZoom";
 import { SourceToggleFields } from "./components/SourceToggle";
 import { HeaderContext, StudioHeader, type HeaderInfo } from "./Header";
 
@@ -76,59 +76,6 @@ export function routeOfChangedFile(file: string, pages: PageInfo[]): PageInfo | 
   return pages.find((p) => p.file === rel) ?? null;
 }
 
-/**
- * Replaces Puck's Publish button with the two steps of the publish flow:
- * "Save to preview" writes the file and pushes studio/preview; "Promote to
- * live" moves master to that branch. Rendered inside Puck so it can read the
- * current editor data.
- */
-function PublishActions({ file, title, onStatus, onSaved, setBusy, busy, onPromoteRequest }: {
-  file: string;
-  title: string;
-  busy: string;
-  setBusy: (s: string) => void;
-  onStatus: (s: PublishStatus | null, note: string) => void;
-  onPromoteRequest: () => void;
-  onSaved: (data: Data) => void;
-}) {
-  const getPuck = useGetPuck();
-
-  const saveToPreview = async () => {
-    setBusy("preview");
-    try {
-      const data: Data = getPuck().appState.data;
-      const saved = await api<{ bytes: number }>(`${API}/page?file=${encodeURIComponent(file)}`, {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      onSaved(data);
-      const pub = await api<{ commit: string; changed: boolean; files: string[]; previewUrl: string; remote: string; branch: string }>(
-        `${API}/publish`,
-        { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ title }) },
-      );
-      const st = await api<PublishStatus>(`${API}/publish/status?fetch=0`);
-      const what = pub.changed ? `${pub.files.length} file(s) in ${pub.commit.slice(0, 7)}` : "no content changes, branch reset to master";
-      onStatus(st, `saved ${saved.bytes} bytes; pushed ${pub.branch} to ${pub.remote}: ${what}`);
-    } catch (e) {
-      onStatus(null, `save to preview failed: ${(e as Error).message}`);
-    } finally {
-      setBusy("");
-    }
-  };
-
-  return (
-    <>
-      <button type="button" className="studio-action" data-testid="save-preview" onClick={saveToPreview} disabled={Boolean(busy)} title="Write the file, commit content/ on studio/preview and push it">
-        {busy === "preview" ? "Saving to preview…" : "Save to preview"}
-      </button>
-      <button type="button" className="studio-action studio-action-live" data-testid="promote-live" onClick={onPromoteRequest} disabled={Boolean(busy)} title="Move master to studio/preview and push (deploys the live site)">
-        {busy === "promote" ? "Promoting…" : "Promote to live"}
-      </button>
-    </>
-  );
-}
-
 /** The confirm step before promote: lists the pages that differ between master and the preview. */
 function PromoteDialog({ status, pages, onCancel, onConfirm, loading }: {
   status: PublishStatus | null;
@@ -170,8 +117,8 @@ function PromoteDialog({ status, pages, onCancel, onConfirm, loading }: {
           </>
         ) : null}
         <div className="studio-modal-actions">
-          <button type="button" className="studio-action" data-testid="promote-cancel" onClick={onCancel}>Cancel</button>
-          <button type="button" className="studio-action studio-action-live" data-testid="promote-confirm" onClick={onConfirm} disabled={loading || Boolean(nothing)}>
+          <button type="button" className="studio-btn" data-testid="promote-cancel" onClick={onCancel}>Cancel</button>
+          <button type="button" className="studio-btn studio-primary" data-testid="promote-confirm" onClick={onConfirm} disabled={loading || Boolean(nothing)}>
             Promote {files.length ? `${files.length} file${files.length === 1 ? "" : "s"}` : ""}
           </button>
         </div>
@@ -224,6 +171,7 @@ function PagesPanel() {
     <div className="pages-tree" data-testid="pages-tree">
       <div className="pages-search">
         <input
+          className="studio-input"
           type="search"
           value={query}
           placeholder={`Search ${pages.length} pages`}
@@ -282,7 +230,7 @@ const pagesPlugin: Plugin = {
 const PLUGINS = [pagesPlugin];
 
 /** Stable identity so Puck does not remount the header on every App render. */
-const HEADER_OVERRIDE = ({ actions }: { actions: ReactNode }) => <StudioHeader actions={actions} />;
+const HEADER_OVERRIDE = () => <StudioHeader />;
 
 /** Stable identity, like the header override: the Markdown "Source" toggle wraps the right-pane fields. */
 const FIELDS_OVERRIDE = ({ children }: { children: ReactNode }) => <SourceToggleFields>{children}</SourceToggleFields>;
@@ -313,6 +261,7 @@ export function App() {
   const [promoting, setPromoting] = useState<"closed" | "loading" | "ready">("closed");
   const [query, setQuery] = useState("");
   const [editedFile, setEditedFile] = useState<string | null>(null);
+  const [zoomApi, setZoomApi] = useState<ZoomApi | null>(null);
   const baseline = useRef("");
   useHubTheme();
 
@@ -383,6 +332,37 @@ export function App() {
     return set;
   }, [pub, editedFile]);
 
+  /** "Save to preview": write the file, commit content/ on studio/preview and push it. Called from the header with Puck's current data. */
+  const saveToPreview = useCallback(
+    async (d: Data) => {
+      setBusy("preview");
+      try {
+        const saved = await api<{ bytes: number }>(`${API}/page?file=${encodeURIComponent(file)}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(d),
+        });
+        baseline.current = normalize(d);
+        setEditedFile(null);
+        const res = await api<{ commit: string; changed: boolean; files: string[]; previewUrl: string; remote: string; branch: string }>(`${API}/publish`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ title }),
+        });
+        const st = await api<PublishStatus>(`${API}/publish/status?fetch=0`);
+        setPub(st);
+        const what = res.changed ? `${res.files.length} file(s) in ${res.commit.slice(0, 7)}` : "no content changes, branch reset to master";
+        setStatus(`saved ${saved.bytes} bytes; pushed ${res.branch} to ${res.remote}: ${what}`);
+      } catch (e) {
+        setStatus(`save to preview failed: ${(e as Error).message}`);
+      } finally {
+        setBusy("");
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [file],
+  );
+
   const openPromote = async () => {
     setPromoting("loading");
     await refreshStatus(true);
@@ -424,15 +404,22 @@ export function App() {
     unsavedOnDisk: pub?.dirtyContent.length ?? 0,
     openPreviewUrl: previewAhead ? previewPageUrl : null,
     message: status,
-    busy: Boolean(busy),
+    busy,
     onRefresh: () => {
       void refreshStatus(true);
+    },
+    onSaveToPreview: (d) => {
+      void saveToPreview(d);
+    },
+    onPromoteRequest: () => {
+      void openPromote();
     },
   };
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column", minHeight: 0 }}>
       <HeaderContext.Provider value={headerInfo}>
+       <ZoomContext.Provider value={zoomApi}>
         {!data ? (
           <div className="studio-header">
             <strong className="studio-brand">STUDIO</strong>
@@ -455,26 +442,9 @@ export function App() {
                 headerTitle={title}
                 height="100%"
                 overrides={{
-                  // One 40 px row replaces the studio bars and Puck's own header; `actions` is the headerActions override below.
+                  // One row replaces the studio bars and Puck's own header; its toolbar holds the publish actions.
                   header: HEADER_OVERRIDE,
                   fields: FIELDS_OVERRIDE,
-                  headerActions: () => (
-                    <PublishActions
-                      file={file}
-                      title={title}
-                      busy={busy}
-                      setBusy={setBusy}
-                      onPromoteRequest={openPromote}
-                      onSaved={(d) => {
-                        baseline.current = normalize(d);
-                        setEditedFile(null);
-                      }}
-                      onStatus={(st, note) => {
-                        if (st) setPub(st);
-                        setStatus(note);
-                      }}
-                    />
-                  ),
                 }}
                 viewports={[
                   { width: 390, height: "auto", label: "Phone" },
@@ -482,10 +452,11 @@ export function App() {
                   { width: 1280, height: "auto", label: "Desktop" },
                 ]}
               />
-              <CanvasZoom />
+              <CanvasZoom onApi={setZoomApi} />
             </PagesContext.Provider>
           ) : null}
         </div>
+       </ZoomContext.Provider>
       </HeaderContext.Provider>
       {promoting !== "closed" ? (
         <PromoteDialog

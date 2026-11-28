@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { createContext, useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
 
 /**
@@ -9,13 +9,27 @@ import { createPortal } from "react-dom";
  * public setter, so this finds the store by walking React's fiber tree up from
  * the canvas element and calls the store's own `setZoomConfig`. Puck then scales
  * `#puck-canvas-root` and resizes it, and drag-and-drop uses the same number.
- * If the store cannot be found the control does not render; nothing else breaks.
+ * The buttons live in the header toolbar (Header.tsx) and read ZoomContext,
+ * which App fills from this component's `onApi`; if the store cannot be found
+ * the context stays null, the buttons do not render and nothing else breaks.
  */
 
 /** Percent steps offered by the buttons and the wheel. */
 export const ZOOM_STEPS = [25, 33, 50, 67, 75, 90, 100, 110, 125, 150, 175, 200] as const;
 const MIN = 0.25;
 const MAX = 2;
+
+/** What the header's zoom buttons need; null until the Puck store is found. */
+export interface ZoomApi {
+  zoom: number;
+  pct: number;
+  isFit: boolean;
+  canIn: boolean;
+  canOut: boolean;
+  step: (dir: 1 | -1) => void;
+  fit: () => void;
+}
+export const ZoomContext = createContext<ZoomApi | null>(null);
 
 interface ZoomConfig {
   autoZoom: number;
@@ -54,28 +68,19 @@ interface Env {
   root: HTMLElement;
   inner: HTMLElement;
   canvas: HTMLElement;
-  host: HTMLElement | null;
 }
 
-/** Marks Puck's own zoom buttons for hiding and returns the element that hosts ours. */
-function ensureHost(toolbar: Element | null): HTMLElement | null {
-  if (!toolbar) return null;
-  let host = toolbar.querySelector<HTMLElement>(":scope > .studio-zoom-host");
-  if (!host) {
-    host = document.createElement("div");
-    host.className = "studio-zoom-host";
-    toolbar.appendChild(host);
-  }
+/** Marks Puck's own zoom buttons (everything after the viewport divider) for hiding; ours are in the header. */
+function hidePuckZoom(toolbar: Element | null) {
+  if (!toolbar) return;
   let after = false;
   for (const child of Array.from(toolbar.children)) {
-    if (child === host) continue;
     if (String(child.className).includes("ViewportControls-divider")) after = true;
     if (after) child.setAttribute("data-studio-hidden", "");
   }
-  return host;
 }
 
-export function CanvasZoom() {
+export function CanvasZoom({ onApi }: { onApi?: (api: ZoomApi | null) => void }) {
   const [env, setEnv] = useState<Env | null>(null);
   const [cfg, setCfg] = useState<ZoomConfig | null>(null);
   const [pan, setPan] = useState(false);
@@ -89,8 +94,8 @@ export function CanvasZoom() {
       if (!root || !inner || !canvas) return;
       const store = findStore(root);
       if (!store) return;
-      const host = ensureHost(canvas.querySelector('[class*="ViewportControls-actionsInner"]'));
-      setEnv((cur) => (cur && cur.store === store && cur.root === root && cur.host === host ? cur : { store, root, inner, canvas, host }));
+      hidePuckZoom(canvas.querySelector('[class*="ViewportControls-actionsInner"]'));
+      setEnv((cur) => (cur && cur.store === store && cur.root === root ? cur : { store, root, inner, canvas }));
     };
     tick();
     const id = window.setInterval(tick, 300);
@@ -219,32 +224,29 @@ export function CanvasZoom() {
     };
   }, [env]);
 
+  // Publish the zoom state and actions for the header's buttons.
+  const onApiRef = useRef(onApi);
+  onApiRef.current = onApi;
+  useEffect(() => {
+    if (!env || !cfg) {
+      onApiRef.current?.(null);
+      return;
+    }
+    const zoom = cfg.zoom;
+    onApiRef.current?.({
+      zoom,
+      pct: Math.round(zoom * 100),
+      isFit: Math.abs(cfg.zoom - cfg.autoZoom) < 0.0005,
+      canIn: zoom < MAX - 0.0005,
+      canOut: zoom > MIN + 0.0005,
+      step,
+      fit,
+    });
+  }, [env, cfg, step, fit]);
+  useEffect(() => () => onApiRef.current?.(null), []);
+
   if (!env) return null;
-  const zoom = cfg?.zoom ?? 1;
-  const isFit = cfg ? Math.abs(cfg.zoom - cfg.autoZoom) < 0.0005 : true;
-  const pct = Math.round(zoom * 100);
-  return (
-    <>
-      {env.host
-        ? createPortal(
-            <div className="studio-zoom" data-testid="canvas-zoom" role="group" aria-label="Canvas zoom">
-              <button type="button" className="studio-zoom-btn" title="Zoom canvas out (Ctrl + wheel)" aria-label="Zoom canvas out" data-testid="zoom-out" disabled={zoom <= MIN + 0.0005} onClick={() => step(-1)}>
-                −
-              </button>
-              <output className="studio-zoom-readout" data-testid="zoom-readout" aria-live="polite">{pct}%</output>
-              <button type="button" className="studio-zoom-btn" title="Zoom canvas in (Ctrl + wheel)" aria-label="Zoom canvas in" data-testid="zoom-in" disabled={zoom >= MAX - 0.0005} onClick={() => step(1)}>
-                +
-              </button>
-              <button type="button" className={`studio-zoom-fit${isFit ? " is-on" : ""}`} title="Fit the page to the canvas (Ctrl + 0)" data-testid="zoom-fit" onClick={fit}>
-                Fit
-              </button>
-            </div>,
-            env.host,
-          )
-        : null}
-      {pan ? createPortal(<HScroll inner={env.inner} />, env.canvas) : null}
-    </>
-  );
+  return pan ? createPortal(<HScroll inner={env.inner} />, env.canvas) : null;
 }
 
 /** A thin horizontal scrollbar drawn by hand: a native one would shrink the frame and make Puck reset the zoom. */

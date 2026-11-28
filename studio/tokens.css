@@ -1,0 +1,139 @@
+/* Mirror of hub workspace.css tokens; the hub is the source, copy values from there, do not invent.
+   Source: hub/frontend/src/components/workspace/workspace.css, the :root block and the three theme
+   blocks (copied 2026-11-27). Same names, same values. The hub keys its themes on <html
+   data-bs-theme>; the studio keys them on <html data-theme>, written by App.tsx from ?theme= or
+   the hub's postMessage({ type: "hub-theme", theme }). Dark is the default, as in the hub.
+   The hub declares no spacing-step tokens (its 4 px grid is a rule, design/ui-standard.md
+   section 1), so none are declared here either.
+   The hex literals below are the one place a colour is spelled out in studio/; every other
+   studio rule reads a token (npm run lint:studio:css fails on a hex outside this file). */
+/* stylelint-disable color-no-hex */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --black: #000000;
+  --panel: #0a0a0a;
+  --raise: #171717;
+  --raise2: #222222;
+  --line: #2a2a2a;
+  --text: #ededed;
+  --mute: #a1a1a1;
+  --faint: rgba(161, 161, 161, .5);
+  --white: #ffffff;
+  --late: #ff5a5f;
+  --late-rgb: 255, 90, 95;
+  --late-wash: rgba(255, 90, 95, .12);
+  --ok: #2fbf71;
+  --ok-wash: rgba(47, 191, 113, .12);
+  --warn: #fbbf24;
+  --info: #a1a1a1;
+  --accent: #ffffff;
+  /* Tile heat steps (hottest first) and text colours on an inverted (--white) surface. */
+  --heat1: #131313;
+  --heat2: #1c1c1c;
+  --heat3: #2b2b2b;
+  --inv-mute: #4a4a4a;
+  --inv-late: #c4141c;
+  --inv-ok: #067a42;
+  --radius: 3px;
+  /* Sheets, modals and the tool card. */
+  --radius-lg: 6px;
+  /* Five text sizes: meta, note, control, body, title. */
+  --fs-xs: 11px;
+  --fs-s: 12px;
+  --fs-m: 12.5px;
+  --fs-b: 13.5px;
+  --fs-l: 15px;
+  /* Three control heights: small, default, phone touch target. */
+  --h-s: 24px;
+  --h-m: 32px;
+  --h-l: 40px;
+  /* Every panel body's padding. */
+  --pad-panel: 10px 12px;
+  --ribbon: 44px;
+  --status: 26px;
+  --font: 'Geist Sans', Geist, 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --mono: ui-monospace, 'Cascadia Mono', Consolas, 'Courier New', monospace;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --black: #ffffff;
+  --panel: #eef0f2;
+  --raise: #f8f9fa;
+  --raise2: #e9ecef;
+  --line: #dee2e6;
+  --text: #212529;
+  --mute: #6c757d;
+  --faint: rgba(108, 117, 125, .6);
+  --white: #000000;
+  --late: #c4141c;
+  --late-rgb: 196, 20, 28;
+  --late-wash: rgba(196, 20, 28, .1);
+  --ok: #067a42;
+  --ok-wash: rgba(6, 122, 66, .1);
+  --warn: #b45309;
+  --info: #6c757d;
+  --accent: #212529;
+  --heat1: #e6e8eb;
+  --heat2: #dfe2e6;
+  --heat3: #d5d9de;
+  --inv-mute: #b0b0b0;
+  --inv-late: #ff5a5f;
+  --inv-ok: #2fbf71;
+}
+
+[data-theme="sensitive-light"] {
+  color-scheme: light;
+  --black: #fff5f5;
+  --panel: #ffcdd2;
+  --raise: #ffebee;
+  --raise2: #ffdde1;
+  --line: #ef9a9a;
+  --text: #212529;
+  --mute: #6c757d;
+  --faint: rgba(108, 117, 125, .6);
+  --white: #1a1a1a;
+  --late: #c62828;
+  --late-rgb: 198, 40, 40;
+  --late-wash: rgba(198, 40, 40, .1);
+  --ok: #2e7d32;
+  --ok-wash: rgba(46, 125, 50, .1);
+  --warn: #b45309;
+  --info: #c62828;
+  --accent: #d32f2f;
+  --heat1: #ffe0e3;
+  --heat2: #ffd3d8;
+  --heat3: #ffc4ca;
+  --inv-mute: #b8a0a0;
+  --inv-late: #ff8a80;
+  --inv-ok: #66bb6a;
+}
+
+[data-theme="sensitive-dark"] {
+  color-scheme: dark;
+  --black: #1a0a0a;
+  --panel: #140808;
+  --raise: #2a1010;
+  --raise2: #3a1818;
+  --line: #4a1c1c;
+  --text: #f5c6c6;
+  --mute: rgba(245, 198, 198, .75);
+  --faint: rgba(244, 143, 177, .5);
+  --white: #fde8e8;
+  --late: #ef5350;
+  --late-rgb: 239, 83, 80;
+  --late-wash: rgba(239, 83, 80, .14);
+  --ok: #a5d6a7;
+  --ok-wash: rgba(165, 214, 167, .12);
+  --warn: #ffcc80;
+  --info: #f48fb1;
+  --accent: #ef5350;
+  --heat1: #1f0c0c;
+  --heat2: #261010;
+  --heat3: #331414;
+  --inv-mute: #6b4444;
+  --inv-late: #c62828;
+  --inv-ok: #2e7d32;
+}
+/* stylelint-enable color-no-hex */

@@ -71,6 +71,47 @@ function safeContentPath(file: string | null): string {
   return abs;
 }
 
+/** Folders under public/ an upload may land in, by the `dir` query parameter. */
+const UPLOAD_DIRS = new Set(["images", "files"]);
+const UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
+
+function readBytes(req: NodeJS.ReadableStream, max: number): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let size = 0;
+    req.on("data", (c: Buffer) => {
+      size += c.length;
+      if (size > max) {
+        reject(new Error(`file is larger than ${Math.round(max / 1024 / 1024)} MB`));
+        req.resume();
+        return;
+      }
+      chunks.push(c);
+    });
+    req.on("end", () => resolve(Buffer.concat(chunks)));
+    req.on("error", reject);
+  });
+}
+
+/**
+ * Saves an uploaded file under public/<dir>/ and returns its site path. The
+ * name is reduced to [a-z0-9._-]; a name already taken gets -2, -3, ... so an
+ * upload never overwrites a file the site uses.
+ */
+function saveUpload(dir: string | null, name: string | null, bytes: Buffer): { path: string; bytes: number } {
+  if (!dir || !UPLOAD_DIRS.has(dir)) throw new Error(`dir must be one of ${[...UPLOAD_DIRS].join(", ")}`);
+  if (!name) throw new Error("name is required");
+  if (bytes.length === 0) throw new Error("the file is empty");
+  const ext = path.extname(name).toLowerCase().replace(/[^a-z0-9.]/g, "");
+  const stem = path.basename(name, path.extname(name)).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "file";
+  const folder = path.join(publicDir, dir);
+  fs.mkdirSync(folder, { recursive: true });
+  let candidate = `${stem}${ext}`;
+  for (let n = 2; fs.existsSync(path.join(folder, candidate)); n++) candidate = `${stem}-${n}${ext}`;
+  fs.writeFileSync(path.join(folder, candidate), bytes);
+  return { path: `/${dir}/${candidate}`, bytes: bytes.length };
+}
+
 function readBody(req: NodeJS.ReadableStream): Promise<string> {
   return new Promise((resolve, reject) => {
     let s = "";
@@ -119,6 +160,11 @@ function fileApi(): Plugin {
           }
           if (route === "promote" && req.method === "POST") {
             return json(200, promote(publishCfg));
+          }
+          // Photos and files from the device (studio/components/FileField.tsx): raw body, name and dir in the query.
+          if (route === "upload" && req.method === "POST") {
+            const bytes = await readBytes(req, UPLOAD_MAX_BYTES);
+            return json(200, saveUpload(url.searchParams.get("dir"), url.searchParams.get("name"), bytes));
           }
           return json(404, { error: "not found" });
         } catch (e) {

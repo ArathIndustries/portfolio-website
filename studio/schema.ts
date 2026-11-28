@@ -6,7 +6,7 @@
  * Rule: a component without an entry here cannot appear on a page. The
  * converter fails loudly on any JSX tag not listed below.
  */
-import type { Fields } from "@puckeditor/core";
+import type { CustomField, Fields } from "@puckeditor/core";
 import {
   DEFAULT_REMOTION_COMPOSITION_ID,
   remotionCompositionOptions,
@@ -36,6 +36,28 @@ const text = (contentEditable = false, placeholder?: string) =>
 const textarea = (contentEditable = false, placeholder?: string) =>
   ({ type: "textarea", contentEditable, placeholder }) as const;
 const number = (min?: number, max?: number) => ({ type: "number", min, max }) as const;
+/**
+ * A path to a file under public/ (an image, a PDF). In the editor it is a text
+ * input plus an Upload button (studio/components/FileField.tsx, attached in
+ * blocks.tsx); here it is a plain description so this file stays React-free.
+ * `dir` is the folder under public/ an upload lands in.
+ */
+export interface StudioFileSpec {
+  accept: string;
+  dir: string;
+  placeholder: string;
+}
+const file = (kind: "image" | "pdf", placeholder: string) =>
+  ({
+    type: "custom",
+    // blocks.tsx swaps in the real control (withFileFields); a schema field never reaches Puck without it.
+    render: undefined as unknown as CustomField<string>["render"],
+    studioFile: {
+      accept: kind === "image" ? "image/*" : "application/pdf",
+      dir: kind === "image" ? "images" : "files",
+      placeholder,
+    } satisfies StudioFileSpec,
+  }) as const;
 /** On/off pair; Puck has no checkbox field, so a two-option radio stands in. */
 const toggle = (label: string) =>
   ({
@@ -328,7 +350,7 @@ export const blockSchemas: Record<string, BlockSchema> = {
     category: "Site",
     fields: {
       heading: text(),
-      image: { ...text(false, "/image.png"), label: "Badge image" },
+      image: { ...file("image", "/image.png"), label: "Badge image" },
       alt: { ...text(), label: "Badge image description" },
       title: { ...text(), label: "Credential name" },
       issuer: text(),
@@ -338,7 +360,7 @@ export const blockSchemas: Record<string, BlockSchema> = {
         label: "More credentials",
         getItemSummary: (item: { title?: string }) => item.title || "Credential",
         arrayFields: {
-          image: { ...text(false, "/image.png"), label: "Badge image" },
+          image: { ...file("image", "/image.png"), label: "Badge image" },
           alt: { ...text(), label: "Badge image description" },
           title: { ...text(), label: "Credential name" },
           issuer: text(),
@@ -388,7 +410,7 @@ export const blockSchemas: Record<string, BlockSchema> = {
       backHref: text(),
       backLabel: text(),
       title: text(),
-      pdf: text(false, "/file.pdf"),
+      pdf: file("pdf", "/file.pdf"),
       downloadLabel: text(),
       frameTitle: { ...text(), label: "Frame title (screen readers)" },
       frameVh: { ...number(20, 100), label: "Frame height (% of the window)" },
@@ -556,7 +578,7 @@ export const blockSchemas: Record<string, BlockSchema> = {
     description: "Image with caption.",
     editing: "mixed",
     category: "Text",
-    fields: { src: text(false, "/images/…"), alt: text(), caption: text(true, "Caption"), maxWidth: number(100, 2000) },
+    fields: { src: file("image", "/images/…"), alt: text(), caption: text(true, "Caption"), maxWidth: number(100, 2000) },
     defaultProps: { src: "/images/digital-twin-poster.png", alt: "", caption: "Caption", maxWidth: 800 },
   },
   Stats: {
@@ -607,7 +629,7 @@ export const blockSchemas: Record<string, BlockSchema> = {
       steps: {
         type: "array",
         getItemSummary: (s: { heading?: string }) => s.heading || "Step",
-        arrayFields: { heading: text(), text: textarea(), image: text(false, "optional /images/…"), accent: text(false, "optional CSS color") },
+        arrayFields: { heading: text(), text: textarea(), image: file("image", "optional /images/…"), accent: text(false, "optional CSS color") },
         defaultItemProps: { heading: "Step", text: "What happens here.", image: "", accent: "" },
       },
     },

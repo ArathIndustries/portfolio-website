@@ -18,6 +18,7 @@ export function SourceToggleFields({ children }: { children: ReactNode }) {
       <div className="studio-source-toggle">
         <button
           type="button"
+          className="studio-btn studio-small"
           aria-pressed={open}
           data-testid="source-toggle"
           onClick={() => {
